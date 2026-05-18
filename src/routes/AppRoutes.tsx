@@ -6,6 +6,7 @@ import { OAuthSuccessPage } from "../pages/OAuthSuccessPage";
 import { OAuthErrorPage } from "../pages/OAuthErrorPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { AdminPage } from "../pages/AdminPage";
+import { ProfilePage } from "../pages/ProfilePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { LandingPage } from "../pages/LandingPage";
 import { AUTH_ROLES } from "../features/auth/auth.types";
@@ -20,6 +21,7 @@ export function AppRoutes() {
       <Route path="/auth/error" element={<OAuthErrorPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route element={<ProtectedRoute allowedRoles={[AUTH_ROLES.ADMIN]} />}>
         <Route path="/admin" element={<AdminPage />} />

@@ -15,6 +15,7 @@ interface AuthState {
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   completeOAuth: () => Promise<void>;
+  refreshUser: () => Promise<AuthUser>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -130,6 +131,18 @@ export const useAuthStore = create<AuthState>((set) => {
         });
         throw error;
       }
+    },
+
+    async refreshUser() {
+      const user = await authApi.me();
+
+      set({
+        user,
+        accessToken: tokenStorage.getAccessToken(),
+        isAuthenticated: true,
+      });
+
+      return user;
     },
 
     async logout() {
