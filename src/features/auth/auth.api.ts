@@ -1,4 +1,8 @@
-import { apiClient, refreshAuthSession } from "../../services/apiClient";
+import {
+  apiClient,
+  refreshAuthSession,
+  resolveApiAssetUrl,
+} from "../../services/apiClient";
 import { env } from "../../config/env";
 import { AUTH_ROLES } from "./auth.types";
 import type {
@@ -53,6 +57,7 @@ function normalizeRole(role: string): AuthRole {
 function normalizeUser(user: ApiAuthUser): AuthUser {
   return {
     ...user,
+    avatarUrl: resolveApiAssetUrl(user.avatarUrl),
     role: normalizeRole(user.role),
   };
 }
@@ -86,7 +91,7 @@ function normalizeMeResponse(response: MeResponse): AuthUser {
       email: response.email ?? null,
       fullName: response.fullName ?? response.displayName ?? null,
       displayName: response.displayName ?? response.fullName ?? null,
-      avatarUrl: response.avatarUrl ?? null,
+      avatarUrl: resolveApiAssetUrl(response.avatarUrl),
       role: normalizeRole(response.role),
       status: response.status,
       createdAt: response.createdAt,

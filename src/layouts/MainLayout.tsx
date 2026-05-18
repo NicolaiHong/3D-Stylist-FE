@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { Box, LogOut } from "lucide-react";
+import { Box, LogOut, UserRound } from "lucide-react";
 import { Button } from "../components/common/Button";
 import { useAuthStore } from "../features/auth/auth.store";
 import { AUTH_ROLES } from "../features/auth/auth.types";
@@ -41,6 +41,21 @@ export function MainLayout({ children }: MainLayoutProps) {
                 to="/dashboard"
               >
                 Dashboard
+              </NavLink>
+              <NavLink
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-ink text-white"
+                      : "text-ink/64 hover:bg-ink/5 hover:text-ink"
+                  }`
+                }
+                to="/profile"
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <UserRound className="h-4 w-4" />
+                  Profile
+                </span>
               </NavLink>
               {isAdmin ? (
                 <NavLink

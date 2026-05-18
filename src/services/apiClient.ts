@@ -30,6 +30,26 @@ export const apiClient = axios.create({
   },
 });
 
+export function resolveApiAssetUrl(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (!value.startsWith("/")) {
+    return value;
+  }
+
+  try {
+    return `${new URL(env.apiBaseUrl).origin}${value}`;
+  } catch {
+    return value;
+  }
+}
+
 function getRefreshedAccessToken(response: RefreshResponse): string | undefined {
   return response.data?.accessToken ?? response.accessToken;
 }
@@ -62,6 +82,10 @@ export async function refreshAuthSession(): Promise<RefreshResponse> {
 
 apiClient.interceptors.request.use((config) => {
   const accessToken = tokenStorage.getAccessToken();
+
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    config.headers.set("Content-Type", undefined);
+  }
 
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
