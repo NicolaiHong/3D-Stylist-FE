@@ -7,6 +7,10 @@ import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
 import { PasswordInput } from "../components/common/PasswordInput";
 import { useAuthStore } from "../features/auth/auth.store";
+import {
+  getAuthIntentPath,
+  resolvePostAuthRedirect,
+} from "../features/auth/auth.redirects";
 
 interface LoginFormErrors {
   email?: string;
@@ -18,19 +22,20 @@ export function LoginPage() {
   const location = useLocation();
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
   const clearError = useAuthStore((state) => state.clearError);
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<LoginFormErrors>({});
 
-  const redirectTo = useMemo(() => {
-    const state = location.state as { from?: { pathname?: string } } | null;
-    return state?.from?.pathname || "/dashboard";
-  }, [location.state]);
+  const redirectTo = useMemo(
+    () => getAuthIntentPath(location.state),
+    [location.state],
+  );
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={resolvePostAuthRedirect(user, redirectTo)} replace />;
   }
 
   const validate = () => {
@@ -58,8 +63,10 @@ export function LoginPage() {
       return;
     }
 
-    await login(values);
-    navigate(redirectTo, { replace: true });
+    const authenticatedUser = await login(values);
+    navigate(resolvePostAuthRedirect(authenticatedUser, redirectTo), {
+      replace: true,
+    });
   };
 
   return (

@@ -12,10 +12,11 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   hydrate: () => Promise<void>;
-  login: (input: LoginInput) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
-  completeOAuth: () => Promise<void>;
+  login: (input: LoginInput) => Promise<AuthUser>;
+  register: (input: RegisterInput) => Promise<AuthUser>;
+  completeOAuth: () => Promise<AuthUser>;
   refreshUser: () => Promise<AuthUser>;
+  setUser: (user: AuthUser) => void;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -83,6 +84,8 @@ export const useAuthStore = create<AuthState>((set) => {
           isAuthenticated: true,
           isLoading: false,
         });
+
+        return session.user;
       } catch (error) {
         set({ error: getApiErrorMessage(error), isLoading: false });
         throw error;
@@ -102,6 +105,8 @@ export const useAuthStore = create<AuthState>((set) => {
           isAuthenticated: true,
           isLoading: false,
         });
+
+        return session.user;
       } catch (error) {
         set({ error: getApiErrorMessage(error), isLoading: false });
         throw error;
@@ -120,6 +125,8 @@ export const useAuthStore = create<AuthState>((set) => {
           isAuthenticated: true,
           isLoading: false,
         });
+
+        return session.user;
       } catch (error) {
         tokenStorage.clear();
         set({
@@ -143,6 +150,14 @@ export const useAuthStore = create<AuthState>((set) => {
       });
 
       return user;
+    },
+
+    setUser(user) {
+      set({
+        user,
+        accessToken: tokenStorage.getAccessToken(),
+        isAuthenticated: true,
+      });
     },
 
     async logout() {

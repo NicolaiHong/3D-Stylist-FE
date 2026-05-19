@@ -3,6 +3,10 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { AuthLayout } from "../components/auth/AuthLayout";
 import { useAuthStore } from "../features/auth/auth.store";
+import {
+  consumeOAuthIntent,
+  resolvePostAuthRedirect,
+} from "../features/auth/auth.redirects";
 
 export function OAuthSuccessPage() {
   const navigate = useNavigate();
@@ -17,8 +21,12 @@ export function OAuthSuccessPage() {
 
     hasStarted.current = true;
 
+    const intendedPath = consumeOAuthIntent();
+
     completeOAuth()
-      .then(() => navigate("/dashboard", { replace: true }))
+      .then((user) =>
+        navigate(resolvePostAuthRedirect(user, intendedPath), { replace: true }),
+      )
       .catch(() => setFailed(true));
   }, [completeOAuth, navigate]);
 
