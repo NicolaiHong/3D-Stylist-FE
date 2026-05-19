@@ -1,5 +1,5 @@
-import { FormEvent, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { FormEvent, useMemo, useState } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowRight, Mail, User } from "lucide-react";
 import { AuthLayout } from "../components/auth/AuthLayout";
 import { OAuthButtons } from "../components/auth/OAuthButtons";
@@ -7,6 +7,10 @@ import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
 import { PasswordInput } from "../components/common/PasswordInput";
 import { useAuthStore } from "../features/auth/auth.store";
+import {
+  getAuthIntentPath,
+  resolvePostAuthRedirect,
+} from "../features/auth/auth.redirects";
 
 interface RegisterFormErrors {
   fullName?: string;
@@ -19,8 +23,10 @@ const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\W_]).{8,128}$/;
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const register = useAuthStore((state) => state.register);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
   const clearError = useAuthStore((state) => state.clearError);
@@ -31,9 +37,13 @@ export function RegisterPage() {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const redirectTo = useMemo(
+    () => getAuthIntentPath(location.state),
+    [location.state],
+  );
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={resolvePostAuthRedirect(user, redirectTo)} replace />;
   }
 
   const validate = () => {
@@ -70,12 +80,14 @@ export function RegisterPage() {
       return;
     }
 
-    await register({
+    const registeredUser = await register({
       fullName: values.fullName.trim(),
       email: values.email.trim(),
       password: values.password,
     });
-    navigate("/dashboard", { replace: true });
+    navigate(resolvePostAuthRedirect(registeredUser, redirectTo), {
+      replace: true,
+    });
   };
 
   return (

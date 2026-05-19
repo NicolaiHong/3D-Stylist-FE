@@ -11,6 +11,11 @@ export interface AuthUser {
   fullName: string | null;
   displayName: string | null;
   avatarUrl: string | null;
+  occupation: string | null;
+  stylePreferences: string[];
+  preferredColors: string[];
+  outfitVibe: string | null;
+  onboardingCompleted: boolean;
   role: AuthRole;
   status: string;
   createdAt: string;

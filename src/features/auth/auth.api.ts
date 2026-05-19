@@ -13,8 +13,21 @@ import type {
   RegisterInput,
 } from "./auth.types";
 
-type ApiAuthUser = Omit<AuthUser, "role"> & {
+export type ApiAuthUser = Omit<
+  AuthUser,
+  | "role"
+  | "occupation"
+  | "stylePreferences"
+  | "preferredColors"
+  | "outfitVibe"
+  | "onboardingCompleted"
+> & {
   role: string;
+  occupation?: string | null;
+  stylePreferences?: string[] | null;
+  preferredColors?: string[] | null;
+  outfitVibe?: string | null;
+  onboardingCompleted?: boolean | null;
 };
 
 interface AuthResponse {
@@ -41,6 +54,11 @@ interface MeResponse {
   fullName?: string | null;
   displayName?: string | null;
   avatarUrl?: string | null;
+  occupation?: string | null;
+  stylePreferences?: string[] | null;
+  preferredColors?: string[] | null;
+  outfitVibe?: string | null;
+  onboardingCompleted?: boolean | null;
   role?: string;
   status?: string;
   createdAt?: string;
@@ -54,10 +72,19 @@ function normalizeRole(role: string): AuthRole {
   throw new Error("Profile response contains an invalid role");
 }
 
-function normalizeUser(user: ApiAuthUser): AuthUser {
+export function normalizeUser(user: ApiAuthUser): AuthUser {
   return {
     ...user,
     avatarUrl: resolveApiAssetUrl(user.avatarUrl),
+    occupation: user.occupation ?? null,
+    stylePreferences: Array.isArray(user.stylePreferences)
+      ? user.stylePreferences
+      : [],
+    preferredColors: Array.isArray(user.preferredColors)
+      ? user.preferredColors
+      : [],
+    outfitVibe: user.outfitVibe ?? null,
+    onboardingCompleted: Boolean(user.onboardingCompleted),
     role: normalizeRole(user.role),
   };
 }
@@ -92,6 +119,15 @@ function normalizeMeResponse(response: MeResponse): AuthUser {
       fullName: response.fullName ?? response.displayName ?? null,
       displayName: response.displayName ?? response.fullName ?? null,
       avatarUrl: resolveApiAssetUrl(response.avatarUrl),
+      occupation: response.occupation ?? null,
+      stylePreferences: Array.isArray(response.stylePreferences)
+        ? response.stylePreferences
+        : [],
+      preferredColors: Array.isArray(response.preferredColors)
+        ? response.preferredColors
+        : [],
+      outfitVibe: response.outfitVibe ?? null,
+      onboardingCompleted: Boolean(response.onboardingCompleted),
       role: normalizeRole(response.role),
       status: response.status,
       createdAt: response.createdAt,

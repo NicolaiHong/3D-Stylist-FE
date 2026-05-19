@@ -7,6 +7,7 @@ import { OAuthErrorPage } from "../pages/OAuthErrorPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { AdminPage } from "../pages/AdminPage";
 import { ProfilePage } from "../pages/ProfilePage";
+import { OnboardingPage } from "../pages/OnboardingPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { LandingPage } from "../pages/LandingPage";
 import { AUTH_ROLES } from "../features/auth/auth.types";
@@ -19,6 +20,9 @@ export function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/auth/success" element={<OAuthSuccessPage />} />
       <Route path="/auth/error" element={<OAuthErrorPage />} />
+      <Route element={<ProtectedRoute requireCompletedOnboarding={false} />}>
+        <Route path="/onboarding" element={<OnboardingPage />} />
+      </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />

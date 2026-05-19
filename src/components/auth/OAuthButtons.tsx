@@ -1,9 +1,22 @@
 import { Facebook } from "lucide-react";
+import { useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { authApi } from "../../features/auth/auth.api";
+import {
+  getAuthIntentPath,
+  rememberOAuthIntent,
+} from "../../features/auth/auth.redirects";
 import { Button } from "../common/Button";
 
 export function OAuthButtons() {
+  const location = useLocation();
+  const intendedPath = useMemo(
+    () => getAuthIntentPath(location.state),
+    [location.state],
+  );
+
   const startOAuth = (provider: "google" | "facebook") => {
+    rememberOAuthIntent(intendedPath);
     window.location.href = authApi.getOAuthUrl(provider);
   };
 
