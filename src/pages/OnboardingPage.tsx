@@ -32,7 +32,7 @@ import type { OnboardingPayload } from "../features/onboarding/onboarding.api";
 import { profileApi } from "../features/profile/profile.api";
 import { useAuthStore } from "../features/auth/auth.store";
 import { resolvePostAuthRedirect } from "../features/auth/auth.redirects";
-import type { AuthUser } from "../features/auth/auth.types";
+import { AUTH_ROLES, type AuthUser } from "../features/auth/auth.types";
 import { getApiErrorMessage } from "../services/apiClient";
 
 const STYLE_OPTIONS = [
@@ -297,6 +297,7 @@ export function OnboardingPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -330,7 +331,7 @@ export function OnboardingPage() {
   const ActiveStepIcon = activeStep.icon;
   const activePreviewUrl = previewUrl ?? user?.avatarUrl ?? null;
   const progressText = `Step ${currentStep + 1} of ${STEPS.length}`;
-  const isBusy = isSaving || isCompleting || isUploading;
+  const isBusy = isSaving || isCompleting || isSkipping || isUploading;
 
   const selectedSummary = useMemo(
     () => [
@@ -342,6 +343,10 @@ export function OnboardingPage() {
 
   if (!user) {
     return <LoadingScreen />;
+  }
+
+  if (user.role === AUTH_ROLES.ADMIN) {
+    return <Navigate to={resolvePostAuthRedirect(user, "/admin")} replace />;
   }
 
   if (user.onboardingCompleted) {
@@ -465,17 +470,35 @@ export function OnboardingPage() {
     setErrors({});
 
     try {
-      const updatedUser = await onboardingApi.patchOnboarding(
+      await onboardingApi.patchOnboarding(
         createOnboardingPayload(form, true),
       );
-      setUser(updatedUser);
-      navigate(resolvePostAuthRedirect(updatedUser, "/dashboard"), {
+      const refreshedUser = await refreshUser();
+      navigate(resolvePostAuthRedirect(refreshedUser, "/dashboard"), {
         replace: true,
       });
     } catch (error) {
       setErrors({ form: getApiErrorMessage(error) });
     } finally {
       setIsCompleting(false);
+    }
+  }
+
+  async function handleSkipOnboarding() {
+    setIsSkipping(true);
+    setStatusMessage(null);
+    setErrors({});
+
+    try {
+      await onboardingApi.patchOnboarding({ skip: true });
+      const refreshedUser = await refreshUser();
+      navigate(resolvePostAuthRedirect(refreshedUser, "/dashboard"), {
+        replace: true,
+      });
+    } catch (error) {
+      setErrors({ form: getApiErrorMessage(error) });
+    } finally {
+      setIsSkipping(false);
     }
   }
 
@@ -831,16 +854,6 @@ export function OnboardingPage() {
             </div>
           ) : null}
 
-          <Button
-            className="w-full border-white/10 text-[#d7e5e2]"
-            disabled={isSaving || isUploading}
-            isLoading={isCompleting}
-            type="button"
-            variant="authSecondary"
-            onClick={() => void handleFinish()}
-          >
-            Skip for now
-          </Button>
         </div>
       </div>
     );
@@ -1004,6 +1017,16 @@ export function OnboardingPage() {
 
             <div className="mt-8 flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
+                  className="border-white/10 text-[#d7e5e2]"
+                  disabled={isSaving || isCompleting || isUploading}
+                  isLoading={isSkipping}
+                  type="button"
+                  variant="authSecondary"
+                  onClick={() => void handleSkipOnboarding()}
+                >
+                  Skip for now
+                </Button>
                 {currentStep > 0 ? (
                   <Button
                     className="border-white/10 text-[#d7e5e2]"
@@ -1018,7 +1041,7 @@ export function OnboardingPage() {
                 ) : null}
                 <Button
                   className="border-white/10 text-[#d7e5e2]"
-                  disabled={isCompleting || isUploading}
+                  disabled={isCompleting || isSkipping || isUploading}
                   icon={<Save className="h-4 w-4" />}
                   isLoading={isSaving}
                   type="button"
@@ -1030,7 +1053,7 @@ export function OnboardingPage() {
               </div>
 
               <Button
-                disabled={isSaving || isUploading}
+                disabled={isSaving || isSkipping || isUploading}
                 icon={<ArrowRight className="h-4 w-4" />}
                 isLoading={isCompleting}
                 type="button"

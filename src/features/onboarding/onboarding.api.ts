@@ -9,6 +9,7 @@ export interface OnboardingPayload {
   preferredColors?: string[];
   outfitVibe?: string;
   complete?: boolean;
+  skip?: boolean;
 }
 
 interface OnboardingResponse {

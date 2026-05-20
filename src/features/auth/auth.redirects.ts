@@ -1,5 +1,5 @@
 import type { Location } from "react-router-dom";
-import type { AuthUser } from "./auth.types";
+import { AUTH_ROLES, type AuthUser } from "./auth.types";
 
 const OAUTH_INTENT_STORAGE_KEY = "3d-stylist.oauth-intended-route";
 
@@ -46,14 +46,24 @@ export function getAuthIntentPath(state: unknown): string | null {
 }
 
 export function resolvePostAuthRedirect(
-  user: Pick<AuthUser, "onboardingCompleted"> | null | undefined,
+  user: Pick<AuthUser, "onboardingCompleted" | "role"> | null | undefined,
   intendedPath?: string | null,
 ) {
-  if (!user?.onboardingCompleted) {
+  if (userNeedsOnboarding(user)) {
     return "/onboarding";
   }
 
+  if (user?.role === AUTH_ROLES.ADMIN) {
+    return normalizeRedirectPath(intendedPath) ?? "/admin";
+  }
+
   return normalizeRedirectPath(intendedPath) ?? "/dashboard";
+}
+
+export function userNeedsOnboarding(
+  user: Pick<AuthUser, "onboardingCompleted" | "role"> | null | undefined,
+) {
+  return user?.role === AUTH_ROLES.USER && !user.onboardingCompleted;
 }
 
 export function rememberOAuthIntent(intendedPath: string | null) {

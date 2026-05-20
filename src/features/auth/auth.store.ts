@@ -77,16 +77,18 @@ export const useAuthStore = create<AuthState>((set) => {
       try {
         const session = await authApi.login(input);
         tokenStorage.setAccessToken(session.accessToken);
+        const user = await authApi.me();
 
         set({
-          user: session.user,
+          user,
           accessToken: session.accessToken,
           isAuthenticated: true,
           isLoading: false,
         });
 
-        return session.user;
+        return user;
       } catch (error) {
+        tokenStorage.clear();
         set({ error: getApiErrorMessage(error), isLoading: false });
         throw error;
       }
@@ -98,16 +100,18 @@ export const useAuthStore = create<AuthState>((set) => {
       try {
         const session = await authApi.register(input);
         tokenStorage.setAccessToken(session.accessToken);
+        const user = await authApi.me();
 
         set({
-          user: session.user,
+          user,
           accessToken: session.accessToken,
           isAuthenticated: true,
           isLoading: false,
         });
 
-        return session.user;
+        return user;
       } catch (error) {
+        tokenStorage.clear();
         set({ error: getApiErrorMessage(error), isLoading: false });
         throw error;
       }
@@ -118,15 +122,16 @@ export const useAuthStore = create<AuthState>((set) => {
 
       try {
         const session = await authApi.refresh();
+        const user = await authApi.me();
 
         set({
-          user: session.user,
-          accessToken: tokenStorage.getAccessToken(),
+          user,
+          accessToken: tokenStorage.getAccessToken() ?? session.accessToken,
           isAuthenticated: true,
           isLoading: false,
         });
 
-        return session.user;
+        return user;
       } catch (error) {
         tokenStorage.clear();
         set({
