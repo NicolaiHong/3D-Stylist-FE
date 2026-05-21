@@ -5,6 +5,8 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { OAuthSuccessPage } from "../pages/OAuthSuccessPage";
 import { OAuthErrorPage } from "../pages/OAuthErrorPage";
 import { DashboardPage } from "../pages/DashboardPage";
+import { CreditsPage } from "../pages/CreditsPage";
+import { PaymentResultPage } from "../pages/PaymentResultPage";
 import { AdminPage } from "../pages/AdminPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { OnboardingPage } from "../pages/OnboardingPage";
@@ -25,6 +27,19 @@ export function AppRoutes() {
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/credits" element={<CreditsPage />} />
+        <Route
+          path="/credits/payment/success"
+          element={<PaymentResultPage routeState="success" />}
+        />
+        <Route
+          path="/credits/payment/failed"
+          element={<PaymentResultPage routeState="failed" />}
+        />
+        <Route
+          path="/credits/payment/cancelled"
+          element={<PaymentResultPage routeState="cancelled" />}
+        />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route element={<ProtectedRoute allowedRoles={[AUTH_ROLES.ADMIN]} />}>
