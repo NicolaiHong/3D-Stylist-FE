@@ -78,10 +78,10 @@ function MobileNavItem({ item }: { item: NavigationItem }) {
     return (
       <span
         aria-disabled="true"
-        className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#849396]/70"
+        className="flex min-h-11 min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#849396]/70 sm:basis-auto"
       >
-        <Icon className="h-4 w-4" />
-        {item.label}
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{item.label}</span>
       </span>
     );
   }
@@ -89,7 +89,7 @@ function MobileNavItem({ item }: { item: NavigationItem }) {
   return (
     <NavLink
       className={({ isActive }) =>
-        `flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        `flex min-h-11 min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center justify-center gap-2 rounded-md border px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] sm:basis-auto ${
           isActive
             ? "border-[#00e5ff]/35 bg-[#00e5ff]/12 text-[#9cf0ff]"
             : "border-white/[0.08] text-[#bac9cc] hover:border-[#00e5ff]/35 hover:text-white"
@@ -97,8 +97,8 @@ function MobileNavItem({ item }: { item: NavigationItem }) {
       }
       to={item.to}
     >
-      <Icon className="h-4 w-4" />
-      {item.label}
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="truncate">{item.label}</span>
     </NavLink>
   );
 }
@@ -113,7 +113,7 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#e5e2e1]">
+    <div className="min-h-screen overflow-x-hidden bg-[#0a0a0a] text-[#e5e2e1]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[#3b494c] bg-[#1c1b1b] p-4 lg:flex">
         <Link
           className="mb-4 border-b border-[#3b494c]/60 px-3 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
