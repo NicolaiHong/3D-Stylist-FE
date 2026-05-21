@@ -15,6 +15,13 @@ export default {
         soft: "0 24px 80px rgba(23, 32, 29, 0.16)",
       },
       fontFamily: {
+        display: [
+          "Outfit",
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
         sans: [
           "Inter",
           "ui-sans-serif",

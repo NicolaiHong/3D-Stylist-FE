@@ -158,3 +158,15 @@ export function getApiErrorMessage(error: unknown): string {
 
   return "Something went wrong";
 }
+
+export function getApiErrorCode(error: unknown): string | null {
+  if (!axios.isAxiosError(error)) {
+    return null;
+  }
+
+  const data = error.response?.data as
+    | { code?: string; error?: { code?: string } }
+    | undefined;
+
+  return data?.error?.code ?? data?.code ?? null;
+}
