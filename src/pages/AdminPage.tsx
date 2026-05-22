@@ -27,7 +27,6 @@ import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { adminApi } from "../features/admin/admin.api";
 import {
   ADMIN_RANGES,
-  type AdminBillingProvider,
   type AdminHealth,
   type AdminMarkPaidResult,
   type AdminOrder,
@@ -46,7 +45,6 @@ import { getApiErrorMessage } from "../services/apiClient";
 
 type OrderStatusFilter = AdminOrderStatus | "all";
 type PaymentStatusFilter = AdminPaymentStatus | "all";
-type ProviderFilter = AdminBillingProvider | "all";
 
 const orderStatusOptions: OrderStatusFilter[] = [
   "all",
@@ -60,14 +58,11 @@ const orderStatusOptions: OrderStatusFilter[] = [
 const transactionStatusOptions: PaymentStatusFilter[] = [
   "all",
   "initiated",
-  "redirected",
   "succeeded",
   "failed",
   "cancelled",
   "expired",
 ];
-
-const providerOptions: ProviderFilter[] = ["all", "momo", "vnpay"];
 
 const rangeOptions: Array<{ label: string; value: AdminRange }> = [
   { label: "7 days", value: ADMIN_RANGES.SEVEN_DAYS },
@@ -175,6 +170,19 @@ function getInitials(user: { displayName: string | null; email: string | null })
 
 function getOrderProduct(order: AdminOrder) {
   return order.items[0] ?? null;
+}
+
+function getOrderTransferContent(order: AdminOrder) {
+  return (
+    order.transferContent ??
+    order.bankTransferContent ??
+    order.orderCode ??
+    "Not returned"
+  );
+}
+
+function getOrderPaymentMethod(order: AdminOrder) {
+  return order.paymentMethod ?? order.provider ?? "vietqr_bank_transfer";
 }
 
 function getStatusTone(status: string) {
@@ -360,7 +368,7 @@ function AdminEmptyState({ message }: { message: string }) {
     <div className="p-8 text-center">
       <p className="text-sm font-bold text-white">{message}</p>
       <p className="mt-2 text-sm text-[#849396]">
-        Refresh after new sandbox activity is available.
+        Refresh after new payment activity is available.
       </p>
     </div>
   );
@@ -522,7 +530,8 @@ function OrdersTable({
             <th className="px-5 py-3 font-bold">User</th>
             <th className="px-5 py-3 font-bold">Product</th>
             <th className="px-5 py-3 font-bold">Amount</th>
-            <th className="px-5 py-3 font-bold">Provider</th>
+            <th className="px-5 py-3 font-bold">Transfer</th>
+            <th className="px-5 py-3 font-bold">Method</th>
             <th className="px-5 py-3 font-bold">Status</th>
             <th className="px-5 py-3 font-bold">Action</th>
           </tr>
@@ -564,8 +573,16 @@ function OrdersTable({
                 <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
                   {formatCurrency(order.totalAmount, order.currency)}
                 </td>
+                <td className="px-5 py-4">
+                  <p className="max-w-[180px] truncate font-mono text-xs font-bold text-[#ffeac0]">
+                    {getOrderTransferContent(order)}
+                  </p>
+                  <p className="mt-1 text-xs text-[#849396]">
+                    {order.paymentVerification ?? "awaiting_transfer"}
+                  </p>
+                </td>
                 <td className="px-5 py-4 text-sm font-bold uppercase text-[#bac9cc]">
-                  {order.provider ?? "none"}
+                  {getOrderPaymentMethod(order)}
                 </td>
                 <td className="px-5 py-4">
                   <StatusBadge status={order.status} />
@@ -689,12 +706,8 @@ function HealthPanel({
         : undefined,
     },
     {
-      label: "MoMo sandbox",
-      value: health?.billing?.momoSandboxConfigured ? "configured" : "missing",
-    },
-    {
-      label: "VNPay sandbox",
-      value: health?.billing?.vnpaySandboxConfigured ? "configured" : "missing",
+      label: "VietQR",
+      value: health?.billing?.vietQrConfigured ? "configured" : "pending",
     },
     {
       label: "Manual mark-paid",
@@ -948,7 +961,7 @@ function ManualMarkPaidDialog({
               Development action
             </p>
             <h2 className="mt-2 font-display text-2xl font-semibold text-white">
-              Mark this sandbox order paid?
+              Mark this VietQR order paid?
             </h2>
           </div>
           <button
@@ -963,8 +976,9 @@ function ManualMarkPaidDialog({
         </div>
         <div className="space-y-5 p-5">
           <p className="text-sm leading-6 text-[#bac9cc]">
-            This development action uses the same grant path as a verified
-            payment. It should only be used for sandbox support.
+            Confirm the bank transfer amount and transfer content match before
+            continuing. This uses the same backend grant path as a verified
+            payment.
           </p>
           <dl className="grid gap-3 text-sm">
             <div className="flex justify-between gap-4">
@@ -987,6 +1001,12 @@ function ManualMarkPaidDialog({
               <dt className="text-[#849396]">Amount</dt>
               <dd className="font-bold text-white">
                 {formatCurrency(order.totalAmount, order.currency)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-[#849396]">Transfer content</dt>
+              <dd className="max-w-[260px] truncate font-mono font-bold text-white">
+                {getOrderTransferContent(order)}
               </dd>
             </div>
           </dl>
@@ -1023,7 +1043,6 @@ export function AdminPage() {
   const [orderStatus, setOrderStatus] = useState<OrderStatusFilter>("all");
   const [transactionStatus, setTransactionStatus] =
     useState<PaymentStatusFilter>("all");
-  const [provider, setProvider] = useState<ProviderFilter>("all");
   const [health, setHealth] = useState<AdminHealth | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [usersPage, setUsersPage] =
@@ -1086,7 +1105,6 @@ export function AdminPage() {
             limit: 8,
             status:
               transactionStatus === "all" ? undefined : transactionStatus,
-            provider: provider === "all" ? undefined : provider,
           }),
           adminApi.getAdminProducts(true),
         ]);
@@ -1114,7 +1132,7 @@ export function AdminPage() {
         }
       }
     },
-    [activeSearch, orderStatus, provider, range, transactionStatus],
+    [activeSearch, orderStatus, range, transactionStatus],
   );
 
   useEffect(() => {
@@ -1142,7 +1160,7 @@ export function AdminPage() {
       {
         label: "Pending Orders",
         value: formatNumber(stats?.orders.pending),
-        detail: `${formatNumber(stats?.orders.total)} total sandbox orders`,
+        detail: `${formatNumber(stats?.orders.total)} total orders`,
         icon: <Clock3 className="h-4 w-4" />,
         ratioValue: stats?.orders.pending,
         ratioTotal: stats?.orders.total,
@@ -1157,9 +1175,9 @@ export function AdminPage() {
         ratioTotal: stats?.orders.total,
       },
       {
-        label: "Sandbox Volume",
+        label: "Manual Volume",
         value: formatCurrency(stats?.orders.sandboxVolumeVnd),
-        detail: "Paid sandbox order total",
+        detail: "Admin-confirmed order total",
         icon: <WalletCards className="h-4 w-4" />,
       },
       {
@@ -1232,8 +1250,8 @@ export function AdminPage() {
                 Admin Operations
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Signed in as {displayName}. Monitor users, sandbox billing,
-                payment attempts, catalog readiness, and system health from one
+                Signed in as {displayName}. Monitor users, VietQR payment
+                verification, catalog readiness, and system health from one
                 admin-only view.
               </p>
             </div>
@@ -1368,7 +1386,7 @@ export function AdminPage() {
           <AdminPanel>
             <PanelHeader
               title="Recent Orders"
-              description={`${ordersPage.total} matching orders. Manual mark-paid appears only for eligible pending sandbox orders.`}
+              description={`${ordersPage.total} matching orders. Manual mark-paid appears only for eligible pending VietQR transfers.`}
               action={
                 <div className="flex flex-wrap gap-3">
                   <SectionSelect
@@ -1397,15 +1415,9 @@ export function AdminPage() {
             <AdminPanel className="xl:col-span-7">
               <PanelHeader
                 title="Payment Transactions"
-                description={`${transactionsPage.total} matching sandbox transaction attempts.`}
+                description={`${transactionsPage.total} matching payment records. Gateway transactions remain secondary when present.`}
                 action={
                   <div className="flex flex-wrap gap-3">
-                    <SectionSelect
-                      label="Provider"
-                      options={providerOptions}
-                      value={provider}
-                      onChange={setProvider}
-                    />
                     <SectionSelect
                       label="Payment status"
                       options={transactionStatusOptions}
@@ -1436,7 +1448,7 @@ export function AdminPage() {
           />
 
           <section className="flex flex-col gap-3 border-t border-[#3b494c]/70 py-6 text-xs font-semibold text-[#849396] sm:flex-row sm:items-center sm:justify-between">
-            <span>3D Stylist admin console · Week 03B sandbox operations</span>
+            <span>3D Stylist admin console · Week 03B VietQR operations</span>
             <span>
               Manual mark-paid:{" "}
               {getManualMarkPaidEnabled(health) ? "enabled" : "disabled"}

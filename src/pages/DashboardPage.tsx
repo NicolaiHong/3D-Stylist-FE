@@ -101,7 +101,7 @@ export function DashboardPage() {
                 Good day, {displayName}.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Your studio is ready for sandbox billing tests and future 3D
+                Your studio is ready for VietQR checkout and future 3D
                 generation workflows.
               </p>
             </div>
@@ -124,9 +124,9 @@ export function DashboardPage() {
                       Payment pending for {getProductName(pendingOrder)}.
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-[#ffeac0]/78">
-                      Continue with MoMo sandbox or VNPay sandbox from the
-                      credits page. No credits or plan access are granted until
-                      the backend confirms payment.
+                      Continue with VietQR checkout from the credits page. No
+                      credits or plan access are granted until admin
+                      verification marks the order paid.
                     </p>
                   </div>
                 </div>

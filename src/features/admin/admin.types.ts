@@ -25,7 +25,7 @@ export type AdminPaymentStatus =
   | "cancelled"
   | "expired";
 
-export type AdminBillingProvider = "momo" | "vnpay";
+export type AdminBillingProvider = "vietqr" | "vietqr_bank_transfer" | "momo" | "vnpay";
 
 export type AdminProductKind = "subscription_plan" | "credit_pack";
 
@@ -40,6 +40,7 @@ export interface AdminHealth {
     latencyMs?: number;
   };
   billing?: {
+    vietQrConfigured?: boolean;
     momoSandboxConfigured: boolean;
     vnpaySandboxConfigured: boolean;
     manualMarkPaidEnabled: boolean;
@@ -89,9 +90,15 @@ export interface AdminTransactionSummary {
 export interface AdminOrder {
   id: string;
   status: AdminOrderStatus;
+  orderCode?: string | null;
   totalAmount: number;
   currency: string;
   provider: AdminBillingProvider | null;
+  paymentMethod?: string | null;
+  paymentVerification?: string | null;
+  transferContent?: string | null;
+  bankTransferContent?: string | null;
+  userReportedTransferredAt?: string | null;
   expiresAt: string | null;
   paidAt: string | null;
   createdAt: string;

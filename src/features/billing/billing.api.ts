@@ -1,6 +1,7 @@
 import { apiClient } from "../../services/apiClient";
 import type {
   BillingCatalog,
+  BillingCheckoutResult,
   BillingOrder,
   BillingOrderStatus,
   BillingProvider,
@@ -49,6 +50,18 @@ export async function createBillingOrder(
   return unwrapData(data).order;
 }
 
+export async function createBillingCheckout(
+  productCode: string,
+  intent: "add_to_cart" | "buy_now" = "buy_now",
+): Promise<BillingCheckoutResult> {
+  const { data } = await apiClient.post<ApiResponse<BillingCheckoutResult>>(
+    "/billing/checkout",
+    { productCode, intent },
+  );
+
+  return unwrapData(data);
+}
+
 export async function getBillingOrders(
   status?: BillingOrderStatus,
 ): Promise<BillingOrder[]> {
@@ -83,11 +96,24 @@ export async function payBillingOrder(
   return unwrapData(data);
 }
 
+export async function confirmBillingTransfer(
+  orderId: string,
+): Promise<BillingOrder> {
+  const { data } = await apiClient.post<ApiResponse<{ order: BillingOrder }>>(
+    `/billing/orders/${orderId}/transfer-confirmation`,
+    {},
+  );
+
+  return unwrapData(data).order;
+}
+
 export const billingApi = {
   getBillingCatalog,
   getBillingMe,
+  createBillingCheckout,
   createBillingOrder,
   getBillingOrders,
   getBillingOrder,
   payBillingOrder,
+  confirmBillingTransfer,
 };

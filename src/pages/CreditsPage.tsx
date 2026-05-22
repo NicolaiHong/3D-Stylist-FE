@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
@@ -8,31 +9,21 @@ import {
   Loader2,
   RefreshCw,
   ShieldCheck,
+  ShoppingCart,
+  Trash2,
   WalletCards,
-  XCircle,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { billingApi } from "../features/billing/billing.api";
 import {
-  BILLING_PROVIDERS,
   type BillingCatalog,
   type BillingOrder,
   type BillingProduct,
-  type BillingProvider,
   type BillingSummary,
 } from "../features/billing/billing.types";
 import { getApiErrorMessage } from "../services/apiClient";
 
-interface ProcessingState {
-  orderId?: string;
-  productCode?: string;
-  provider: BillingProvider;
-}
-
-interface RedirectState {
-  provider: BillingProvider;
-  productName: string;
-}
+export const BILLING_CART_STORAGE_KEY = "3d-stylist.checkout.productCode";
 
 function formatCurrency(value: number, currency = "VND") {
   return new Intl.NumberFormat("vi-VN", {
@@ -59,10 +50,6 @@ function getOrderProductName(order: BillingOrder) {
   return order.items[0]?.productName ?? "Billing product";
 }
 
-function getOrderProductCode(order: BillingOrder) {
-  return order.items[0]?.productCode ?? "";
-}
-
 function getPlanBenefit(product: BillingProduct) {
   if (product.planCode === "pro") {
     return "Priority render and high quality texture";
@@ -87,32 +74,6 @@ function statusTone(status: BillingOrder["status"]) {
   return "border-[#ffb4ab]/25 bg-[#93000a]/20 text-[#ffdad6]";
 }
 
-function MethodButton({
-  provider,
-  disabled = false,
-  isLoading,
-  onClick,
-}: {
-  provider: BillingProvider;
-  disabled?: boolean;
-  isLoading: boolean;
-  onClick: () => void;
-}) {
-  const label = provider === BILLING_PROVIDERS.MOMO ? "MoMo" : "VNPay";
-
-  return (
-    <button
-      className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
-      disabled={disabled || isLoading}
-      type="button"
-      onClick={onClick}
-    >
-      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-      Pay with {label} sandbox
-    </button>
-  );
-}
-
 function EmptyCatalogState({
   title,
   body,
@@ -128,19 +89,57 @@ function EmptyCatalogState({
   );
 }
 
+function ProductActions({
+  product,
+  disabled,
+  selectedProductCode,
+  onAddToCart,
+  onBuyNow,
+}: {
+  product: BillingProduct;
+  disabled?: boolean;
+  selectedProductCode: string | null;
+  onAddToCart: (product: BillingProduct) => void;
+  onBuyNow: (product: BillingProduct) => void;
+}) {
+  const isSelected = selectedProductCode === product.code;
+
+  return (
+    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <button
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={disabled}
+        type="button"
+        onClick={() => onAddToCart(product)}
+      >
+        <ShoppingCart className="h-4 w-4" />
+        {isSelected ? "In cart" : "Add to cart"}
+      </button>
+      <button
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={disabled}
+        type="button"
+        onClick={() => onBuyNow(product)}
+      >
+        Buy now
+        <ArrowRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 export function CreditsPage() {
-  const paymentInitiationRef = useRef(false);
+  const navigate = useNavigate();
   const [catalog, setCatalog] = useState<BillingCatalog | null>(null);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [orders, setOrders] = useState<BillingOrder[]>([]);
-  const [selectedProduct, setSelectedProduct] =
-    useState<BillingProduct | null>(null);
-  const [createdOrder, setCreatedOrder] = useState<BillingOrder | null>(null);
-  const [processing, setProcessing] = useState<ProcessingState | null>(null);
-  const [redirecting, setRedirecting] = useState<RedirectState | null>(null);
+  const [cartProductCode, setCartProductCode] = useState<string | null>(() =>
+    window.localStorage.getItem(BILLING_CART_STORAGE_KEY),
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const [isCartUpdating, setIsCartUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   async function loadBillingData(showLoading = true) {
     if (showLoading) {
@@ -179,135 +178,42 @@ export function CreditsPage() {
       .filter((order) => order.status === "pending")
       .forEach((order) => byId.set(order.id, order));
 
-    if (createdOrder?.status === "pending") {
-      byId.set(createdOrder.id, createdOrder);
-    }
-
     return Array.from(byId.values()).sort((a, b) =>
       b.createdAt.localeCompare(a.createdAt),
     );
-  }, [createdOrder, orders, summary?.pendingOrders]);
+  }, [orders, summary?.pendingOrders]);
+
+  const selectedProduct = useMemo(
+    () =>
+      catalog?.products.find((product) => product.code === cartProductCode) ??
+      null,
+    [cartProductCode, catalog?.products],
+  );
   const plans = catalog?.plans ?? [];
   const creditPacks = catalog?.creditPacks ?? [];
 
-  function beginPaymentInitiation() {
-    if (paymentInitiationRef.current) {
-      return false;
-    }
-
-    paymentInitiationRef.current = true;
-    return true;
+  function setCartProduct(product: BillingProduct) {
+    setIsCartUpdating(true);
+    setActionMessage(null);
+    window.localStorage.setItem(BILLING_CART_STORAGE_KEY, product.code);
+    setCartProductCode(product.code);
+    setActionMessage(`${product.name} is ready for checkout.`);
+    window.setTimeout(() => setIsCartUpdating(false), 150);
   }
 
-  function releasePaymentInitiation() {
-    paymentInitiationRef.current = false;
+  function handleAddToCart(product: BillingProduct) {
+    setCartProduct(product);
   }
 
-  async function redirectToPayment(
-    order: BillingOrder,
-    provider: BillingProvider,
-    lockAlreadyAcquired = false,
-  ): Promise<boolean> {
-    if (!lockAlreadyAcquired && !beginPaymentInitiation()) {
-      return false;
-    }
-
-    let redirectStarted = false;
-    setActionError(null);
-    setProcessing({ orderId: order.id, provider });
-
-    try {
-      const result = await billingApi.payBillingOrder(order.id, provider);
-      const redirectUrl = result.payment.redirectUrl || result.transaction.paymentUrl;
-
-      if (!redirectUrl) {
-        setActionError("Sandbox payment did not return a redirect URL.");
-        await loadBillingData(false);
-        return false;
-      }
-
-      setRedirecting({ provider, productName: getOrderProductName(result.order) });
-      redirectStarted = true;
-      window.setTimeout(() => {
-        window.location.assign(redirectUrl);
-      }, 150);
-      return true;
-    } catch (payError) {
-      setActionError(getApiErrorMessage(payError));
-      await loadBillingData(false);
-      return false;
-    } finally {
-      setProcessing(null);
-
-      if (!lockAlreadyAcquired && !redirectStarted) {
-        releasePaymentInitiation();
-      }
-    }
+  function handleBuyNow(product: BillingProduct) {
+    setCartProduct(product);
+    navigate("/credits/checkout");
   }
 
-  async function createAndPay(
-    product: BillingProduct,
-    provider: BillingProvider,
-  ) {
-    if (!beginPaymentInitiation()) {
-      return;
-    }
-
-    let redirectStarted = false;
-    setActionError(null);
-    setProcessing({ productCode: product.code, provider });
-
-    try {
-      const order = await billingApi.createBillingOrder(product.code);
-      setCreatedOrder(order);
-      setOrders((current) => [order, ...current]);
-      redirectStarted = await redirectToPayment(order, provider, true);
-    } catch (createError) {
-      setActionError(getApiErrorMessage(createError));
-      await loadBillingData(false);
-    } finally {
-      setProcessing(null);
-
-      if (!redirectStarted) {
-        releasePaymentInitiation();
-      }
-    }
-  }
-
-  function isProcessingProduct(product: BillingProduct, provider: BillingProvider) {
-    return (
-      processing?.productCode === product.code && processing.provider === provider
-    );
-  }
-
-  function isProcessingOrder(order: BillingOrder, provider: BillingProvider) {
-    return processing?.orderId === order.id && processing.provider === provider;
-  }
-
-  function findCatalogProduct(productCode: string) {
-    return catalog?.products.find((product) => product.code === productCode);
-  }
-
-  if (redirecting) {
-    const providerName =
-      redirecting.provider === BILLING_PROVIDERS.MOMO ? "MoMo" : "VNPay";
-
-    return (
-      <DashboardShell planLabel={summary?.plan.name}>
-        <main className="flex min-h-screen items-center justify-center px-4 py-10">
-          <section className="w-full max-w-md rounded-lg border border-[#00e5ff]/25 bg-[#1c1b1b] p-6 text-center shadow-[0_0_48px_rgba(0,229,255,0.12)]">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#00e5ff]" />
-            <h1 className="mt-5 font-display text-2xl font-semibold text-white">
-              Opening {providerName} sandbox...
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-              Do not close this tab while we prepare payment for{" "}
-              {redirecting.productName}.
-            </p>
-          </section>
-        </main>
-      </DashboardShell>
-    );
+  function clearCart() {
+    window.localStorage.removeItem(BILLING_CART_STORAGE_KEY);
+    setCartProductCode(null);
+    setActionMessage(null);
   }
 
   return (
@@ -320,11 +226,11 @@ export function CreditsPage() {
                 Credits
               </p>
               <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Plans and sandbox payments.
+                Plans and credit packs.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Choose a business plan or credit pack, create a pending order,
-                then open MoMo sandbox or VNPay sandbox.
+                Add one item to cart or buy now, then complete checkout with
+                VietQR bank transfer. Access activates after admin verification.
               </p>
             </div>
 
@@ -375,14 +281,58 @@ export function CreditsPage() {
             </section>
           ) : null}
 
-          {actionError ? (
-            <section
-              className="rounded-lg border border-[#ffb4ab]/30 bg-[#93000a]/25 p-4 text-sm text-[#ffdad6]"
-              role="alert"
-            >
+          {actionMessage ? (
+            <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-4 text-sm text-[#c3f5ff]">
               <div className="flex gap-3">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{actionError}</span>
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{actionMessage}</span>
+              </div>
+            </section>
+          ) : null}
+
+          {selectedProduct ? (
+            <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-5">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
+                    One-item cart
+                  </p>
+                  <h2 className="mt-2 font-display text-2xl font-semibold text-white">
+                    {selectedProduct.name}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                    {formatCurrency(
+                      selectedProduct.priceVnd,
+                      selectedProduct.currency,
+                    )}
+                    {" · "}
+                    {selectedProduct.kind === "subscription_plan"
+                      ? "Monthly plan"
+                      : `${selectedProduct.credits ?? 0} HD credits`}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                    type="button"
+                    onClick={clearCart}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remove
+                  </button>
+                  <button
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isCartUpdating}
+                    type="button"
+                    onClick={() => navigate("/credits/checkout")}
+                  >
+                    {isCartUpdating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : null}
+                    Checkout
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </section>
           ) : null}
@@ -428,7 +378,7 @@ export function CreditsPage() {
                                 {plan.name}
                               </h3>
                               <p className="mt-1 text-sm text-[#bac9cc]">
-                                Sandbox monthly plan
+                                Manual monthly plan
                               </p>
                             </div>
                             {isCurrent ? (
@@ -457,18 +407,13 @@ export function CreditsPage() {
                               {getPlanBenefit(plan)}
                             </li>
                           </ul>
-                          <button
-                            className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                          <ProductActions
                             disabled={isCurrent}
-                            type="button"
-                            onClick={() => {
-                              setSelectedProduct(plan);
-                              setCreatedOrder(null);
-                              setActionError(null);
-                            }}
-                          >
-                            {isCurrent ? "Current plan" : `Choose ${plan.name}`}
-                          </button>
+                            product={plan}
+                            selectedProductCode={cartProductCode}
+                            onAddToCart={handleAddToCart}
+                            onBuyNow={handleBuyNow}
+                          />
                         </article>
                       );
                     })
@@ -510,90 +455,31 @@ export function CreditsPage() {
                           {formatCurrency(pack.priceVnd, pack.currency)}
                         </p>
                         <p className="mt-4 text-sm leading-6 text-[#bac9cc]">
-                          Adds {pack.credits ?? 0} credits after verified
-                          sandbox payment. Credit packs do not unlock export by
-                          themselves.
+                          Adds {pack.credits ?? 0} credits after admin verifies
+                          the VietQR transfer. Credit packs do not unlock export
+                          by themselves.
                         </p>
-                        <button
-                          className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
-                          type="button"
-                          onClick={() => {
-                            setSelectedProduct(pack);
-                            setCreatedOrder(null);
-                            setActionError(null);
-                          }}
-                        >
-                          Buy {pack.credits ?? pack.name} credits
-                        </button>
+                        <ProductActions
+                          product={pack}
+                          selectedProductCode={cartProductCode}
+                          onAddToCart={handleAddToCart}
+                          onBuyNow={handleBuyNow}
+                        />
                       </article>
                     ))
                   )}
                 </div>
               </section>
 
-              {selectedProduct ? (
-                <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-5">
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-                        Sandbox payment
-                      </p>
-                      <h2 className="mt-2 font-display text-2xl font-semibold text-white">
-                        {selectedProduct.name}
-                      </h2>
-                      <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                        We create a pending order first, then open the selected
-                        sandbox gateway. The frontend never marks orders paid.
-                      </p>
-                      {createdOrder ? (
-                        <p className="mt-3 text-sm font-semibold text-[#ffeac0]">
-                          Order {createdOrder.id.slice(0, 8)} created. Choose a
-                          sandbox payment method to continue.
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="flex min-w-full flex-col gap-3 sm:min-w-[420px] sm:flex-row">
-                      <MethodButton
-                        disabled={Boolean(processing)}
-                        isLoading={isProcessingProduct(
-                          selectedProduct,
-                          BILLING_PROVIDERS.MOMO,
-                        )}
-                        provider={BILLING_PROVIDERS.MOMO}
-                        onClick={() =>
-                          void createAndPay(
-                            selectedProduct,
-                            BILLING_PROVIDERS.MOMO,
-                          )
-                        }
-                      />
-                      <MethodButton
-                        disabled={Boolean(processing)}
-                        isLoading={isProcessingProduct(
-                          selectedProduct,
-                          BILLING_PROVIDERS.VNPAY,
-                        )}
-                        provider={BILLING_PROVIDERS.VNPAY}
-                        onClick={() =>
-                          void createAndPay(
-                            selectedProduct,
-                            BILLING_PROVIDERS.VNPAY,
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-                </section>
-              ) : null}
-
               <section className="space-y-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="font-display text-2xl font-semibold text-white">
-                      Pending orders
+                      Pending verification
                     </h2>
                     <p className="mt-1 text-sm text-[#bac9cc]">
-                      Retry or resume sandbox payment while an order is pending.
+                      Resume a VietQR order or wait for admin mark-paid after
+                      transfer.
                     </p>
                   </div>
                   <button
@@ -626,7 +512,7 @@ export function CreditsPage() {
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                           <div>
                             <span className="inline-flex rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#ffeac0]">
-                              Payment pending
+                              Waiting for verification
                             </span>
                             <h3 className="mt-3 font-display text-xl font-semibold text-white">
                               {getOrderProductName(order)}
@@ -635,43 +521,20 @@ export function CreditsPage() {
                               {formatCurrency(order.totalAmount, order.currency)}
                               {" · "}Expires {formatDateTime(order.expiresAt)}
                             </p>
-                            {order.transactions[0] ? (
-                              <p className="mt-2 text-sm text-[#bac9cc]">
-                                Latest attempt: {order.transactions[0].provider}{" "}
-                                {order.transactions[0].status}
+                            {order.bankTransferContent ? (
+                              <p className="mt-2 font-mono text-xs font-bold text-[#ffeac0]">
+                                {order.bankTransferContent}
                               </p>
                             ) : null}
                           </div>
-                          <div className="flex flex-col gap-3 sm:flex-row">
-                            <MethodButton
-                              disabled={Boolean(processing)}
-                              isLoading={isProcessingOrder(
-                                order,
-                                BILLING_PROVIDERS.MOMO,
-                              )}
-                              provider={BILLING_PROVIDERS.MOMO}
-                              onClick={() =>
-                                void redirectToPayment(
-                                  order,
-                                  BILLING_PROVIDERS.MOMO,
-                                )
-                              }
-                            />
-                            <MethodButton
-                              disabled={Boolean(processing)}
-                              isLoading={isProcessingOrder(
-                                order,
-                                BILLING_PROVIDERS.VNPAY,
-                              )}
-                              provider={BILLING_PROVIDERS.VNPAY}
-                              onClick={() =>
-                                void redirectToPayment(
-                                  order,
-                                  BILLING_PROVIDERS.VNPAY,
-                                )
-                              }
-                            />
-                          </div>
+                          <button
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
+                            type="button"
+                            onClick={() => navigate(`/credits/checkout/${order.id}`)}
+                          >
+                            View checkout
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
                         </div>
                       </article>
                     ))}
@@ -689,68 +552,55 @@ export function CreditsPage() {
                       No billing orders yet
                     </p>
                     <p className="mt-1 text-sm text-[#bac9cc]">
-                      Completed, failed, and cancelled sandbox orders will appear
-                      here.
+                      VietQR orders will appear here after checkout starts.
                     </p>
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
-                    {orders.slice(0, 8).map((order) => {
-                      const canRetry = order.status !== "paid";
-                      const retryProduct = findCatalogProduct(
-                        getOrderProductCode(order),
-                      );
-
-                      return (
-                        <div
-                          className="grid gap-4 border-b border-[#3b494c]/70 p-4 last:border-b-0 md:grid-cols-[1fr_auto]"
-                          key={order.id}
-                        >
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="truncate text-sm font-bold text-white">
-                                {getOrderProductName(order)}
-                              </p>
-                              <span
-                                className={`rounded-md border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.12em] ${statusTone(
-                                  order.status,
-                                )}`}
-                              >
-                                {order.status}
-                              </span>
-                            </div>
-                            <p className="mt-2 text-sm text-[#bac9cc]">
-                              {formatCurrency(order.totalAmount, order.currency)}
-                              {" · "}Created {formatDateTime(order.createdAt)}
+                    {orders.slice(0, 8).map((order) => (
+                      <div
+                        className="grid gap-4 border-b border-[#3b494c]/70 p-4 last:border-b-0 md:grid-cols-[1fr_auto]"
+                        key={order.id}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate text-sm font-bold text-white">
+                              {getOrderProductName(order)}
                             </p>
-                          </div>
-                          {canRetry && retryProduct ? (
-                            <button
-                              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                              type="button"
-                              onClick={() => {
-                                setSelectedProduct(retryProduct);
-                                setCreatedOrder(null);
-                                setActionError(null);
-                              }}
+                            <span
+                              className={`rounded-md border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.12em] ${statusTone(
+                                order.status,
+                              )}`}
                             >
-                              Retry payment
-                              <ArrowRight className="h-4 w-4" />
-                            </button>
-                          ) : order.status === "paid" ? (
-                            <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#9cf0ff]">
-                              <CheckCircle2 className="h-4 w-4" />
-                              Confirmed
+                              {order.status}
                             </span>
-                          ) : (
-                            <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#ffdad6]">
-                              <XCircle className="h-4 w-4" />
-                              Not payable
-                            </span>
-                          )}
+                          </div>
+                          <p className="mt-2 text-sm text-[#bac9cc]">
+                            {formatCurrency(order.totalAmount, order.currency)}
+                            {" · "}Created {formatDateTime(order.createdAt)}
+                          </p>
                         </div>
-                      );
-                    })}
+                        {order.status === "pending" ? (
+                          <button
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                            type="button"
+                            onClick={() => navigate(`/credits/checkout/${order.id}`)}
+                          >
+                            Resume checkout
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        ) : order.status === "paid" ? (
+                          <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#9cf0ff]">
+                            <CheckCircle2 className="h-4 w-4" />
+                            Confirmed
+                          </span>
+                        ) : (
+                          <span className="inline-flex min-h-11 items-center justify-center rounded-md px-3 py-2 text-sm font-bold text-[#ffdad6]">
+                            Payment not completed
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </section>
