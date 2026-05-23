@@ -140,6 +140,16 @@ export interface BillingSummary {
   latestPayment: BillingTransaction | null;
 }
 
+export interface CancelCurrentSubscriptionResult {
+  subscription: {
+    id: string;
+    planCode: string;
+    status: string;
+    cancelledAt: string | null;
+  };
+  capabilities: BillingSummary["capabilities"];
+}
+
 export interface PayBillingOrderResult {
   order: BillingOrder;
   transaction: BillingTransaction;

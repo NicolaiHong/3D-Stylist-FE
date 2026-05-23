@@ -6,6 +6,7 @@ import type {
   BillingOrderStatus,
   BillingProvider,
   BillingSummary,
+  CancelCurrentSubscriptionResult,
   PayBillingOrderResult,
 } from "./billing.types";
 
@@ -107,6 +108,16 @@ export async function confirmBillingTransfer(
   return unwrapData(data).order;
 }
 
+export async function cancelCurrentSubscription(
+  confirmation: string,
+): Promise<CancelCurrentSubscriptionResult> {
+  const { data } = await apiClient.post<
+    ApiResponse<CancelCurrentSubscriptionResult>
+  >("/billing/subscriptions/current/cancellation", { confirmation });
+
+  return unwrapData(data);
+}
+
 export const billingApi = {
   getBillingCatalog,
   getBillingMe,
@@ -116,4 +127,5 @@ export const billingApi = {
   getBillingOrder,
   payBillingOrder,
   confirmBillingTransfer,
+  cancelCurrentSubscription,
 };

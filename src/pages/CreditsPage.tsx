@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Trash2,
   WalletCards,
+  X,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { billingApi } from "../features/billing/billing.api";
@@ -24,6 +25,12 @@ import {
 import { getApiErrorMessage } from "../services/apiClient";
 
 export const BILLING_CART_STORAGE_KEY = "3d-stylist.checkout.productCode";
+
+type ProductSelectionIntent = "add_to_cart" | "buy_now";
+
+interface PendingSubscriptionChange {
+  product: BillingProduct;
+}
 
 function formatCurrency(value: number, currency = "VND") {
   return new Intl.NumberFormat("vi-VN", {
@@ -74,17 +81,193 @@ function statusTone(status: BillingOrder["status"]) {
   return "border-[#ffb4ab]/25 bg-[#93000a]/20 text-[#ffdad6]";
 }
 
-function EmptyCatalogState({
-  title,
-  body,
-}: {
-  title: string;
-  body: string;
-}) {
+function EmptyCatalogState({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-6 text-center lg:col-span-3">
       <p className="text-sm font-bold text-white">{title}</p>
       <p className="mt-1 text-sm text-[#bac9cc]">{body}</p>
+    </div>
+  );
+}
+
+function SubscriptionCancelDialog({
+  currentPlanName,
+  selectedPlanName,
+  confirmationText,
+  error,
+  isSubmitting,
+  isOpen,
+  onClose,
+  onConfirm,
+  onConfirmationChange,
+}: {
+  currentPlanName: string;
+  selectedPlanName: string;
+  confirmationText: string;
+  error: string | null;
+  isSubmitting: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  onConfirmationChange: (value: string) => void;
+}) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const canConfirm = confirmationText === "cancel";
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+
+    function handleEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape" && !isSubmitting) {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      previousActiveElement?.focus();
+    };
+  }, [isOpen, isSubmitting, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  function trapFocus(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+
+    if (!focusable?.length) {
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 px-4 py-6 backdrop-blur-sm"
+      role="presentation"
+    >
+      <div
+        aria-describedby="subscription-cancel-description"
+        aria-labelledby="subscription-cancel-title"
+        aria-modal="true"
+        className="w-full max-w-lg rounded-lg border border-[#f3bf26]/30 bg-[#1c1b1b] p-5 text-[#e5e2e1] shadow-[0_0_42px_rgba(243,191,38,0.12)]"
+        ref={dialogRef}
+        role="dialog"
+        onKeyDown={trapFocus}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 text-[#ffeac0]">
+            <AlertTriangle className="h-5 w-5" />
+          </span>
+          <button
+            aria-label="Close cancellation dialog"
+            className="flex h-10 w-10 items-center justify-center rounded-md text-[#bac9cc] transition hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isSubmitting}
+            type="button"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#f3bf26]">
+          Plan change blocked
+        </p>
+        <h2
+          className="mt-3 font-display text-2xl font-semibold text-white"
+          id="subscription-cancel-title"
+        >
+          Cancel current subscription?
+        </h2>
+        <p
+          className="mt-3 text-sm leading-6 text-[#bac9cc]"
+          id="subscription-cancel-description"
+        >
+          You are currently on {currentPlanName}. Cancellation is required
+          before changing to {selectedPlanName}.
+        </p>
+
+        <div className="mt-5 rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-sm leading-6 text-[#ffeac0]">
+          Your current plan will stop unlocking paid export and download access.
+          No new VietQR order will be created until you choose the new plan
+          again.
+        </div>
+
+        <label
+          className="mt-5 block text-sm font-bold text-white"
+          htmlFor="subscription-cancel-confirmation"
+        >
+          Type 'cancel' to confirm
+        </label>
+        <input
+          aria-describedby={error ? "subscription-cancel-error" : undefined}
+          aria-invalid={Boolean(error)}
+          className="mt-2 h-12 w-full rounded-md border border-white/10 bg-[#0e0e0e] px-3 text-base text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-4 focus:ring-[#00e5ff]/15 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isSubmitting}
+          id="subscription-cancel-confirmation"
+          placeholder="type cancel to confirm"
+          ref={inputRef}
+          type="text"
+          value={confirmationText}
+          onChange={(event) => onConfirmationChange(event.target.value)}
+        />
+
+        {error ? (
+          <p
+            className="mt-3 text-sm text-[#ffdad6]"
+            id="subscription-cancel-error"
+            role="alert"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <button
+            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSubmitting}
+            type="button"
+            onClick={onClose}
+          >
+            Keep current plan
+          </button>
+          <button
+            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md bg-[#ffb4ab] px-4 py-2.5 text-sm font-bold text-[#3a0909] transition hover:bg-[#ffdad6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdad6] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!canConfirm || isSubmitting}
+            type="button"
+            onClick={onConfirm}
+          >
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Cancel current plan
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -140,6 +323,14 @@ export function CreditsPage() {
   const [isCartUpdating, setIsCartUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [pendingSubscriptionChange, setPendingSubscriptionChange] =
+    useState<PendingSubscriptionChange | null>(null);
+  const [cancellationText, setCancellationText] = useState("");
+  const [cancellationError, setCancellationError] = useState<string | null>(
+    null,
+  );
+  const [isCancellingSubscription, setIsCancellingSubscription] =
+    useState(false);
 
   async function loadBillingData(showLoading = true) {
     if (showLoading) {
@@ -192,22 +383,125 @@ export function CreditsPage() {
   const plans = catalog?.plans ?? [];
   const creditPacks = catalog?.creditPacks ?? [];
 
-  function setCartProduct(product: BillingProduct) {
+  function isCurrentSubscriptionProduct(product: BillingProduct) {
+    const activeSubscription = summary?.subscription;
+
+    if (
+      product.kind !== "subscription_plan" ||
+      !activeSubscription ||
+      activeSubscription.status !== "active"
+    ) {
+      return false;
+    }
+
+    return (
+      activeSubscription.productCode === product.code ||
+      (Boolean(product.planCode) &&
+        activeSubscription.planCode === product.planCode)
+    );
+  }
+
+  function requiresSubscriptionCancellation(product: BillingProduct) {
+    const activeSubscription = summary?.subscription;
+
+    return (
+      product.kind === "subscription_plan" &&
+      Boolean(activeSubscription) &&
+      activeSubscription?.status === "active" &&
+      !isCurrentSubscriptionProduct(product)
+    );
+  }
+
+  function setCartProduct(product: BillingProduct, message?: string) {
     setIsCartUpdating(true);
     setActionMessage(null);
     window.localStorage.setItem(BILLING_CART_STORAGE_KEY, product.code);
     setCartProductCode(product.code);
-    setActionMessage(`${product.name} is ready for checkout.`);
+    setActionMessage(message ?? `${product.name} is ready for checkout.`);
     window.setTimeout(() => setIsCartUpdating(false), 150);
   }
 
-  function handleAddToCart(product: BillingProduct) {
+  function openCancellationDialog(product: BillingProduct) {
+    setPendingSubscriptionChange({ product });
+    setCancellationText("");
+    setCancellationError(null);
+    setActionMessage(null);
+  }
+
+  function closeCancellationDialog() {
+    if (isCancellingSubscription) {
+      return;
+    }
+
+    setPendingSubscriptionChange(null);
+    setCancellationText("");
+    setCancellationError(null);
+  }
+
+  function handleProductSelection(
+    product: BillingProduct,
+    intent: ProductSelectionIntent,
+  ) {
+    if (requiresSubscriptionCancellation(product)) {
+      openCancellationDialog(product);
+      return;
+    }
+
     setCartProduct(product);
+
+    if (intent === "buy_now") {
+      navigate("/credits/checkout");
+    }
+  }
+
+  function handleAddToCart(product: BillingProduct) {
+    handleProductSelection(product, "add_to_cart");
   }
 
   function handleBuyNow(product: BillingProduct) {
-    setCartProduct(product);
+    handleProductSelection(product, "buy_now");
+  }
+
+  function handleCheckoutSelectedProduct() {
+    if (!selectedProduct) {
+      return;
+    }
+
+    if (isCurrentSubscriptionProduct(selectedProduct)) {
+      setActionMessage(`${selectedProduct.name} is already your current plan.`);
+      return;
+    }
+
+    if (requiresSubscriptionCancellation(selectedProduct)) {
+      openCancellationDialog(selectedProduct);
+      return;
+    }
+
     navigate("/credits/checkout");
+  }
+
+  async function handleConfirmCancellation() {
+    if (!pendingSubscriptionChange || cancellationText !== "cancel") {
+      return;
+    }
+
+    setIsCancellingSubscription(true);
+    setCancellationError(null);
+
+    try {
+      await billingApi.cancelCurrentSubscription(cancellationText);
+      await loadBillingData(false);
+      setCartProduct(
+        pendingSubscriptionChange.product,
+        "Current plan cancelled. You can now continue with your new plan.",
+      );
+      setPendingSubscriptionChange(null);
+      setCancellationText("");
+    } catch (cancelError) {
+      setCancellationError(getApiErrorMessage(cancelError));
+    } finally {
+      setIsCancellingSubscription(false);
+    }
   }
 
   function clearCart() {
@@ -324,7 +618,7 @@ export function CreditsPage() {
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={isCartUpdating}
                     type="button"
-                    onClick={() => navigate("/credits/checkout")}
+                    onClick={handleCheckoutSelectedProduct}
                   >
                     {isCartUpdating ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -518,7 +812,10 @@ export function CreditsPage() {
                               {getOrderProductName(order)}
                             </h3>
                             <p className="mt-2 text-sm text-[#bac9cc]">
-                              {formatCurrency(order.totalAmount, order.currency)}
+                              {formatCurrency(
+                                order.totalAmount,
+                                order.currency,
+                              )}
                               {" · "}Expires {formatDateTime(order.expiresAt)}
                             </p>
                             {order.bankTransferContent ? (
@@ -530,7 +827,9 @@ export function CreditsPage() {
                           <button
                             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
                             type="button"
-                            onClick={() => navigate(`/credits/checkout/${order.id}`)}
+                            onClick={() =>
+                              navigate(`/credits/checkout/${order.id}`)
+                            }
                           >
                             View checkout
                             <ArrowRight className="h-4 w-4" />
@@ -584,7 +883,9 @@ export function CreditsPage() {
                           <button
                             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                             type="button"
-                            onClick={() => navigate(`/credits/checkout/${order.id}`)}
+                            onClick={() =>
+                              navigate(`/credits/checkout/${order.id}`)
+                            }
                           >
                             Resume checkout
                             <ArrowRight className="h-4 w-4" />
@@ -608,6 +909,17 @@ export function CreditsPage() {
           )}
         </div>
       </main>
+      <SubscriptionCancelDialog
+        confirmationText={cancellationText}
+        currentPlanName={summary?.plan.name ?? "current plan"}
+        error={cancellationError}
+        isOpen={Boolean(pendingSubscriptionChange)}
+        isSubmitting={isCancellingSubscription}
+        selectedPlanName={pendingSubscriptionChange?.product.name ?? "new plan"}
+        onClose={closeCancellationDialog}
+        onConfirm={() => void handleConfirmCancellation()}
+        onConfirmationChange={setCancellationText}
+      />
     </DashboardShell>
   );
 }
