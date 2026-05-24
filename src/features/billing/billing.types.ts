@@ -89,11 +89,19 @@ export interface BillingOrderItem {
 
 export interface BillingOrder {
   id: string;
+  orderCode: string | null;
   status: BillingOrderStatus;
   totalAmount: number;
   currency: string;
   provider: BillingProvider | string | null;
   providerOrderId: string | null;
+  paymentMethod: string | null;
+  paymentVerification: string | null;
+  bankTransferContent: string | null;
+  bankTransferAmount: number | null;
+  userReportedTransferredAt: string | null;
+  verifiedAt: string | null;
+  verifiedByAdminUserId: string | null;
   expiresAt: string | null;
   paidAt: string | null;
   failedAt: string | null;
@@ -102,6 +110,7 @@ export interface BillingOrder {
   updatedAt: string;
   items: BillingOrderItem[];
   transactions: BillingTransaction[];
+  payment: VietQrPaymentInstruction | null;
 }
 
 export interface BillingSummary {
@@ -131,6 +140,16 @@ export interface BillingSummary {
   latestPayment: BillingTransaction | null;
 }
 
+export interface CancelCurrentSubscriptionResult {
+  subscription: {
+    id: string;
+    planCode: string;
+    status: string;
+    cancelledAt: string | null;
+  };
+  capabilities: BillingSummary["capabilities"];
+}
+
 export interface PayBillingOrderResult {
   order: BillingOrder;
   transaction: BillingTransaction;
@@ -139,4 +158,42 @@ export interface PayBillingOrderResult {
     mode: "sandbox";
     redirectUrl: string;
   };
+}
+
+export interface VietQrPaymentInstruction {
+  method: "vietqr_bank_transfer" | string;
+  status: string;
+  amount: number;
+  currency: string;
+  transferContent: string;
+  bank: {
+    bankBin: string;
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+  };
+  qr: {
+    payload: string;
+    imageUrl: string;
+  };
+  instructions: string[];
+}
+
+export interface BillingCheckoutResult {
+  checkout: {
+    id: string;
+    status: "converted_to_order";
+    productCode: string;
+    quantity: 1;
+    totalAmount: number;
+    currency: string;
+    expiresAt: string | null;
+  };
+  product: BillingProduct;
+  eligibility: {
+    canCheckout: true;
+    blocker: null;
+  };
+  order: BillingOrder;
+  payment: VietQrPaymentInstruction | null;
 }
