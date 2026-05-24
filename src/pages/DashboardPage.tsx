@@ -16,6 +16,7 @@ import {
   CreditCard,
   Database,
   Download,
+  Eye,
   ExternalLink,
   ImageIcon,
   Loader2,
@@ -23,6 +24,7 @@ import {
   RefreshCw,
   Sparkles,
   UserRound,
+  X,
 } from "lucide-react";
 import { PaywallModal } from "../components/billing/PaywallModal";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
@@ -43,6 +45,7 @@ const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 const INSUFFICIENT_CREDITS_MESSAGE =
   "You’ve used all your generation credits. Buy more credits or upgrade your plan to continue.";
+type FigureAssetKind = "image" | "model";
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -104,6 +107,66 @@ function getFigurePreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
 }
 
+function getFigureAssetKey(figure: FigureDto, kind: FigureAssetKind) {
+  return `${figure.id}:${kind}`;
+}
+
+function getDownloadFileName(figure: FigureDto, kind: FigureAssetKind) {
+  if (kind === "model") {
+    return `3d-stylist-model-${figure.id}.glb`;
+  }
+
+  return `3d-stylist-generation-${figure.id}.png`;
+}
+
+function getFigurePlaceholderCopy(figure: FigureDto) {
+  if (figure.status === "queued" || figure.status === "processing") {
+    return "Generating...";
+  }
+
+  if (
+    figure.status === "success" &&
+    !getFigurePreviewUrl(figure) &&
+    !figure.modelUrl
+  ) {
+    return "Generation complete. Preview will appear when provider result is available.";
+  }
+
+  if (figure.status === "failed") {
+    return figure.failureReason || "Generation failed. Please try again later.";
+  }
+
+  if (figure.status === "canceled") {
+    return "Generation canceled.";
+  }
+
+  return "Preview pending";
+}
+
+async function downloadUrlWithFallback(url: string, fileName: string) {
+  try {
+    const response = await fetch(url, { credentials: "include" });
+
+    if (!response.ok) {
+      throw new Error("Asset download failed");
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.rel = "noreferrer";
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+  } catch {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
+
 function getPromptSnippet(prompt: string | null | undefined) {
   const value = prompt?.trim();
 
@@ -151,6 +214,7 @@ function FigureStatusBadge({ status }: { status: FigureStatus }) {
 
 function FigurePreview({ figure }: { figure: FigureDto }) {
   const previewUrl = getFigurePreviewUrl(figure);
+  const placeholderCopy = getFigurePlaceholderCopy(figure);
 
   if (previewUrl) {
     return (
@@ -163,17 +227,33 @@ function FigurePreview({ figure }: { figure: FigureDto }) {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center bg-[#0e0e0e] text-center">
+    <div className="flex h-full w-full flex-col items-center justify-center bg-[#0e0e0e] p-4 text-center">
       <ImageIcon className="h-8 w-8 text-[#3b494c]" />
-      <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#849396]">
-        Preview pending
+      <p className="mt-3 max-w-[220px] text-xs font-semibold leading-5 text-[#849396]">
+        {placeholderCopy}
       </p>
     </div>
   );
 }
 
-function FigureCard({ figure }: { figure: FigureDto }) {
+function FigureCard({
+  figure,
+  downloadingAssetKey,
+  onDownload,
+  onView,
+}: {
+  figure: FigureDto;
+  downloadingAssetKey: string | null;
+  onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
+  onView: (figure: FigureDto) => void;
+}) {
   const createdDate = formatDate(figure.createdAt);
+  const previewUrl = getFigurePreviewUrl(figure);
+  const canViewImage = figure.status === "success" && Boolean(previewUrl);
+  const isImageDownloading =
+    downloadingAssetKey === getFigureAssetKey(figure, "image");
+  const isModelDownloading =
+    downloadingAssetKey === getFigureAssetKey(figure, "model");
 
   return (
     <article className="overflow-hidden rounded-lg border border-[#3b494c]/70 bg-[#201f1f]">
@@ -197,30 +277,228 @@ function FigureCard({ figure }: { figure: FigureDto }) {
             {figure.failureReason}
           </p>
         ) : null}
-        {figure.modelUrl ? (
-          <a
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-            href={figure.modelUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Open model
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {canViewImage ? (
+            <button
+              aria-label={`View image for ${getPromptSnippet(figure.prompt)}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              type="button"
+              onClick={() => onView(figure)}
+            >
+              <Eye className="h-3.5 w-3.5" />
+              View image
+            </button>
+          ) : null}
+          {previewUrl ? (
+            <button
+              aria-label={`Download image for ${getPromptSnippet(
+                figure.prompt,
+              )}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isImageDownloading}
+              type="button"
+              onClick={() => onDownload(figure, "image")}
+            >
+              {isImageDownloading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Download image
+            </button>
+          ) : null}
+          {figure.modelUrl ? (
+            <a
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              href={figure.modelUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open model
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          ) : null}
+          {figure.modelUrl ? (
+            <button
+              aria-label={`Download model for ${getPromptSnippet(
+                figure.prompt,
+              )}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isModelDownloading}
+              type="button"
+              onClick={() => onDownload(figure, "model")}
+            >
+              {isModelDownloading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Download model
+            </button>
+          ) : null}
+        </div>
       </div>
     </article>
   );
 }
 
-function ActiveFigurePanel({
+function FigurePreviewDialog({
+  downloadingAssetKey,
   figure,
-  isPolling,
+  onClose,
+  onDownload,
 }: {
+  downloadingAssetKey: string | null;
   figure: FigureDto;
-  isPolling: boolean;
+  onClose: () => void;
+  onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
 }) {
   const previewUrl = getFigurePreviewUrl(figure);
+  const createdDate = formatDate(figure.createdAt);
+  const isImageDownloading =
+    downloadingAssetKey === getFigureAssetKey(figure, "image");
+  const isModelDownloading =
+    downloadingAssetKey === getFigureAssetKey(figure, "model");
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      aria-labelledby="figure-preview-dialog-title"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/78 p-4 backdrop-blur-sm"
+      role="dialog"
+    >
+      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-lg border border-[#3b494c] bg-[#141313] shadow-2xl shadow-black/50">
+        <div className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-4 sm:p-5">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
+              Generated result
+            </p>
+            <h2
+              className="mt-2 font-display text-2xl font-semibold text-white"
+              id="figure-preview-dialog-title"
+            >
+              Image preview
+            </h2>
+          </div>
+          <button
+            aria-label="Close image preview"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            type="button"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid max-h-[calc(92vh-82px)] overflow-y-auto lg:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)]">
+          <div className="min-h-[320px] bg-[#090909] lg:min-h-[560px]">
+            {previewUrl ? (
+              <img
+                alt={getPromptSnippet(figure.prompt)}
+                className="h-full w-full object-contain"
+                src={previewUrl}
+              />
+            ) : (
+              <FigurePreview figure={figure} />
+            )}
+          </div>
+          <aside className="space-y-5 border-t border-[#3b494c]/70 p-5 lg:border-l lg:border-t-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <FigureStatusBadge status={figure.status} />
+              {createdDate ? (
+                <span className="text-sm font-semibold text-[#849396]">
+                  {createdDate}
+                </span>
+              ) : null}
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
+                Prompt
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#e5e2e1]">
+                {figure.prompt?.trim() || "Untitled generation"}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
+              {previewUrl ? (
+                <button
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isImageDownloading}
+                  type="button"
+                  onClick={() => onDownload(figure, "image")}
+                >
+                  {isImageDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Download image
+                </button>
+              ) : null}
+              {figure.modelUrl ? (
+                <a
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  href={figure.modelUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Open model
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              ) : null}
+              {figure.modelUrl ? (
+                <button
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isModelDownloading}
+                  type="button"
+                  onClick={() => onDownload(figure, "model")}
+                >
+                  {isModelDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Download model
+                </button>
+              ) : null}
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActiveFigurePanel({
+  downloadingAssetKey,
+  figure,
+  isPolling,
+  onDownload,
+  onView,
+}: {
+  downloadingAssetKey: string | null;
+  figure: FigureDto;
+  isPolling: boolean;
+  onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
+  onView: (figure: FigureDto) => void;
+}) {
+  const previewUrl = getFigurePreviewUrl(figure);
+  const hasResultAsset = Boolean(previewUrl || figure.modelUrl);
+  const isImageDownloading =
+    downloadingAssetKey === getFigureAssetKey(figure, "image");
+  const isModelDownloading =
+    downloadingAssetKey === getFigureAssetKey(figure, "model");
 
   return (
     <div className="grid gap-4 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4 md:grid-cols-[160px_1fr]">
@@ -245,7 +523,9 @@ function ActiveFigurePanel({
         </p>
         {figure.status === "success" ? (
           <p className="mt-3 text-sm font-semibold text-[#c9fff6]">
-            Generation complete. The result is available in recent generations.
+            {hasResultAsset
+              ? "Generation complete. The result is available in recent generations."
+              : "Generation complete. Preview will appear when provider result is available."}
           </p>
         ) : null}
         {figure.status === "failed" && figure.failureReason ? (
@@ -255,15 +535,33 @@ function ActiveFigurePanel({
         ) : null}
         <div className="mt-4 flex flex-wrap gap-3">
           {previewUrl ? (
-            <a
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-              href={previewUrl}
-              rel="noreferrer"
-              target="_blank"
+            <button
+              aria-label={`View image for ${getPromptSnippet(figure.prompt)}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              type="button"
+              onClick={() => onView(figure)}
             >
-              Open preview
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+              <Eye className="h-3.5 w-3.5" />
+              View image
+            </button>
+          ) : null}
+          {previewUrl ? (
+            <button
+              aria-label={`Download image for ${getPromptSnippet(
+                figure.prompt,
+              )}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              disabled={isImageDownloading}
+              type="button"
+              onClick={() => onDownload(figure, "image")}
+            >
+              {isImageDownloading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Download image
+            </button>
           ) : null}
           {figure.modelUrl ? (
             <a
@@ -275,6 +573,24 @@ function ActiveFigurePanel({
               Open model
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
+          ) : null}
+          {figure.modelUrl ? (
+            <button
+              aria-label={`Download model for ${getPromptSnippet(
+                figure.prompt,
+              )}`}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isModelDownloading}
+              type="button"
+              onClick={() => onDownload(figure, "model")}
+            >
+              {isModelDownloading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Download model
+            </button>
           ) : null}
         </div>
       </div>
@@ -310,6 +626,10 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [figuresError, setFiguresError] = useState<string | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [selectedFigure, setSelectedFigure] = useState<FigureDto | null>(null);
+  const [downloadingAssetKey, setDownloadingAssetKey] = useState<string | null>(
+    null,
+  );
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const isMountedRef = useRef(true);
   const pollingStartedAtRef = useRef<number | null>(null);
@@ -489,6 +809,40 @@ export function DashboardPage() {
 
     return `${figures.length} recent generation${figures.length === 1 ? "" : "s"}.`;
   }, [figures.length, isFiguresLoading]);
+
+  const handleViewFigure = useCallback((figure: FigureDto) => {
+    setSelectedFigure(figure);
+  }, []);
+
+  const handleCloseFigurePreview = useCallback(() => {
+    setSelectedFigure(null);
+  }, []);
+
+  const handleDownloadFigureAsset = useCallback(
+    async (figure: FigureDto, kind: FigureAssetKind) => {
+      const url =
+        kind === "image" ? getFigurePreviewUrl(figure) : figure.modelUrl;
+
+      if (!url) {
+        return;
+      }
+
+      const assetKey = getFigureAssetKey(figure, kind);
+
+      setDownloadingAssetKey(assetKey);
+
+      try {
+        await downloadUrlWithFallback(url, getDownloadFileName(figure, kind));
+      } finally {
+        if (isMountedRef.current) {
+          setDownloadingAssetKey((currentKey) =>
+            currentKey === assetKey ? null : currentKey,
+          );
+        }
+      }
+    },
+    [],
+  );
 
   async function handleGenerate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -753,8 +1107,13 @@ export function DashboardPage() {
 
                   {activeFigure ? (
                     <ActiveFigurePanel
+                      downloadingAssetKey={downloadingAssetKey}
                       figure={activeFigure}
                       isPolling={isPolling}
+                      onDownload={(figure, kind) =>
+                        void handleDownloadFigureAsset(figure, kind)
+                      }
+                      onView={handleViewFigure}
                     />
                   ) : null}
                 </form>
@@ -934,7 +1293,15 @@ export function DashboardPage() {
                   <FigureEmptyState />
                 ) : (
                   figures.map((figure) => (
-                    <FigureCard figure={figure} key={figure.id} />
+                    <FigureCard
+                      downloadingAssetKey={downloadingAssetKey}
+                      figure={figure}
+                      key={figure.id}
+                      onDownload={(selected, kind) =>
+                        void handleDownloadFigureAsset(selected, kind)
+                      }
+                      onView={handleViewFigure}
+                    />
                   ))
                 )}
               </div>
@@ -946,6 +1313,16 @@ export function DashboardPage() {
         isOpen={isPaywallOpen}
         onClose={() => setIsPaywallOpen(false)}
       />
+      {selectedFigure ? (
+        <FigurePreviewDialog
+          downloadingAssetKey={downloadingAssetKey}
+          figure={selectedFigure}
+          onClose={handleCloseFigurePreview}
+          onDownload={(figure, kind) =>
+            void handleDownloadFigureAsset(figure, kind)
+          }
+        />
+      ) : null}
     </DashboardShell>
   );
 }
