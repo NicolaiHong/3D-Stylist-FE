@@ -1,15 +1,25 @@
-import { useEffect, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
   CalendarClock,
   CheckCircle2,
+  Clock3,
   CreditCard,
   Database,
   Download,
+  ExternalLink,
+  ImageIcon,
+  Loader2,
   LockKeyhole,
-  Plus,
   RefreshCw,
   Sparkles,
   UserRound,
@@ -17,9 +27,22 @@ import {
 import { PaywallModal } from "../components/billing/PaywallModal";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { billingApi } from "../features/billing/billing.api";
-import type { BillingOrder, BillingSummary } from "../features/billing/billing.types";
+import type {
+  BillingOrder,
+  BillingSummary,
+} from "../features/billing/billing.types";
 import { useAuthStore } from "../features/auth/auth.store";
-import { getApiErrorMessage } from "../services/apiClient";
+import { figuresApi } from "../features/figures/figures.api";
+import type {
+  FigureDto,
+  FigureStatus,
+} from "../features/figures/figures.types";
+import { getApiErrorCode, getApiErrorMessage } from "../services/apiClient";
+
+const GENERATION_POLL_INTERVAL_MS = 3000;
+const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+const INSUFFICIENT_CREDITS_MESSAGE =
+  "You’ve used all your generation credits. Buy more credits or upgrade your plan to continue.";
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -45,6 +68,62 @@ function getPlanTone(summary: BillingSummary | null) {
   return summary.plan.status === "active" ? "Active plan" : "Free plan";
 }
 
+function isPollingStatus(status: FigureStatus) {
+  return status === "queued" || status === "processing";
+}
+
+function isTerminalStatus(status: FigureStatus) {
+  return status === "success" || status === "failed" || status === "canceled";
+}
+
+function formatStatus(status: FigureStatus) {
+  if (status === "queued") {
+    return "Queued";
+  }
+
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function getFigureStatusTone(status: FigureStatus) {
+  if (status === "queued" || status === "processing") {
+    return "border-[#00e5ff]/30 bg-[#00e5ff]/10 text-[#9cf0ff]";
+  }
+
+  if (status === "success") {
+    return "border-[#2cebcf]/30 bg-[#2cebcf]/10 text-[#c9fff6]";
+  }
+
+  if (status === "failed" || status === "canceled") {
+    return "border-[#ffb4ab]/30 bg-[#93000a]/25 text-[#ffdad6]";
+  }
+
+  return "border-white/10 bg-white/[0.05] text-[#bac9cc]";
+}
+
+function getFigurePreviewUrl(figure: FigureDto) {
+  return figure.previewUrl || figure.thumbnailUrl || null;
+}
+
+function getPromptSnippet(prompt: string | null | undefined) {
+  const value = prompt?.trim();
+
+  if (!value) {
+    return "Untitled generation";
+  }
+
+  return value.length > 92 ? `${value.slice(0, 92)}...` : value;
+}
+
+function mergeFigureIntoList(figures: FigureDto[], figure: FigureDto) {
+  const exists = figures.some((item) => item.id === figure.id);
+
+  if (exists) {
+    return figures.map((item) => (item.id === figure.id ? figure : item));
+  }
+
+  return [figure, ...figures].slice(0, 6);
+}
+
 function DashboardSkeleton() {
   return (
     <div className="grid gap-6 lg:grid-cols-12">
@@ -57,36 +136,415 @@ function DashboardSkeleton() {
   );
 }
 
+function FigureStatusBadge({ status }: { status: FigureStatus }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] ${getFigureStatusTone(
+        status,
+      )}`}
+    >
+      {isPollingStatus(status) ? <Clock3 className="h-3.5 w-3.5" /> : null}
+      {formatStatus(status)}
+    </span>
+  );
+}
+
+function FigurePreview({ figure }: { figure: FigureDto }) {
+  const previewUrl = getFigurePreviewUrl(figure);
+
+  if (previewUrl) {
+    return (
+      <img
+        alt={getPromptSnippet(figure.prompt)}
+        className="h-full w-full object-cover"
+        src={previewUrl}
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center bg-[#0e0e0e] text-center">
+      <ImageIcon className="h-8 w-8 text-[#3b494c]" />
+      <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#849396]">
+        Preview pending
+      </p>
+    </div>
+  );
+}
+
+function FigureCard({ figure }: { figure: FigureDto }) {
+  const createdDate = formatDate(figure.createdAt);
+
+  return (
+    <article className="overflow-hidden rounded-lg border border-[#3b494c]/70 bg-[#201f1f]">
+      <div className="aspect-square overflow-hidden border-b border-[#3b494c]/70 bg-[#0e0e0e]">
+        <FigurePreview figure={figure} />
+      </div>
+      <div className="space-y-4 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <FigureStatusBadge status={figure.status} />
+          {createdDate ? (
+            <span className="text-xs font-semibold text-[#849396]">
+              {createdDate}
+            </span>
+          ) : null}
+        </div>
+        <p className="min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
+          {getPromptSnippet(figure.prompt)}
+        </p>
+        {figure.status === "failed" && figure.failureReason ? (
+          <p className="rounded-md border border-[#ffb4ab]/20 bg-[#93000a]/20 p-3 text-xs leading-5 text-[#ffdad6]">
+            {figure.failureReason}
+          </p>
+        ) : null}
+        {figure.modelUrl ? (
+          <a
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            href={figure.modelUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Open model
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function ActiveFigurePanel({
+  figure,
+  isPolling,
+}: {
+  figure: FigureDto;
+  isPolling: boolean;
+}) {
+  const previewUrl = getFigurePreviewUrl(figure);
+
+  return (
+    <div className="grid gap-4 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4 md:grid-cols-[160px_1fr]">
+      <div className="aspect-square overflow-hidden rounded-md border border-[#3b494c] bg-[#090909]">
+        <FigurePreview figure={figure} />
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <FigureStatusBadge status={figure.status} />
+          {isPolling ? (
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#bac9cc]">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Syncing
+            </span>
+          ) : null}
+        </div>
+        <h3 className="mt-3 font-display text-xl font-semibold text-white">
+          Current generation
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+          {getPromptSnippet(figure.prompt)}
+        </p>
+        {figure.status === "success" ? (
+          <p className="mt-3 text-sm font-semibold text-[#c9fff6]">
+            Generation complete. The result is available in recent generations.
+          </p>
+        ) : null}
+        {figure.status === "failed" && figure.failureReason ? (
+          <p className="mt-3 rounded-md border border-[#ffb4ab]/20 bg-[#93000a]/20 p-3 text-sm leading-6 text-[#ffdad6]">
+            {figure.failureReason}
+          </p>
+        ) : null}
+        <div className="mt-4 flex flex-wrap gap-3">
+          {previewUrl ? (
+            <a
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              href={previewUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open preview
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          ) : null}
+          {figure.modelUrl ? (
+            <a
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              href={figure.modelUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open model
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FigureEmptyState() {
+  return (
+    <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-8 text-center md:col-span-3">
+      <Sparkles className="mx-auto h-8 w-8 text-[#3b494c]" />
+      <p className="mt-3 text-sm font-bold text-white">
+        No generated garments yet.
+      </p>
+      <p className="mt-1 text-sm text-[#bac9cc]">
+        Submit a prompt above and your first result will appear here.
+      </p>
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const user = useAuthStore((state) => state.user);
   const displayName = user?.displayName || user?.fullName || "Creator";
   const [summary, setSummary] = useState<BillingSummary | null>(null);
+  const [figures, setFigures] = useState<FigureDto[]>([]);
+  const [activeFigure, setActiveFigure] = useState<FigureDto | null>(null);
+  const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isFiguresLoading, setIsFiguresLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [figuresError, setFiguresError] = useState<string | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const isMountedRef = useRef(true);
+  const pollingStartedAtRef = useRef<number | null>(null);
+  const pollingFigureIdRef = useRef<string | null>(null);
 
-  async function loadBillingSummary() {
-    setIsLoading(true);
+  const loadBillingSummary = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
       const billingSummary = await billingApi.getBillingMe();
-      setSummary(billingSummary);
+
+      if (isMountedRef.current) {
+        setSummary(billingSummary);
+      }
     } catch (loadError) {
-      setSummary(null);
-      setError(getApiErrorMessage(loadError));
+      if (isMountedRef.current) {
+        setSummary(null);
+        setError(getApiErrorMessage(loadError));
+      }
     } finally {
-      setIsLoading(false);
+      if (showLoading && isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  }
+  }, []);
+
+  const loadFigures = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setIsFiguresLoading(true);
+    }
+    setFiguresError(null);
+
+    try {
+      const result = await figuresApi.listFigures({ limit: 6 });
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setFigures(result.figures);
+      setActiveFigure((current) => {
+        if (current && !isTerminalStatus(current.status)) {
+          return current;
+        }
+
+        return result.figures.find((figure) => isPollingStatus(figure.status)) ?? current;
+      });
+    } catch (loadError) {
+      if (isMountedRef.current) {
+        setFiguresError(getApiErrorMessage(loadError));
+      }
+    } finally {
+      if (showLoading && isMountedRef.current) {
+        setIsFiguresLoading(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     void loadBillingSummary();
-  }, []);
+    void loadFigures();
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [loadBillingSummary, loadFigures]);
+
+  useEffect(() => {
+    if (!activeFigure || !isPollingStatus(activeFigure.status)) {
+      setIsPolling(false);
+      pollingStartedAtRef.current = null;
+      pollingFigureIdRef.current = null;
+      return;
+    }
+
+    if (pollingFigureIdRef.current !== activeFigure.id) {
+      pollingFigureIdRef.current = activeFigure.id;
+      pollingStartedAtRef.current = Date.now();
+    }
+
+    let isCancelled = false;
+    let pollTimeoutId: number | undefined;
+
+    async function pollFigureStatus() {
+      if (!activeFigure || isCancelled || !isMountedRef.current) {
+        return;
+      }
+
+      const startedAt = pollingStartedAtRef.current ?? Date.now();
+
+      if (Date.now() - startedAt > GENERATION_POLL_TIMEOUT_MS) {
+        if (!isCancelled && isMountedRef.current) {
+          setIsPolling(false);
+          setGenerationError(
+            "Generation is taking longer than expected. Refresh recent generations in a moment.",
+          );
+        }
+        return;
+      }
+
+      setIsPolling(true);
+
+      try {
+        const updatedFigure = await figuresApi.getFigureStatus(activeFigure.id);
+
+        if (isCancelled || !isMountedRef.current) {
+          return;
+        }
+
+        setActiveFigure(updatedFigure);
+        setFigures((currentFigures) =>
+          mergeFigureIntoList(currentFigures, updatedFigure),
+        );
+
+        if (isTerminalStatus(updatedFigure.status)) {
+          setIsPolling(false);
+          pollingStartedAtRef.current = null;
+          pollingFigureIdRef.current = null;
+          void loadBillingSummary(false);
+          void loadFigures(false);
+          return;
+        }
+      } catch (pollError) {
+        if (!isCancelled && isMountedRef.current) {
+          setIsPolling(false);
+          setGenerationError(
+            getApiErrorCode(pollError) === "FIGURE_NOT_FOUND"
+              ? "Generation status is no longer available."
+              : "We could not refresh generation status. Try again in a moment.",
+          );
+        }
+        return;
+      }
+
+      pollTimeoutId = window.setTimeout(
+        pollFigureStatus,
+        GENERATION_POLL_INTERVAL_MS,
+      );
+    }
+
+    pollTimeoutId = window.setTimeout(
+      pollFigureStatus,
+      GENERATION_POLL_INTERVAL_MS,
+    );
+
+    return () => {
+      isCancelled = true;
+      if (pollTimeoutId !== undefined) {
+        window.clearTimeout(pollTimeoutId);
+      }
+    };
+  }, [activeFigure, loadBillingSummary, loadFigures]);
 
   const pendingOrder = summary?.pendingOrders[0] ?? null;
   const renewalDate = formatDate(summary?.plan.currentPeriodEnd);
   const latestPayment = summary?.latestPayment;
+  const creditBalance = summary?.credits.balance ?? 0;
+  const hasLoadedZeroCredits = Boolean(summary) && creditBalance <= 0;
+  const trimmedPrompt = prompt.trim();
+  const canGenerate =
+    trimmedPrompt.length > 0 && !isGenerating && !hasLoadedZeroCredits;
+  const promptCharacterCount = prompt.length;
+
+  const recentFiguresTitle = useMemo(() => {
+    if (isFiguresLoading) {
+      return "Loading generation history.";
+    }
+
+    if (figures.length === 0) {
+      return "No generated garments yet.";
+    }
+
+    return `${figures.length} recent generation${figures.length === 1 ? "" : "s"}.`;
+  }, [figures.length, isFiguresLoading]);
+
+  async function handleGenerate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!trimmedPrompt || isGenerating) {
+      return;
+    }
+
+    if (hasLoadedZeroCredits) {
+      setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationError(null);
+
+    try {
+      const figure = await figuresApi.generateFigure({
+        prompt: trimmedPrompt,
+      });
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setPrompt("");
+      setActiveFigure(figure);
+      setFigures((currentFigures) => mergeFigureIntoList(currentFigures, figure));
+      void loadBillingSummary(false);
+      void loadFigures(false);
+    } catch (generateError) {
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      const errorCode = getApiErrorCode(generateError);
+
+      if (errorCode === "INSUFFICIENT_GENERATION_CREDITS") {
+        setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+      } else if (errorCode === "GENERATION_PROVIDER_UNAVAILABLE") {
+        setGenerationError(
+          "The generation service is temporarily unavailable. Try again later.",
+        );
+      } else if (errorCode === "GENERATION_FAILED") {
+        setGenerationError(
+          "Generation failed before a result was created. Try a shorter prompt or try again later.",
+        );
+      } else {
+        setGenerationError(getApiErrorMessage(generateError));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsGenerating(false);
+      }
+    }
+  }
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
@@ -101,8 +559,8 @@ export function DashboardPage() {
                 Good day, {displayName}.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Your studio is ready for VietQR checkout and future 3D
-                generation workflows.
+                Generate a 3D fashion figure from a prompt, track its render
+                state, and keep credits accurate as results complete.
               </p>
             </div>
             <Link
@@ -173,28 +631,115 @@ export function DashboardPage() {
             <section className="grid gap-6 lg:grid-cols-12">
               <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-6 lg:col-span-8 lg:p-8">
                 <div className="absolute inset-x-0 top-0 h-px bg-[#00e5ff]/55" />
-                <div className="flex h-full min-h-[260px] flex-col justify-between gap-8">
-                  <div>
-                    <span className="inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#9cf0ff]">
-                      <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
-                      Engine placeholder
-                    </span>
-                    <h2 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-tight text-white">
-                      Draft a new garment when the studio engine lands.
-                    </h2>
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-[#bac9cc]">
-                      Week 03A keeps generation disabled while billing and
-                      payment states become testable.
-                    </p>
+                <form
+                  className="flex h-full min-h-[360px] flex-col gap-6"
+                  onSubmit={(event) => void handleGenerate(event)}
+                >
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div>
+                      <span className="inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#9cf0ff]">
+                        <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
+                        AI generation
+                      </span>
+                      <h2 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-tight text-white">
+                        Draft a new 3D garment direction.
+                      </h2>
+                      <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc]">
+                        Describe silhouette, material, mood, and styling intent
+                        for the result.
+                      </p>
+                    </div>
+                    <div className="grid gap-2 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4 text-sm text-[#bac9cc] sm:min-w-[220px]">
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Cost</span>
+                        <span className="font-bold text-white">1 credit</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Balance</span>
+                        <span className="font-bold text-[#9cf0ff]">
+                          {creditBalance} credits
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  <div>
+                    <label
+                      className="text-sm font-bold text-[#e5e2e1]"
+                      htmlFor="generation-prompt"
+                    >
+                      Generation prompt
+                    </label>
+                    <textarea
+                      aria-describedby="generation-prompt-help"
+                      className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={isGenerating}
+                      id="generation-prompt"
+                      maxLength={1000}
+                      placeholder="Example: oversized cropped bomber jacket, matte nylon, cyan stitch highlights, runway streetwear pose"
+                      value={prompt}
+                      onChange={(event) => {
+                        setPrompt(event.target.value);
+                        setGenerationError(null);
+                      }}
+                    />
+                    <div
+                      className="mt-2 flex flex-col gap-2 text-xs text-[#849396] sm:flex-row sm:items-center sm:justify-between"
+                      id="generation-prompt-help"
+                    >
+                      <span>Tip: include fabric, color, fit, and scene.</span>
+                      <span>{promptCharacterCount}/1000</span>
+                    </div>
+                  </div>
+
+                  {hasLoadedZeroCredits ? (
+                    <div className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-sm leading-6 text-[#ffeac0]">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p>{INSUFFICIENT_CREDITS_MESSAGE}</p>
+                        <Link
+                          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                          to="/credits"
+                        >
+                          Buy credits
+                        </Link>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {generationError ? (
+                    <div
+                      className="rounded-lg border border-[#ffb4ab]/30 bg-[#93000a]/25 p-4 text-sm leading-6 text-[#ffdad6]"
+                      role="alert"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex gap-3">
+                          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                          <p>{generationError}</p>
+                        </div>
+                        {generationError === INSUFFICIENT_CREDITS_MESSAGE ? (
+                          <Link
+                            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+                            to="/credits"
+                          >
+                            Buy credits
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-sm font-bold text-[#001f24] opacity-70"
-                      disabled
-                      type="button"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={!canGenerate}
+                      type="submit"
                     >
-                      <Plus className="h-4 w-4" />
-                      Generate placeholder
+                      {isGenerating ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      {isGenerating ? "Generating" : "Generate"}
                     </button>
                     <button
                       className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -205,7 +750,14 @@ export function DashboardPage() {
                       Check export gate
                     </button>
                   </div>
-                </div>
+
+                  {activeFigure ? (
+                    <ActiveFigurePanel
+                      figure={activeFigure}
+                      isPolling={isPolling}
+                    />
+                  ) : null}
+                </form>
               </article>
 
               <article className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-6 lg:col-span-4 lg:p-8">
@@ -224,7 +776,7 @@ export function DashboardPage() {
                 </p>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="font-display text-6xl font-semibold leading-none text-white">
-                    {summary?.credits.balance ?? 0}
+                    {creditBalance}
                   </span>
                   <span className="text-base font-semibold text-[#bac9cc]">
                     credits
@@ -319,36 +871,74 @@ export function DashboardPage() {
           )}
 
           <section className="space-y-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="font-display text-2xl font-semibold text-white">
                   Recent generations
                 </h2>
                 <p className="mt-1 text-sm text-[#bac9cc]">
-                  No generated garments yet.
+                  {recentFiguresTitle}
                 </p>
               </div>
-              {latestPayment ? (
-                <p className="text-sm font-semibold text-[#bac9cc]">
-                  Latest payment: {latestPayment.status}
-                </p>
-              ) : null}
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  className="rounded-lg border border-[#3b494c]/70 bg-[#201f1f] p-4"
-                  key={index}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                {latestPayment ? (
+                  <p className="text-sm font-semibold text-[#bac9cc]">
+                    Latest payment: {latestPayment.status}
+                  </p>
+                ) : null}
+                <button
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  type="button"
+                  onClick={() => void loadFigures(false)}
                 >
-                  <div className="flex aspect-square flex-col items-center justify-center rounded-md border border-dashed border-[#3b494c] bg-[#0e0e0e] text-center">
-                    <Sparkles className="h-8 w-8 text-[#3b494c]" />
-                    <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#849396]">
-                      Empty slot
-                    </p>
-                  </div>
-                </div>
-              ))}
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Refresh
+                </button>
+              </div>
             </div>
+
+            {figuresError ? (
+              <section
+                className="rounded-lg border border-[#ffb4ab]/30 bg-[#93000a]/25 p-4 text-[#ffdad6]"
+                role="alert"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <p className="text-sm">{figuresError}</p>
+                  </div>
+                  <button
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
+                    type="button"
+                    onClick={() => void loadFigures()}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Retry
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
+            {isFiguresLoading ? (
+              <div className="grid gap-4 md:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    className="h-80 animate-pulse rounded-lg border border-white/10 bg-white/[0.05]"
+                    key={index}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-3">
+                {figures.length === 0 ? (
+                  <FigureEmptyState />
+                ) : (
+                  figures.map((figure) => (
+                    <FigureCard figure={figure} key={figure.id} />
+                  ))
+                )}
+              </div>
+            )}
           </section>
         </div>
       </main>
