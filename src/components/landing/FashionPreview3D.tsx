@@ -4,7 +4,7 @@ import { Box3, Group, Mesh, PerspectiveCamera, Vector3 } from "three";
 import { OrbitControls as OrbitControlsImpl } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-const MODEL_PATH = "/models/fashion-avatar.glb";
+const MODEL_PATH = "/models/character.boyglb.glb";
 const MODEL_HEIGHT = 2.86;
 const MODEL_TARGET: [number, number, number] = [0, 0.03, 0];
 

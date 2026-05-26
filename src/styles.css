@@ -152,15 +152,20 @@ input {
 
 .landing-preview-card {
   position: relative;
-  height: 100%;
+  width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(18, 223, 243, 0.66);
+  border: 1px solid rgba(0, 229, 255, 0.72);
   border-radius: 8px;
   background: #0a0a0a;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.035),
-    0 0 34px rgba(0, 229, 255, 0.18),
+    0 0 24px rgba(0, 229, 255, 0.16),
     0 24px 80px rgba(0, 0, 0, 0.44);
+  transition:
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms ease;
+  will-change: transform;
 }
 
 .landing-preview-card::before {
@@ -175,15 +180,40 @@ input {
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 120px);
 }
 
+.landing-preview-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 34px rgba(0, 229, 255, 0.12),
+    0 0 36px rgba(0, 229, 255, 0.18);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.landing-preview-card:hover {
+  border-color: rgba(0, 229, 255, 0.92);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.055),
+    0 0 36px rgba(0, 229, 255, 0.28),
+    0 30px 88px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.landing-preview-card:hover::after {
+  opacity: 1;
+}
+
 .landing-preview-card canvas {
   outline: none;
 }
 
 .landing-preview-toolbar,
 .landing-preview-caption {
-  position: absolute;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 3;
   display: flex;
   align-items: center;
@@ -199,14 +229,19 @@ input {
 }
 
 .landing-preview-toolbar {
-  top: 0;
   border-bottom-width: 1px;
   box-shadow: 0 1px 0 rgba(18, 223, 243, 0.24);
   padding: 0.75rem 0.9rem;
 }
 
+.landing-preview-viewport {
+  position: relative;
+  z-index: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .landing-preview-caption {
-  bottom: 0;
   border-top-width: 1px;
   box-shadow: 0 -1px 0 rgba(18, 223, 243, 0.22);
   padding: 0.8rem 0.9rem;
@@ -225,21 +260,6 @@ input {
   font-weight: 700;
 }
 
-.landing-preview-meta {
-  position: absolute;
-  z-index: 4;
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid rgba(18, 223, 243, 0.36);
-  border-radius: 8px;
-  background: rgba(18, 24, 25, 0.96);
-  padding: 0.75rem 0.9rem;
-  color: #e5e2e1;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
 .landing-step-card {
   position: relative;
   overflow: hidden;
@@ -254,8 +274,3 @@ input {
   opacity: 0.9;
 }
 
-@media (min-width: 768px) {
-  .landing-preview-meta {
-    display: inline-flex;
-  }
-}

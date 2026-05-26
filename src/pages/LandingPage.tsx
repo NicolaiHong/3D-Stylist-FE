@@ -2,7 +2,6 @@ import { Component, ErrorInfo, ReactNode, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  BadgeCheck,
   Banknote,
   ChevronRight,
   Check,
@@ -309,7 +308,7 @@ export function LandingPage() {
           </dl>
         </div>
 
-        <div className="landing-preview-stage h-[390px] sm:h-[460px] md:h-[540px] lg:h-[640px]">
+        <div className="landing-preview-stage">
           <div className="landing-preview-card">
             <div className="landing-preview-toolbar">
               <span className="flex items-center gap-1.5">
@@ -318,23 +317,17 @@ export function LandingPage() {
               </span>
               <span>GLB</span>
             </div>
-            <PreviewErrorBoundary fallback={<PreviewErrorFallback />}>
-              <Suspense fallback={<PreviewLoadingFallback />}>
-                <FashionPreview3D />
-              </Suspense>
-            </PreviewErrorBoundary>
+            <div className="landing-preview-viewport h-[390px] sm:h-[460px] md:h-[540px] lg:h-[640px]">
+              <PreviewErrorBoundary fallback={<PreviewErrorFallback />}>
+                <Suspense fallback={<PreviewLoadingFallback />}>
+                  <FashionPreview3D />
+                </Suspense>
+              </PreviewErrorBoundary>
+            </div>
             <div className="landing-preview-caption">
               <span>Prompt-ready styling surface</span>
               <span className="text-[#9cf0ff]">Orbit preview</span>
             </div>
-          </div>
-          <div className="landing-preview-meta left-0 top-8">
-            <BadgeCheck className="h-4 w-4 text-[#9cf0ff]" />
-            <span>Auth-safe studio flow</span>
-          </div>
-          <div className="landing-preview-meta bottom-10 right-0">
-            <CircuitBoard className="h-4 w-4 text-[#ffeac0]" />
-            <span>Credits before production</span>
           </div>
         </div>
       </section>
