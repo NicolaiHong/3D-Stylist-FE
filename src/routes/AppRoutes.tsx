@@ -7,6 +7,7 @@ import { OAuthErrorPage } from "../pages/OAuthErrorPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { CreditsPage } from "../pages/CreditsPage";
 import { CheckoutPage } from "../pages/CheckoutPage";
+import { PaymentResultPage } from "../pages/PaymentResultPage";
 import { AdminPage } from "../pages/AdminPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { OnboardingPage } from "../pages/OnboardingPage";
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="/credits" element={<CreditsPage />} />
         <Route path="/credits/checkout" element={<CheckoutPage />} />
         <Route path="/credits/checkout/:orderId" element={<CheckoutPage />} />
+        <Route path="/credits/payment/:status" element={<PaymentResultPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route element={<ProtectedRoute allowedRoles={[AUTH_ROLES.ADMIN]} />}>
