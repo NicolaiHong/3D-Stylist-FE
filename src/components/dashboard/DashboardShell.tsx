@@ -153,7 +153,11 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
         </div>
       </aside>
 
-      <div className="lg:pl-64">
+      <div className="relative min-h-screen lg:pl-64">
+        <div
+          aria-hidden="true"
+          className="authenticated-app-surface pointer-events-none fixed inset-0 lg:left-64"
+        />
         <header className="sticky top-0 z-30 border-b border-[#3b494c] bg-[#0a0a0a]/92 px-4 py-3 backdrop-blur lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <Link
@@ -192,7 +196,7 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
           </nav>
         </header>
 
-        {children}
+        <div className="relative z-10">{children}</div>
       </div>
     </div>
   );

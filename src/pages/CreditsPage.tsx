@@ -83,7 +83,7 @@ function statusTone(status: BillingOrder["status"]) {
 
 function EmptyCatalogState({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-6 text-center lg:col-span-3">
+    <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center lg:col-span-3">
       <p className="text-sm font-bold text-white">{title}</p>
       <p className="mt-1 text-sm text-[#bac9cc]">{body}</p>
     </div>
@@ -288,7 +288,7 @@ function ProductActions({
   const isSelected = selectedProductCode === product.code;
 
   return (
-    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+    <div className="mt-5 grid gap-3 sm:grid-cols-2">
       <button
         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
         disabled={disabled}
@@ -512,8 +512,8 @@ export function CreditsPage() {
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-        <div className="mx-auto w-full max-w-[1200px] space-y-8">
+      <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <div className="mx-auto w-full max-w-[1200px] space-y-6">
           <header className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
@@ -585,7 +585,7 @@ export function CreditsPage() {
           ) : null}
 
           {selectedProduct ? (
-            <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-5">
+            <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-4">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
@@ -632,7 +632,7 @@ export function CreditsPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-5 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
                   className="h-72 animate-pulse rounded-lg border border-white/10 bg-white/[0.05]"
@@ -663,7 +663,7 @@ export function CreditsPage() {
 
                       return (
                         <article
-                          className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5"
+                          className="credits-product-card p-5"
                           key={plan.code}
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -681,13 +681,13 @@ export function CreditsPage() {
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-6 font-display text-3xl font-semibold text-white">
+                          <p className="mt-5 font-display text-3xl font-semibold text-white">
                             {formatCurrency(plan.priceVnd, plan.currency)}
                             <span className="ml-2 text-sm font-semibold text-[#bac9cc]">
                               / month
                             </span>
                           </p>
-                          <ul className="mt-5 space-y-3 text-sm text-[#bac9cc]">
+                          <ul className="mt-4 space-y-2.5 text-sm text-[#bac9cc]">
                             <li className="flex gap-2">
                               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
                               {plan.credits ?? 0} included HD generations
@@ -731,7 +731,7 @@ export function CreditsPage() {
                   ) : (
                     creditPacks.map((pack) => (
                       <article
-                        className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5"
+                        className="credits-product-card p-5"
                         key={pack.code}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -745,10 +745,10 @@ export function CreditsPage() {
                           </div>
                           <WalletCards className="h-5 w-5 text-[#f3bf26]" />
                         </div>
-                        <p className="mt-6 font-display text-3xl font-semibold text-white">
+                        <p className="mt-5 font-display text-3xl font-semibold text-white">
                           {formatCurrency(pack.priceVnd, pack.currency)}
                         </p>
-                        <p className="mt-4 text-sm leading-6 text-[#bac9cc]">
+                        <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
                           Adds {pack.credits ?? 0} credits after admin verifies
                           the VietQR transfer. Credit packs do not unlock export
                           by themselves.
@@ -787,7 +787,7 @@ export function CreditsPage() {
                 </div>
 
                 {pendingOrders.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-6 text-center">
+                  <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center">
                     <CreditCard className="mx-auto h-7 w-7 text-[#3b494c]" />
                     <p className="mt-3 text-sm font-bold text-white">
                       No pending payments
@@ -800,7 +800,7 @@ export function CreditsPage() {
                   <div className="grid gap-4">
                     {pendingOrders.map((order) => (
                       <article
-                        className="rounded-lg border border-[#f3bf26]/30 bg-[#201f1f] p-5"
+                        className="rounded-lg border border-[#f3bf26]/30 bg-[#201f1f] p-4"
                         key={order.id}
                       >
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -846,7 +846,7 @@ export function CreditsPage() {
                   Order history
                 </h2>
                 {orders.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-6 text-center">
+                  <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center">
                     <p className="text-sm font-bold text-white">
                       No billing orders yet
                     </p>

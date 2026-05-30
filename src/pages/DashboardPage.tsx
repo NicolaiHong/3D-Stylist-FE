@@ -189,7 +189,7 @@ function mergeFigureIntoList(figures: FigureDto[], figure: FigureDto) {
 
 function DashboardSkeleton() {
   return (
-    <div className="grid gap-6 lg:grid-cols-12">
+    <div className="grid gap-5 lg:grid-cols-12">
       <div className="h-72 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-8" />
       <div className="h-72 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-4" />
       <div className="h-52 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-4" />
@@ -902,8 +902,8 @@ export function DashboardPage() {
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-        <div className="mx-auto w-full max-w-[1200px] space-y-8">
+      <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <div className="mx-auto w-full max-w-[1200px] space-y-6">
           <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
@@ -982,11 +982,11 @@ export function DashboardPage() {
           {isLoading ? (
             <DashboardSkeleton />
           ) : (
-            <section className="grid gap-6 lg:grid-cols-12">
-              <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-6 lg:col-span-8 lg:p-8">
+            <section className="grid gap-5 lg:grid-cols-12">
+              <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-8 lg:p-6">
                 <div className="absolute inset-x-0 top-0 h-px bg-[#00e5ff]/55" />
                 <form
-                  className="flex h-full min-h-[360px] flex-col gap-6"
+                  className="flex h-full min-h-[320px] flex-col gap-5"
                   onSubmit={(event) => void handleGenerate(event)}
                 >
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -1003,7 +1003,7 @@ export function DashboardPage() {
                         for the result.
                       </p>
                     </div>
-                    <div className="grid gap-2 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4 text-sm text-[#bac9cc] sm:min-w-[220px]">
+                    <div className="grid gap-2 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-sm text-[#bac9cc] sm:min-w-[220px]">
                       <div className="flex items-center justify-between gap-4">
                         <span>Cost</span>
                         <span className="font-bold text-white">1 credit</span>
@@ -1119,7 +1119,7 @@ export function DashboardPage() {
                 </form>
               </article>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-6 lg:col-span-4 lg:p-8">
+              <article className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-4 lg:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <Database className="h-6 w-6 text-[#bac9cc]" />
                   <Link
@@ -1130,23 +1130,23 @@ export function DashboardPage() {
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
-                <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-[#bac9cc]">
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#bac9cc]">
                   Credit balance
                 </p>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="font-display text-6xl font-semibold leading-none text-white">
+                  <span className="font-display text-5xl font-semibold leading-none text-white">
                     {creditBalance}
                   </span>
                   <span className="text-base font-semibold text-[#bac9cc]">
                     credits
                   </span>
                 </div>
-                <p className="mt-5 border-t border-[#3b494c]/70 pt-5 text-sm leading-6 text-[#bac9cc]">
+                <p className="mt-4 border-t border-[#3b494c]/70 pt-4 text-sm leading-6 text-[#bac9cc]">
                   1 credit = 1 HD generation.
                 </p>
               </article>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-6 lg:col-span-4">
+              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 lg:col-span-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-md bg-[#00e5ff]/10 text-[#00e5ff]">
                     <CreditCard className="h-5 w-5" />
@@ -1169,14 +1169,14 @@ export function DashboardPage() {
                   </p>
                 ) : null}
                 <Link
-                  className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
                   to="/credits"
                 >
                   {summary?.plan.status === "active" ? "Manage plan" : "Upgrade"}
                 </Link>
               </article>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-6 lg:col-span-4">
+              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 lg:col-span-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#f3bf26]/12 text-[#f3bf26]">
                   {summary?.capabilities.canExportModel ? (
                     <CheckCircle2 className="h-5 w-5" />
@@ -1193,7 +1193,7 @@ export function DashboardPage() {
                     : "PAYWALL_REQUIRED opens when export/download is blocked."}
                 </p>
                 <button
-                  className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                   type="button"
                   onClick={() => {
                     if (!summary?.capabilities.canExportModel) {
@@ -1206,7 +1206,7 @@ export function DashboardPage() {
                 </button>
               </article>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-6 lg:col-span-4">
+              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 lg:col-span-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-md bg-white/[0.08] text-[#bac9cc]">
                   <UserRound className="h-5 w-5" />
                 </div>
@@ -1220,7 +1220,7 @@ export function DashboardPage() {
                   Profile and onboarding remain separate from paid plan state.
                 </p>
                 <Link
-                  className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                   to="/profile"
                 >
                   View profile

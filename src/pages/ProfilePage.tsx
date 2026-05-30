@@ -274,7 +274,7 @@ export function ProfilePage() {
   if (!user) {
     return (
       <DashboardShell>
-        <main className="min-h-screen bg-[#131313] px-4 py-8 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-12">
+        <main className="min-h-screen px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
           <div className="mx-auto flex min-h-[420px] w-full max-w-[1160px] items-center justify-center rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
             <div className="text-center">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#00e5ff]" />
@@ -290,10 +290,10 @@ export function ProfilePage() {
 
   return (
     <DashboardShell planLabel={billingSummary?.plan.name}>
-      <main className="min-h-screen bg-[#131313] px-4 py-8 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-12">
-        <div className="mx-auto w-full max-w-[1180px] space-y-8">
+      <main className="min-h-screen px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
+        <div className="mx-auto w-full max-w-[1180px] space-y-6">
           <section className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] shadow-[0_0_38px_rgba(0,229,255,0.08)]">
-            <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-8 lg:p-8">
+            <div className="grid gap-5 p-5 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-6 lg:p-6">
               <div className="mx-auto w-full max-w-[180px] lg:mx-0">
                 <div className="relative aspect-square rounded-lg border border-[#00e5ff]/55 bg-[#0e0e0e] p-1 shadow-[0_0_28px_rgba(0,229,255,0.18)]">
                   {activePreviewUrl ? (
@@ -426,9 +426,9 @@ export function ProfilePage() {
             </section>
           ) : null}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.82fr)]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.82fr)]">
             <form
-              className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 sm:p-6"
+              className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5"
               onSubmit={(event) => void handleProfileSubmit(event)}
             >
               <div className="flex flex-col gap-3 border-b border-[#3b494c]/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
@@ -526,7 +526,7 @@ export function ProfilePage() {
               </div>
             </form>
 
-            <section className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 sm:p-6">
+            <section className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5">
               <div className="flex items-start gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[#00e5ff]/10 text-[#9cf0ff]">
                   <Sparkles className="h-5 w-5" />
@@ -633,7 +633,7 @@ export function ProfilePage() {
             </section>
           </div>
 
-          <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 sm:p-6">
+          <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">

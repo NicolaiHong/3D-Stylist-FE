@@ -274,3 +274,92 @@ input {
   opacity: 0.9;
 }
 
+.authenticated-app-surface {
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(0, 229, 255, 0.13), transparent 27rem),
+    radial-gradient(circle at 82% 34%, rgba(156, 240, 255, 0.08), transparent 24rem),
+    linear-gradient(180deg, #0a0a0a 0%, #101010 46%, #070707 100%);
+}
+
+.authenticated-app-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, rgba(0, 229, 255, 0.13) 1px, transparent 1.4px),
+    linear-gradient(116deg, transparent 0 24%, rgba(0, 229, 255, 0.16) 24.08% 24.24%, transparent 24.38% 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 128px);
+  background-size:
+    28px 28px,
+    auto,
+    auto;
+  opacity: 0.45;
+}
+
+.authenticated-app-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.46), transparent 34%, rgba(0, 0, 0, 0.32)),
+    radial-gradient(circle at 50% 12%, transparent 0 24rem, rgba(0, 0, 0, 0.28) 54rem);
+}
+
+.credits-product-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #3b494c;
+  border-radius: 0.5rem;
+  background: #1c1b1b;
+  transition:
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms ease;
+}
+
+.credits-product-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.14), transparent 58%),
+    linear-gradient(180deg, rgba(0, 229, 255, 0.16), transparent 30%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.credits-product-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.credits-product-card:hover,
+.credits-product-card:focus-within {
+  border-color: rgba(0, 229, 255, 0.58);
+  box-shadow: 0 0 34px rgba(0, 229, 255, 0.18);
+  transform: translateY(-0.25rem);
+}
+
+.credits-product-card:hover::before,
+.credits-product-card:focus-within::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credits-product-card {
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .credits-product-card:hover,
+  .credits-product-card:focus-within {
+    transform: none;
+  }
+}
+

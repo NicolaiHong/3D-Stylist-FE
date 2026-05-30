@@ -195,7 +195,11 @@ function getStatusTone(status: string) {
     return "border-[#00e5ff]/30 bg-[#00e5ff]/10 text-[#9cf0ff]";
   }
 
-  if (status === "pending" || status === "redirected" || status === "initiated") {
+  if (status === "pending") {
+    return "border-[#f3bf26]/35 bg-[#f3bf26]/10 text-[#ffeac0]";
+  }
+
+  if (status === "redirected" || status === "initiated") {
     return "border-[#00e5ff]/18 bg-[#00e5ff]/5 text-[#c3f5ff]";
   }
 
@@ -331,7 +335,7 @@ function KpiCard({
         : "text-[#00e5ff] bg-[#00e5ff]/10";
 
   return (
-    <article className="min-h-[156px] rounded-lg border border-[#3b494c] bg-[#201f1f] p-5">
+    <article className="min-h-[148px] rounded-lg border border-[#3b494c] bg-[#201f1f] p-4">
       {isLoading ? (
         <div className="space-y-5">
           <div className="h-4 w-28 animate-pulse rounded-sm bg-white/10" />
@@ -348,10 +352,10 @@ function KpiCard({
               {icon}
             </span>
           </div>
-          <p className="mt-5 font-display text-3xl font-semibold leading-none text-white">
+          <p className="mt-4 font-display text-3xl font-semibold leading-none text-white">
             {value}
           </p>
-          <p className="mt-4 text-xs font-semibold text-[#bac9cc]">{detail}</p>
+          <p className="mt-3 text-xs font-semibold text-[#bac9cc]">{detail}</p>
           {ratioValue !== undefined && ratioTotal !== undefined ? (
             <div className="mt-4">
               <MiniRatioBar total={ratioTotal} value={ratioValue} tone={tone} />
@@ -1239,9 +1243,9 @@ export function AdminPage() {
 
   return (
     <DashboardShell planLabel="Admin OS">
-      <main className="min-h-screen overflow-x-hidden bg-[#0a0a0a] px-4 py-8 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-12">
-        <div className="mx-auto w-full max-w-[1440px] space-y-8">
-          <header className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] xl:items-end">
+      <main className="min-h-screen overflow-x-hidden px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
+        <div className="mx-auto w-full max-w-[1440px] space-y-6">
+          <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] xl:items-end">
             <div>
               <p className="text-xs font-bold uppercase text-[#00e5ff]">
                 Admin Overview
@@ -1362,7 +1366,7 @@ export function AdminPage() {
             </section>
           ) : null}
 
-          <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {kpis.map((kpi) => (
               <KpiCard
                 detail={kpi.detail}
@@ -1378,7 +1382,7 @@ export function AdminPage() {
             ))}
           </section>
 
-          <section className="grid gap-6 lg:grid-cols-12">
+          <section className="grid gap-5 lg:grid-cols-12">
             <HealthPanel health={health} isLoading={isLoading} />
             <SubscriptionCreditPanel stats={stats} isLoading={isLoading} />
           </section>
@@ -1411,7 +1415,7 @@ export function AdminPage() {
             />
           </AdminPanel>
 
-          <section className="grid gap-6 xl:grid-cols-12">
+          <section className="grid gap-5 xl:grid-cols-12">
             <AdminPanel className="xl:col-span-7">
               <PanelHeader
                 title="Payment Transactions"

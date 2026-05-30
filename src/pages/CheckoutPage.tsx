@@ -296,8 +296,8 @@ function BankTransferDetails({
   const accountNumber = payment?.bank.accountNumber ?? "Not returned";
 
   return (
-    <section className="flex h-full flex-col justify-between gap-6 p-5 sm:p-6 lg:p-8">
-      <div className="space-y-6">
+    <section className="flex h-full flex-col justify-between gap-5 p-5 sm:p-6 lg:p-6">
+      <div className="space-y-5">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[#00e5ff]" />
           <div>
@@ -378,7 +378,7 @@ function PaymentInstructionCards() {
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {steps.map(({ title, body, icon: Icon }, index) => (
         <article
-          className="rounded-lg border border-[#262626] bg-[#121212] p-5"
+          className="rounded-lg border border-[#262626] bg-[#121212] p-4"
           key={title}
         >
           <div className="flex items-start justify-between gap-4">
@@ -591,7 +591,7 @@ export function CheckoutPage() {
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+      <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
         <div className="mx-auto w-full max-w-[1240px] space-y-6">
           <div className="flex flex-col gap-4 rounded-lg border border-[#262626] bg-[#121212] p-4 sm:flex-row sm:items-center sm:justify-between">
             <Link
@@ -617,7 +617,7 @@ export function CheckoutPage() {
             </div>
           </div>
 
-          <header className="rounded-lg border border-[#262626] bg-[#121212] p-6 sm:p-8">
+          <header className="rounded-lg border border-[#262626] bg-[#121212] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
               VietQR bank transfer
             </p>
@@ -665,7 +665,7 @@ export function CheckoutPage() {
               <div className="h-[560px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
             </div>
           ) : !order ? (
-            <section className="rounded-lg border border-dashed border-[#3b494c] bg-[#121212] p-8 text-center">
+            <section className="rounded-lg border border-dashed border-[#3b494c] bg-[#121212] p-6 text-center">
               <ShoppingCartFallback />
             </section>
           ) : (
@@ -726,7 +726,7 @@ export function CheckoutPage() {
 
               <PaymentProgress order={order} />
 
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
                 <PaymentInstructionCards />
 
                 <div className="space-y-4">

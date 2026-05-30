@@ -85,9 +85,9 @@ export function PaymentResultPage() {
 
   return (
     <DashboardShell>
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-        <div className="mx-auto w-full max-w-[980px] space-y-6">
-          <header className="rounded-lg border border-[#262626] bg-[#121212] p-6 sm:p-8">
+      <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <div className="mx-auto w-full max-w-[980px] space-y-5">
+          <header className="rounded-lg border border-[#262626] bg-[#121212] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
               {copy.eyebrow}
             </p>
@@ -99,7 +99,7 @@ export function PaymentResultPage() {
             </p>
           </header>
 
-          <section className={`rounded-lg border p-5 sm:p-6 ${copy.panelClassName}`}>
+          <section className={`rounded-lg border p-5 ${copy.panelClassName}`}>
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               <span
                 className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-md border ${copy.iconClassName}`}
@@ -132,7 +132,7 @@ export function PaymentResultPage() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5">
+          <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
             <div className="flex gap-3">
               <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
               <div>
@@ -150,7 +150,7 @@ export function PaymentResultPage() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
               to="/credits"
             >
               Back to credits
@@ -158,7 +158,7 @@ export function PaymentResultPage() {
             </Link>
             {canResumeCheckout && orderId ? (
               <Link
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-5 py-3 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-5 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                 to={`/credits/checkout/${orderId}`}
               >
                 <RotateCcw className="h-4 w-4" />
@@ -167,7 +167,7 @@ export function PaymentResultPage() {
             ) : null}
             {status === "success" ? (
               <Link
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                 to="/dashboard"
               >
                 Open dashboard
