@@ -43,9 +43,52 @@ import { getApiErrorCode, getApiErrorMessage } from "../services/apiClient";
 
 const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+const MAX_GENERATION_PROMPT_LENGTH = 1000;
 const INSUFFICIENT_CREDITS_MESSAGE =
   "You’ve used all your generation credits. Buy more credits or upgrade your plan to continue.";
+const PROMPT_TOO_LONG_MESSAGE =
+  "Your prompt plus style direction is too long. Shorten the prompt or remove the style direction.";
+const STYLE_INTENTS = [
+  {
+    id: "minimal-luxury",
+    label: "Minimal luxury",
+    promptText:
+      "minimal luxury, refined tailoring, premium materials, restrained details",
+  },
+  {
+    id: "cyber-streetwear",
+    label: "Cyber streetwear",
+    promptText:
+      "cyber streetwear, futuristic urban layering, restrained neon accents",
+  },
+  {
+    id: "techwear",
+    label: "Techwear",
+    promptText:
+      "techwear, functional layers, technical fabrics, structured utility details",
+  },
+  {
+    id: "formal-runway",
+    label: "Formal runway",
+    promptText:
+      "formal runway, editorial tailoring, polished silhouette, elevated finish",
+  },
+  {
+    id: "sporty-activewear",
+    label: "Sporty activewear",
+    promptText:
+      "sporty activewear, performance fabrics, streamlined athletic silhouette",
+  },
+  {
+    id: "vintage-editorial",
+    label: "Vintage editorial",
+    promptText:
+      "vintage editorial, archival fashion mood, styled magazine silhouette",
+  },
+] as const;
 type FigureAssetKind = "image" | "model";
+type StyleIntent = (typeof STYLE_INTENTS)[number];
+type StyleIntentId = StyleIntent["id"];
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -103,8 +146,81 @@ function getFigureStatusTone(status: FigureStatus) {
   return "border-white/10 bg-white/[0.05] text-[#bac9cc]";
 }
 
+function getFigureStatusExplanation(status: FigureStatus) {
+  if (status === "queued") {
+    return "Request accepted. Waiting for generation to start.";
+  }
+
+  if (status === "processing") {
+    return "Generation is in progress. Status refreshes automatically.";
+  }
+
+  if (status === "success") {
+    return "Generation complete. Open the available preview or model.";
+  }
+
+  if (status === "failed") {
+    return "Generation did not complete. Your balance is refreshed from backend state; check credits before submitting another request.";
+  }
+
+  if (status === "canceled") {
+    return "Generation was canceled.";
+  }
+
+  return "Generation draft is waiting to be submitted.";
+}
+
+function getFigureStatusExplanationTone(status: FigureStatus) {
+  if (status === "success") {
+    return "text-[#c9fff6]";
+  }
+
+  if (status === "failed" || status === "canceled") {
+    return "text-[#ffdad6]";
+  }
+
+  return "text-[#bac9cc]";
+}
+
 function getFigurePreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
+}
+
+function getFigureAssetAvailability(figure: FigureDto) {
+  const availability: string[] = [];
+
+  if (getFigurePreviewUrl(figure)) {
+    availability.push("Image ready");
+  }
+
+  if (figure.modelUrl) {
+    availability.push("Model ready");
+  }
+
+  if (
+    availability.length === 0 &&
+    figure.status !== "failed" &&
+    figure.status !== "canceled"
+  ) {
+    availability.push("Preview pending");
+  }
+
+  return availability;
+}
+
+function getStyleDirectionSuffix(styleIntent: StyleIntent | undefined) {
+  if (!styleIntent) {
+    return "";
+  }
+
+  return `\n\nStyle direction: ${styleIntent.promptText}.`;
+}
+
+function composeGenerationPrompt(
+  prompt: string,
+  styleIntent: StyleIntent | undefined,
+) {
+  return `${prompt}${getStyleDirectionSuffix(styleIntent)}`;
 }
 
 function getFigureAssetKey(figure: FigureDto, kind: FigureAssetKind) {
@@ -249,6 +365,7 @@ function FigureCard({
 }) {
   const createdDate = formatDate(figure.createdAt);
   const previewUrl = getFigurePreviewUrl(figure);
+  const assetAvailability = getFigureAssetAvailability(figure);
   const canViewImage = figure.status === "success" && Boolean(previewUrl);
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
@@ -261,17 +378,39 @@ function FigureCard({
         <FigurePreview figure={figure} />
       </div>
       <div className="space-y-4 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <FigureStatusBadge status={figure.status} />
-          {createdDate ? (
-            <span className="text-xs font-semibold text-[#849396]">
-              {createdDate}
-            </span>
-          ) : null}
         </div>
-        <p className="min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
-          {getPromptSnippet(figure.prompt)}
-        </p>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
+            Prompt
+          </p>
+          <p className="mt-1 min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
+            {getPromptSnippet(figure.prompt)}
+          </p>
+        </div>
+        {createdDate ? (
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
+              Created
+            </p>
+            <p className="mt-1 text-xs font-semibold text-[#bac9cc]">
+              {createdDate}
+            </p>
+          </div>
+        ) : null}
+        {assetAvailability.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {assetAvailability.map((label) => (
+              <span
+                className="rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-[#bac9cc]"
+                key={label}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        ) : null}
         {figure.status === "failed" && figure.failureReason ? (
           <p className="rounded-md border border-[#ffb4ab]/20 bg-[#93000a]/20 p-3 text-xs leading-5 text-[#ffdad6]">
             {figure.failureReason}
@@ -494,7 +633,6 @@ function ActiveFigurePanel({
   onView: (figure: FigureDto) => void;
 }) {
   const previewUrl = getFigurePreviewUrl(figure);
-  const hasResultAsset = Boolean(previewUrl || figure.modelUrl);
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
@@ -521,13 +659,13 @@ function ActiveFigurePanel({
         <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
           {getPromptSnippet(figure.prompt)}
         </p>
-        {figure.status === "success" ? (
-          <p className="mt-3 text-sm font-semibold text-[#c9fff6]">
-            {hasResultAsset
-              ? "Generation complete. The result is available in recent generations."
-              : "Generation complete. Preview will appear when provider result is available."}
-          </p>
-        ) : null}
+        <p
+          className={`mt-3 text-sm font-semibold ${getFigureStatusExplanationTone(
+            figure.status,
+          )}`}
+        >
+          {getFigureStatusExplanation(figure.status)}
+        </p>
         {figure.status === "failed" && figure.failureReason ? (
           <p className="mt-3 rounded-md border border-[#ffb4ab]/20 bg-[#93000a]/20 p-3 text-sm leading-6 text-[#ffdad6]">
             {figure.failureReason}
@@ -619,6 +757,8 @@ export function DashboardPage() {
   const [figures, setFigures] = useState<FigureDto[]>([]);
   const [activeFigure, setActiveFigure] = useState<FigureDto | null>(null);
   const [prompt, setPrompt] = useState("");
+  const [selectedStyleIntentId, setSelectedStyleIntentId] =
+    useState<StyleIntentId | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFiguresLoading, setIsFiguresLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -794,9 +934,21 @@ export function DashboardPage() {
   const creditBalance = summary?.credits.balance ?? 0;
   const hasLoadedZeroCredits = Boolean(summary) && creditBalance <= 0;
   const trimmedPrompt = prompt.trim();
+  const selectedStyleIntent = STYLE_INTENTS.find(
+    (styleIntent) => styleIntent.id === selectedStyleIntentId,
+  );
+  const styleDirectionCharacterCount =
+    getStyleDirectionSuffix(selectedStyleIntent).length;
+  const composedPromptCharacterCount =
+    trimmedPrompt.length + styleDirectionCharacterCount;
+  const isComposedPromptTooLong =
+    composedPromptCharacterCount > MAX_GENERATION_PROMPT_LENGTH;
+  const estimatedBalanceAfterSubmit = Math.max(creditBalance - 1, 0);
   const canGenerate =
-    trimmedPrompt.length > 0 && !isGenerating && !hasLoadedZeroCredits;
-  const promptCharacterCount = prompt.length;
+    trimmedPrompt.length > 0 &&
+    !isGenerating &&
+    !hasLoadedZeroCredits &&
+    !isComposedPromptTooLong;
 
   const recentFiguresTitle = useMemo(() => {
     if (isFiguresLoading) {
@@ -856,12 +1008,22 @@ export function DashboardPage() {
       return;
     }
 
+    if (isComposedPromptTooLong) {
+      setGenerationError(PROMPT_TOO_LONG_MESSAGE);
+      return;
+    }
+
+    const composedPrompt = composeGenerationPrompt(
+      trimmedPrompt,
+      selectedStyleIntent,
+    );
+
     setIsGenerating(true);
     setGenerationError(null);
 
     try {
       const figure = await figuresApi.generateFigure({
-        prompt: trimmedPrompt,
+        prompt: composedPrompt,
       });
 
       if (!isMountedRef.current) {
@@ -882,6 +1044,7 @@ export function DashboardPage() {
 
       if (errorCode === "INSUFFICIENT_GENERATION_CREDITS") {
         setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+        void loadBillingSummary(false);
       } else if (errorCode === "GENERATION_PROVIDER_UNAVAILABLE") {
         setGenerationError(
           "The generation service is temporarily unavailable. Try again later.",
@@ -1005,7 +1168,7 @@ export function DashboardPage() {
                     </div>
                     <div className="grid gap-2 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-sm text-[#bac9cc] sm:min-w-[220px]">
                       <div className="flex items-center justify-between gap-4">
-                        <span>Cost</span>
+                        <span>Generation cost</span>
                         <span className="font-bold text-white">1 credit</span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
@@ -1014,6 +1177,17 @@ export function DashboardPage() {
                           {creditBalance} credits
                         </span>
                       </div>
+                      {summary && creditBalance > 0 ? (
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Balance after submit</span>
+                          <span className="font-bold text-[#c9fff6]">
+                            {estimatedBalanceAfterSubmit} credits
+                          </span>
+                        </div>
+                      ) : null}
+                      <p className="border-t border-[#3b494c]/70 pt-2 text-xs leading-5 text-[#849396]">
+                        Estimate only. Backend confirms the final balance.
+                      </p>
                     </div>
                   </div>
 
@@ -1025,11 +1199,16 @@ export function DashboardPage() {
                       Generation prompt
                     </label>
                     <textarea
-                      aria-describedby="generation-prompt-help"
+                      aria-describedby={`generation-prompt-help${
+                        isComposedPromptTooLong
+                          ? " generation-prompt-length-error"
+                          : ""
+                      }`}
+                      aria-invalid={isComposedPromptTooLong}
                       className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={isGenerating}
                       id="generation-prompt"
-                      maxLength={1000}
+                      maxLength={MAX_GENERATION_PROMPT_LENGTH}
                       placeholder="Example: oversized cropped bomber jacket, matte nylon, cyan stitch highlights, runway streetwear pose"
                       value={prompt}
                       onChange={(event) => {
@@ -1041,8 +1220,64 @@ export function DashboardPage() {
                       className="mt-2 flex flex-col gap-2 text-xs text-[#849396] sm:flex-row sm:items-center sm:justify-between"
                       id="generation-prompt-help"
                     >
-                      <span>Tip: include fabric, color, fit, and scene.</span>
-                      <span>{promptCharacterCount}/1000</span>
+                      <span>
+                        Start with a garment type, then add material, fit, color,
+                        and mood.
+                      </span>
+                      <span>
+                        {selectedStyleIntent
+                          ? `${trimmedPrompt.length} prompt chars + ${styleDirectionCharacterCount} style direction chars / ${MAX_GENERATION_PROMPT_LENGTH}`
+                          : `${trimmedPrompt.length}/${MAX_GENERATION_PROMPT_LENGTH}`}
+                      </span>
+                    </div>
+                    {isComposedPromptTooLong ? (
+                      <p
+                        className="mt-2 text-xs font-semibold leading-5 text-[#ffb4ab]"
+                        id="generation-prompt-length-error"
+                        role="alert"
+                      >
+                        {PROMPT_TOO_LONG_MESSAGE}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold text-[#e5e2e1]">
+                      Style intent
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#849396]">
+                      Optional style direction. Applied to your prompt when you
+                      generate.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {STYLE_INTENTS.map((styleIntent) => {
+                        const isSelected =
+                          styleIntent.id === selectedStyleIntentId;
+
+                        return (
+                          <button
+                            aria-pressed={isSelected}
+                            className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
+                              isSelected
+                                ? "border-[#00e5ff]/70 bg-[#00e5ff]/15 text-[#c3f5ff]"
+                                : "border-white/[0.12] bg-white/[0.03] text-[#bac9cc] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 hover:text-[#c3f5ff]"
+                            }`}
+                            disabled={isGenerating}
+                            key={styleIntent.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedStyleIntentId((current) =>
+                                current === styleIntent.id
+                                  ? null
+                                  : styleIntent.id,
+                              );
+                              setGenerationError(null);
+                            }}
+                          >
+                            {styleIntent.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
