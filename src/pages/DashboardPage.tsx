@@ -929,6 +929,11 @@ export function DashboardPage() {
   }, [activeFigure, loadBillingSummary, loadFigures]);
 
   const pendingOrder = summary?.pendingOrders[0] ?? null;
+  const isPendingOrderWaitingForAdminVerification =
+    pendingOrder?.paymentVerification === "user_reported_transferred" ||
+    pendingOrder?.paymentVerification === "pending_admin_verification";
+  const pendingOrderTransferContent =
+    pendingOrder?.bankTransferContent ?? pendingOrder?.orderCode;
   const renewalDate = formatDate(summary?.plan.currentPeriodEnd);
   const latestPayment = summary?.latestPayment;
   const creditBalance = summary?.credits.balance ?? 0;
@@ -1096,20 +1101,31 @@ export function DashboardPage() {
                   <CalendarClock className="mt-0.5 h-5 w-5 shrink-0" />
                   <div>
                     <h2 className="text-sm font-bold text-white">
-                      Payment pending for {getProductName(pendingOrder)}.
+                      {isPendingOrderWaitingForAdminVerification
+                        ? "Waiting for admin verification"
+                        : "Transfer required"}{" "}
+                      for {getProductName(pendingOrder)}.
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-[#ffeac0]/78">
-                      Continue with VietQR checkout from the credits page. No
-                      credits or plan access are granted until admin
-                      verification marks the order paid.
+                      {isPendingOrderWaitingForAdminVerification
+                        ? "Your transfer report is recorded. Credits or plan access remain unchanged until admin verification marks the order paid."
+                        : "Open checkout and transfer manually with VietQR. No credits or plan access are granted until admin verification marks the order paid."}
                     </p>
+                    {pendingOrderTransferContent ? (
+                      <p className="mt-2 break-all font-mono text-xs font-bold text-[#ffeac0]">
+                        Transfer content / order code:{" "}
+                        {pendingOrderTransferContent}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <Link
                   className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
-                  to="/credits"
+                  to={`/credits/checkout/${pendingOrder.id}`}
                 >
-                  Continue payment
+                  {isPendingOrderWaitingForAdminVerification
+                    ? "View verification status"
+                    : "Continue checkout"}
                 </Link>
               </div>
             </section>

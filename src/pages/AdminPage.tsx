@@ -1,5 +1,6 @@
 import {
   FormEvent,
+  KeyboardEvent as ReactKeyboardEvent,
   ReactNode,
   useCallback,
   useEffect,
@@ -602,7 +603,7 @@ function OrdersTable({
                       {markingOrderId === order.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : null}
-                      Mark paid
+                      Verify transfer and mark paid
                     </button>
                   ) : (
                     <span className="text-xs font-semibold text-[#849396]">
@@ -930,21 +931,70 @@ function ManualMarkPaidDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
+  const isSubmittingRef = useRef(isSubmitting);
+  const onCloseRef = useRef(onClose);
+  const orderId = order?.id;
+
   useEffect(() => {
-    if (!order) {
+    isSubmittingRef.current = isSubmitting;
+  }, [isSubmitting]);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!orderId) {
       return undefined;
     }
 
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+    const focusTimeoutId = window.setTimeout(
+      () => cancelButtonRef.current?.focus(),
+      0,
+    );
+
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isSubmitting) {
-        onClose();
+      if (event.key === "Escape" && !isSubmittingRef.current) {
+        onCloseRef.current();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSubmitting, onClose, order]);
+    return () => {
+      window.clearTimeout(focusTimeoutId);
+      window.removeEventListener("keydown", handleKeyDown);
+      previousActiveElement?.focus();
+    };
+  }, [orderId]);
+
+  function trapFocus(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+
+    if (!focusableElements?.length) {
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    } else if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
 
   if (!order) {
     return null;
@@ -954,18 +1004,28 @@ function ManualMarkPaidDialog({
 
   return (
     <div
-      aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 px-4 py-8 backdrop-blur-sm"
-      role="dialog"
+      role="presentation"
     >
-      <div className="w-full max-w-lg rounded-lg border border-[#f3bf26]/35 bg-[#1c1b1b] shadow-[0_0_56px_rgba(243,191,38,0.14)]">
+      <div
+        aria-describedby="manual-mark-paid-description"
+        aria-labelledby="manual-mark-paid-title"
+        aria-modal="true"
+        className="max-h-[calc(100vh-4rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-[#f3bf26]/35 bg-[#1c1b1b] shadow-[0_0_56px_rgba(243,191,38,0.14)]"
+        onKeyDown={trapFocus}
+        ref={dialogRef}
+        role="dialog"
+      >
         <div className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-5">
           <div>
             <p className="text-xs font-bold uppercase text-[#f3bf26]">
-              Development action
+              Manual verification
             </p>
-            <h2 className="mt-2 font-display text-2xl font-semibold text-white">
-              Mark this VietQR order paid?
+            <h2
+              className="mt-2 font-display text-2xl font-semibold text-white"
+              id="manual-mark-paid-title"
+            >
+              Verify this transfer and mark it paid?
             </h2>
           </div>
           <button
@@ -979,38 +1039,69 @@ function ManualMarkPaidDialog({
           </button>
         </div>
         <div className="space-y-5 p-5">
-          <p className="text-sm leading-6 text-[#bac9cc]">
-            Confirm the bank transfer amount and transfer content match before
-            continuing. This uses the same backend grant path as a verified
-            payment.
+          <p
+            className="text-sm leading-6 text-[#bac9cc]"
+            id="manual-mark-paid-description"
+          >
+            Check the external bank app or statement first. This app does not
+            reconcile bank transfers automatically. Confirm the transfer
+            amount and transfer content match before continuing.
           </p>
           <dl className="grid gap-3 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-[#849396]">Order</dt>
-              <dd className="font-mono font-bold text-white">{shortId(order.id)}</dd>
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">Order ID</dt>
+              <dd className="break-all font-mono font-bold text-white sm:text-right">
+                {shortId(order.id)}
+              </dd>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-[#849396]">User</dt>
-              <dd className="max-w-[260px] truncate font-bold text-white">
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">Customer</dt>
+              <dd className="break-words font-bold text-white sm:text-right">
                 {getUserLabel(order.user)}
               </dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
               <dt className="text-[#849396]">Product</dt>
-              <dd className="max-w-[260px] truncate font-bold text-white">
+              <dd className="break-words font-bold text-white sm:text-right">
                 {product?.productName ?? "Unknown product"}
               </dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
               <dt className="text-[#849396]">Amount</dt>
-              <dd className="font-bold text-white">
+              <dd className="font-bold text-white sm:text-right">
                 {formatCurrency(order.totalAmount, order.currency)}
               </dd>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-[#849396]">Transfer content</dt>
-              <dd className="max-w-[260px] truncate font-mono font-bold text-white">
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">
+                Transfer content / order code
+              </dt>
+              <dd className="break-all font-mono font-bold text-[#ffeac0] sm:text-right">
                 {getOrderTransferContent(order)}
+              </dd>
+            </div>
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">Payment method</dt>
+              <dd className="font-bold text-white sm:text-right">
+                {titleCase(getOrderPaymentMethod(order))}
+              </dd>
+            </div>
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">Verification state</dt>
+              <dd className="font-bold text-white sm:text-right">
+                {titleCase(order.paymentVerification ?? "awaiting_transfer")}
+              </dd>
+            </div>
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">Order status</dt>
+              <dd className="font-bold text-white sm:text-right">
+                {titleCase(order.status)}
+              </dd>
+            </div>
+            <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
+              <dt className="text-[#849396]">Expires</dt>
+              <dd className="font-bold text-white sm:text-right">
+                {formatDateTime(order.expiresAt)}
               </dd>
             </div>
           </dl>
@@ -1021,6 +1112,7 @@ function ManualMarkPaidDialog({
             disabled={isSubmitting}
             type="button"
             onClick={onClose}
+            ref={cancelButtonRef}
           >
             Cancel
           </button>
@@ -1031,7 +1123,7 @@ function ManualMarkPaidDialog({
             onClick={onConfirm}
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Confirm mark-paid
+            Confirm verified transfer
           </button>
         </div>
       </div>
@@ -1390,7 +1482,7 @@ export function AdminPage() {
           <AdminPanel>
             <PanelHeader
               title="Recent Orders"
-              description={`${ordersPage.total} matching orders. Manual mark-paid appears only for eligible pending VietQR transfers.`}
+              description={`${ordersPage.total} matching orders. Manual mark-paid requires checking the bank app or statement outside this system. This app does not reconcile transfers automatically.`}
               action={
                 <div className="flex flex-wrap gap-3">
                   <SectionSelect
