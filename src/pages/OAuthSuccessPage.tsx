@@ -14,6 +14,8 @@ import {
 } from "../features/auth/auth.redirects";
 
 const MIN_SUCCESS_DURATION_MS = 2000;
+const OAUTH_SESSION_RESTORE_ERROR_URL =
+  "/auth/error?code=OAUTH_SESSION_RESTORE_FAILED&message=Sign-in%20session%20could%20not%20be%20restored";
 
 const statusLabels = [
   "Verifying session",
@@ -64,7 +66,7 @@ export function OAuthSuccessPage() {
       .catch(() => {
         setFailed(true);
         window.setTimeout(() => {
-          navigate("/auth/error?message=OAuth%20session%20is%20invalid", {
+          navigate(OAUTH_SESSION_RESTORE_ERROR_URL, {
             replace: true,
           });
         }, 700);

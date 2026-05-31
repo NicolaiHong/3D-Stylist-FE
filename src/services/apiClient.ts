@@ -22,6 +22,13 @@ interface RefreshResponse {
 
 let refreshSessionPromise: Promise<RefreshResponse> | null = null;
 
+const AUTOMATIC_REFRESH_EXCLUDED_AUTH_PATHS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh",
+  "/auth/refresh-token",
+];
+
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
   withCredentials: true,
@@ -52,6 +59,20 @@ export function resolveApiAssetUrl(value: string | null | undefined): string | n
 
 function getRefreshedAccessToken(response: RefreshResponse): string | undefined {
   return response.data?.accessToken ?? response.accessToken;
+}
+
+function shouldSkipAutomaticRefresh(url?: string): boolean {
+  if (!url) {
+    return false;
+  }
+
+  const path = url.split(/[?#]/, 1)[0];
+
+  return (
+    AUTOMATIC_REFRESH_EXCLUDED_AUTH_PATHS.some((excludedPath) =>
+      path.endsWith(excludedPath),
+    ) || path.includes("/auth/oauth/")
+  );
 }
 
 export async function refreshAuthSession(): Promise<RefreshResponse> {
@@ -103,7 +124,8 @@ apiClient.interceptors.response.use(
       error.response?.status !== 401 ||
       !originalRequest ||
       originalRequest._retry ||
-      originalRequest.url?.includes("/auth/refresh")
+      shouldSkipAutomaticRefresh(originalRequest.url) ||
+      !tokenStorage.getAccessToken()
     ) {
       return Promise.reject(error);
     }
