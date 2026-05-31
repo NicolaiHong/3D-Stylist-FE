@@ -13,15 +13,45 @@ import { authApi } from "../features/auth/auth.api";
 const facebookEmailSuggestions = [
   {
     icon: RefreshCw,
-    text: "Reconnect Facebook and approve the email permission again.",
+    text: "Reconnect Facebook and approve the email permission if you used Facebook.",
   },
   {
     icon: UserRound,
-    text: "Try another Facebook account that can share a verified email.",
+    text: "Try another provider account that can share a verified email.",
   },
   {
     icon: CheckCircle2,
     text: "Continue with Google or use email/password login.",
+  },
+];
+
+const sessionRestoreSuggestions = [
+  {
+    icon: RefreshCw,
+    text: "Return to login and start a fresh sign-in attempt.",
+  },
+  {
+    icon: UserRound,
+    text: "Check whether your browser blocks cross-site cookies, then retry.",
+  },
+  {
+    icon: CheckCircle2,
+    text: "Use email/password login if browser privacy settings prevent session restore.",
+  },
+];
+
+const genericProviderSuggestions = [
+  {
+    icon: RefreshCw,
+    text: "Return to login and try the provider again.",
+  },
+  {
+    icon: UserRound,
+    text: "Continue with Google if another provider could not complete sign in.",
+  },
+  {
+    icon: CheckCircle2,
+    text: "Use email/password login to continue.",
   },
 ];
 
@@ -30,16 +60,36 @@ export function OAuthErrorPage() {
   const code = searchParams.get("code");
   const message =
     searchParams.get("message") || "The provider could not complete sign in.";
-  const isFacebookMissingEmail =
+  const isEmailRequired =
     code === "OAUTH_EMAIL_REQUIRED" ||
     message.toLowerCase().includes("did not return an email");
+  const isSessionRestoreFailure = code === "OAUTH_SESSION_RESTORE_FAILED";
 
-  const title = isFacebookMissingEmail
-    ? "Facebook sign-in could not be completed"
-    : "Sign-in could not be completed";
-  const description = isFacebookMissingEmail
-    ? "Facebook did not provide an email address for this account."
-    : "The provider could not complete sign in. Please try another sign-in method.";
+  const title = isEmailRequired
+    ? "Email permission is required"
+    : isSessionRestoreFailure
+      ? "Sign-in session could not be restored"
+      : "Sign-in could not be completed";
+  const description = isEmailRequired
+    ? "Your provider did not share an email address for this account."
+    : isSessionRestoreFailure
+      ? "Your provider sign-in completed, but this browser could not restore your 3D Stylist session."
+      : "The provider could not complete sign in. Please try another sign-in method.";
+  const alertTitle = isEmailRequired
+    ? "An email address is required."
+    : isSessionRestoreFailure
+      ? "Session handoff was interrupted."
+      : "The sign-in attempt was not completed.";
+  const alertDescription = isEmailRequired
+    ? "3D Stylist needs an email address to connect your account safely."
+    : isSessionRestoreFailure
+      ? "Your browser may have blocked or cleared the secure sign-in cookie. Return to login and try again."
+      : "Return to login and retry the provider, or choose another sign-in method.";
+  const suggestions = isEmailRequired
+    ? facebookEmailSuggestions
+    : isSessionRestoreFailure
+      ? sessionRestoreSuggestions
+      : genericProviderSuggestions;
 
   const continueWithGoogle = () => {
     window.location.href = authApi.getOAuthUrl("google");
@@ -60,10 +110,10 @@ export function OAuthErrorPage() {
           </span>
           <div>
             <p className="text-sm font-semibold text-[#ffe8b8]">
-              Your account is safe.
+              {alertTitle}
             </p>
             <p className="mt-1 text-sm leading-6 text-slate-300">
-              We need an email address to connect a secure 3D Stylist account.
+              {alertDescription}
             </p>
           </div>
         </div>
@@ -74,7 +124,7 @@ export function OAuthErrorPage() {
           What you can do next
         </p>
         <ul className="mt-3 space-y-3">
-          {facebookEmailSuggestions.map(({ icon: Icon, text }) => (
+          {suggestions.map(({ icon: Icon, text }) => (
             <li key={text} className="flex gap-3 text-sm leading-6 text-slate-300">
               <Icon className="mt-1 h-4 w-4 shrink-0 text-[#f0b44c]" />
               <span>{text}</span>
