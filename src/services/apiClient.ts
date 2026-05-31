@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { env } from "../config/env";
+import { captureApiClientError } from "../config/sentry";
 import { tokenStorage } from "./tokenStorage";
 
 type RetryRequestConfig = InternalAxiosRequestConfig & {
@@ -75,6 +76,33 @@ function shouldSkipAutomaticRefresh(url?: string): boolean {
   );
 }
 
+function getSafeApiPath(url?: string): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+
+  try {
+    return new URL(url, env.apiBaseUrl).pathname;
+  } catch {
+    return url.split(/[?#]/, 1)[0];
+  }
+}
+
+function captureUnexpectedApiError(error: AxiosError): void {
+  const status = error.response?.status;
+
+  if (error.code === "ERR_CANCELED" || (status !== undefined && status < 500)) {
+    return;
+  }
+
+  captureApiClientError({
+    errorCode: error.code,
+    method: error.config?.method?.toUpperCase(),
+    path: getSafeApiPath(error.config?.url),
+    status,
+  });
+}
+
 export async function refreshAuthSession(): Promise<RefreshResponse> {
   if (!refreshSessionPromise) {
     refreshSessionPromise = axios
@@ -92,6 +120,13 @@ export async function refreshAuthSession(): Promise<RefreshResponse> {
 
         tokenStorage.setAccessToken(accessToken);
         return data;
+      })
+      .catch((error: unknown) => {
+        if (axios.isAxiosError(error)) {
+          captureUnexpectedApiError(error);
+        }
+
+        throw error;
       })
       .finally(() => {
         refreshSessionPromise = null;
@@ -118,6 +153,8 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    captureUnexpectedApiError(error);
+
     const originalRequest = error.config as RetryRequestConfig | undefined;
 
     if (
