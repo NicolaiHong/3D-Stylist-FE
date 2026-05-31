@@ -57,6 +57,27 @@ function getOrderProductName(order: BillingOrder) {
   return order.items[0]?.productName ?? "Billing product";
 }
 
+function isWaitingForAdminVerification(order: BillingOrder) {
+  return (
+    order.paymentVerification === "user_reported_transferred" ||
+    order.paymentVerification === "pending_admin_verification"
+  );
+}
+
+function getPendingOrderCopy(order: BillingOrder) {
+  if (isWaitingForAdminVerification(order)) {
+    return {
+      title: "Waiting for admin verification",
+      guidance: "Your transfer report is recorded. Access has not changed yet.",
+    };
+  }
+
+  return {
+    title: "Transfer required",
+    guidance: "Open checkout to scan VietQR or copy bank details.",
+  };
+}
+
 function getPlanBenefit(product: BillingProduct) {
   if (product.planCode === "pro") {
     return "Priority render and high quality texture";
@@ -604,6 +625,10 @@ export function CreditsPage() {
                       ? "Monthly plan"
                       : `${selectedProduct.credits ?? 0} HD credits`}
                   </p>
+                  <p className="mt-2 max-w-2xl text-xs font-semibold leading-5 text-[#c3f5ff]">
+                    Checkout creates a manual VietQR order. Access does not
+                    change until admin verification.
+                  </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <button
@@ -769,11 +794,11 @@ export function CreditsPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="font-display text-2xl font-semibold text-white">
-                      Pending verification
+                      Pending VietQR orders
                     </h2>
                     <p className="mt-1 text-sm text-[#bac9cc]">
-                      Resume a VietQR order or wait for admin mark-paid after
-                      transfer.
+                      Resume a manual transfer or monitor admin verification
+                      after reporting it.
                     </p>
                   </div>
                   <button
@@ -798,15 +823,20 @@ export function CreditsPage() {
                   </div>
                 ) : (
                   <div className="grid gap-4">
-                    {pendingOrders.map((order) => (
-                      <article
-                        className="rounded-lg border border-[#f3bf26]/30 bg-[#201f1f] p-4"
-                        key={order.id}
-                      >
+                    {pendingOrders.map((order) => {
+                      const pendingCopy = getPendingOrderCopy(order);
+                      const transferContent =
+                        order.bankTransferContent ?? order.orderCode;
+
+                      return (
+                        <article
+                          className="rounded-lg border border-[#f3bf26]/30 bg-[#201f1f] p-4"
+                          key={order.id}
+                        >
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                           <div>
                             <span className="inline-flex rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#ffeac0]">
-                              Waiting for verification
+                              {pendingCopy.title}
                             </span>
                             <h3 className="mt-3 font-display text-xl font-semibold text-white">
                               {getOrderProductName(order)}
@@ -818,9 +848,12 @@ export function CreditsPage() {
                               )}
                               {" · "}Expires {formatDateTime(order.expiresAt)}
                             </p>
-                            {order.bankTransferContent ? (
-                              <p className="mt-2 font-mono text-xs font-bold text-[#ffeac0]">
-                                {order.bankTransferContent}
+                            <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                              {pendingCopy.guidance}
+                            </p>
+                            {transferContent ? (
+                              <p className="mt-2 break-all font-mono text-xs font-bold text-[#ffeac0]">
+                                Transfer content / order code: {transferContent}
                               </p>
                             ) : null}
                           </div>
@@ -835,8 +868,9 @@ export function CreditsPage() {
                             <ArrowRight className="h-4 w-4" />
                           </button>
                         </div>
-                      </article>
-                    ))}
+                        </article>
+                      );
+                    })}
                   </div>
                 )}
               </section>

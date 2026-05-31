@@ -24,37 +24,37 @@ interface PaymentResultCopy {
 
 const resultCopy: Record<PaymentResultStatus, PaymentResultCopy> = {
   success: {
-    title: "Payment result confirmed",
-    eyebrow: "Gateway return",
+    title: "Sandbox gateway result recorded",
+    eyebrow: "Sandbox gateway return",
     description:
-      "The backend accepted the gateway return and recorded the payment result. Open credits to refresh your current billing state.",
+      "The sandbox gateway return was recorded. Open credits to refresh your current backend-owned billing state.",
     icon: CheckCircle2,
     panelClassName: "border-[#00e5ff]/30 bg-[#00e5ff]/10 text-[#c3f5ff]",
     iconClassName: "border-[#00e5ff]/35 bg-[#00e5ff]/12 text-[#00e5ff]",
   },
   failed: {
     title: "Payment was not completed",
-    eyebrow: "Payment failed",
+    eyebrow: "Sandbox gateway return",
     description:
-      "The gateway returned a failed payment result. You can return to credits or resume this checkout if the order is still valid.",
+      "The sandbox gateway returned a failed payment result. You can return to credits or view this checkout if the order is still valid.",
     icon: XCircle,
     panelClassName: "border-[#ffb4ab]/30 bg-[#93000a]/25 text-[#ffdad6]",
     iconClassName: "border-[#ffb4ab]/35 bg-[#93000a]/25 text-[#ffb4ab]",
   },
   cancelled: {
     title: "Payment was cancelled",
-    eyebrow: "Payment cancelled",
+    eyebrow: "Sandbox gateway return",
     description:
-      "The gateway reported a cancelled payment. You can return to credits or resume this checkout if the order is still valid.",
+      "The sandbox gateway returned a cancelled result. You can return to credits or view this checkout when you are ready.",
     icon: Clock3,
     panelClassName: "border-[#f3bf26]/30 bg-[#f3bf26]/10 text-[#ffeac0]",
     iconClassName: "border-[#f3bf26]/35 bg-[#f3bf26]/12 text-[#f3bf26]",
   },
   unknown: {
     title: "Payment result received",
-    eyebrow: "Review needed",
+    eyebrow: "Sandbox gateway return",
     description:
-      "The payment return used a status this app does not recognize. Check your credits page before starting another checkout.",
+      "The sandbox gateway return used a status this app does not recognize. Check your credits page before starting another checkout.",
     icon: AlertTriangle,
     panelClassName: "border-[#3b494c] bg-[#1c1b1b] text-[#bac9cc]",
     iconClassName: "border-[#3b494c] bg-[#0e0e0e] text-[#bac9cc]",
@@ -80,8 +80,9 @@ export function PaymentResultPage() {
   const status = normalizeStatus(rawStatus);
   const copy = resultCopy[status];
   const Icon = copy.icon;
-  const canResumeCheckout =
-    Boolean(orderId) && (status === "failed" || status === "cancelled");
+  const canViewOrderCheckout =
+    Boolean(orderId) &&
+    (status === "failed" || status === "cancelled" || status === "unknown");
 
   return (
     <DashboardShell>
@@ -156,13 +157,13 @@ export function PaymentResultPage() {
               Back to credits
               <ArrowRight className="h-4 w-4" />
             </Link>
-            {canResumeCheckout && orderId ? (
+            {canViewOrderCheckout && orderId ? (
               <Link
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-5 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                 to={`/credits/checkout/${orderId}`}
               >
                 <RotateCcw className="h-4 w-4" />
-                Resume checkout
+                View order checkout
               </Link>
             ) : null}
             {status === "success" ? (

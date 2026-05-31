@@ -98,7 +98,7 @@ function getStatusDescription(order: BillingOrder | null) {
   }
 
   if (order.status === "paid") {
-    return "Your payment has been verified by the backend. Billing access is now confirmed.";
+    return "Your transfer has been verified and marked paid. Billing access is now confirmed.";
   }
 
   if (order.status === "expired") {
@@ -340,7 +340,7 @@ function BankTransferDetails({
             copyLabel="Copy content"
             isEmphasized
             isMono
-            label="Transfer content"
+            label="Transfer content / order code"
             value={transferContent}
             onCopy={() => onCopy(getTransferContent(payment, order), "transfer")}
           />
@@ -445,6 +445,13 @@ function CheckoutStatusPanel({
           </p>
         </div>
       </div>
+
+      {!isPaid && !isTerminal ? (
+        <p className="mt-4 text-xs font-semibold leading-5 text-[#ffeac0]">
+          This only reports your transfer. Credits or plan access start after
+          admin verification. This app does not auto-detect bank transfers.
+        </p>
+      ) : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
         <button
@@ -604,7 +611,7 @@ export function CheckoutPage() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#c3f5ff]">
                 <LockKeyhole className="h-4 w-4" />
-                Secure VietQR checkout
+                Manual VietQR checkout
               </span>
               <button
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
