@@ -5,6 +5,7 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { OAuthSuccessPage } from "../pages/OAuthSuccessPage";
 import { OAuthErrorPage } from "../pages/OAuthErrorPage";
 import { DashboardPage } from "../pages/DashboardPage";
+import { StudioPage } from "../pages/StudioPage";
 import { CreditsPage } from "../pages/CreditsPage";
 import { CheckoutPage } from "../pages/CheckoutPage";
 import { PaymentResultPage } from "../pages/PaymentResultPage";
@@ -28,6 +29,7 @@ export function AppRoutes() {
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/studio" element={<StudioPage />} />
         <Route path="/credits" element={<CreditsPage />} />
         <Route path="/credits/checkout" element={<CheckoutPage />} />
         <Route path="/credits/checkout/:orderId" element={<CheckoutPage />} />

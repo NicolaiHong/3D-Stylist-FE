@@ -30,7 +30,7 @@ interface NavigationItem {
 const navigationItems: NavigationItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Outfits", icon: Shirt, disabled: true },
-  { label: "Studio", icon: Sparkles, disabled: true },
+  { label: "Studio", to: "/studio", icon: Sparkles },
   { label: "Credits", to: "/credits", icon: Database },
   { label: "Profile", to: "/profile", icon: UserRound },
   { label: "Admin", to: "/admin", icon: ShieldCheck, adminOnly: true },

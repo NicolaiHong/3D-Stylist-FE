@@ -350,6 +350,32 @@ input {
   opacity: 1;
 }
 
+.generation-result-arrow {
+  animation: generation-result-arrow 1.4s ease-in-out infinite;
+}
+
+.studio-grid {
+  background:
+    radial-gradient(circle, rgba(0, 229, 255, 0.12) 1px, transparent 1.4px),
+    radial-gradient(circle at 50% 42%, rgba(0, 229, 255, 0.08), transparent 26rem),
+    #121212;
+  background-size:
+    28px 28px,
+    auto,
+    auto;
+}
+
+@keyframes generation-result-arrow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(0.3rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .credits-product-card {
     transition:
@@ -360,6 +386,10 @@ input {
   .credits-product-card:hover,
   .credits-product-card:focus-within {
     transform: none;
+  }
+
+  .generation-result-arrow {
+    animation: none;
   }
 }
 

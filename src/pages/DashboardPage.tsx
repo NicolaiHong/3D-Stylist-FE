@@ -9,7 +9,9 @@ import {
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
+  ArrowDown,
   ArrowRight,
+  Box,
   CalendarClock,
   CheckCircle2,
   Clock3,
@@ -43,11 +45,11 @@ import { getApiErrorCode, getApiErrorMessage } from "../services/apiClient";
 
 const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
-const MAX_GENERATION_PROMPT_LENGTH = 1000;
+const MAX_GENERATION_PROMPT_LENGTH = 600;
 const INSUFFICIENT_CREDITS_MESSAGE =
   "You’ve used all your generation credits. Buy more credits or upgrade your plan to continue.";
 const PROMPT_TOO_LONG_MESSAGE =
-  "Your prompt plus style direction is too long. Shorten the prompt or remove the style direction.";
+  "Prompt plus setup details must be 600 characters or fewer for real 3D generation.";
 const STYLE_INTENTS = [
   {
     id: "minimal-luxury",
@@ -89,6 +91,32 @@ const STYLE_INTENTS = [
 type FigureAssetKind = "image" | "model";
 type StyleIntent = (typeof STYLE_INTENTS)[number];
 type StyleIntentId = StyleIntent["id"];
+type ModelSource = "default" | "personal";
+type ModelGender = "male" | "female" | "unisex";
+type GenerationOutputType = "2d" | "3d";
+
+const MODEL_GENDERS: Array<{ id: ModelGender; label: string }> = [
+  { id: "male", label: "Male" },
+  { id: "female", label: "Female" },
+  { id: "unisex", label: "Unisex" },
+];
+
+const GENERATION_OUTPUT_TYPES: Array<{
+  id: GenerationOutputType;
+  label: string;
+  helper: string;
+}> = [
+  {
+    id: "2d",
+    label: "2D Preview",
+    helper: "Generate a visual fashion concept preview.",
+  },
+  {
+    id: "3d",
+    label: "3D GLB Model",
+    helper: "Generate or preview an interactive 3D model when available.",
+  },
+];
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -208,19 +236,22 @@ function getFigureAssetAvailability(figure: FigureDto) {
   return availability;
 }
 
-function getStyleDirectionSuffix(styleIntent: StyleIntent | undefined) {
-  if (!styleIntent) {
-    return "";
-  }
-
-  return `\n\nStyle direction: ${styleIntent.promptText}.`;
-}
-
 function composeGenerationPrompt(
   prompt: string,
   styleIntent: StyleIntent | undefined,
+  modelGender: ModelGender,
+  outputType: GenerationOutputType,
 ) {
-  return `${prompt}${getStyleDirectionSuffix(styleIntent)}`;
+  const details = [
+    styleIntent ? `Style direction: ${styleIntent.promptText}.` : null,
+    "Model source: default studio mannequin.",
+    `Model gender: ${modelGender}.`,
+    `Output request: ${
+      outputType === "3d" ? "3D GLB model preview" : "2D fashion preview"
+    }.`,
+  ].filter((detail): detail is string => Boolean(detail));
+
+  return `${prompt}\n\n${details.join("\n")}`;
 }
 
 function getFigureAssetKey(figure: FigureDto, kind: FigureAssetKind) {
@@ -750,6 +781,327 @@ function FigureEmptyState() {
   );
 }
 
+function GenerationResultNotice({ figure }: { figure: FigureDto }) {
+  const isFailed = figure.status === "failed" || figure.status === "canceled";
+  const message =
+    figure.status === "success"
+      ? "Generation complete. Preview it in Studio."
+      : isFailed
+        ? "Generation failed. Try a shorter prompt or generate again."
+        : "Generation submitted. Result will appear in Studio when ready.";
+  const actionLabel = isPollingStatus(figure.status)
+    ? "Open Studio status"
+    : "Open Studio";
+
+  return (
+    <Link
+      className={`group flex flex-col gap-3 rounded-lg border p-4 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] sm:flex-row sm:items-center sm:justify-between ${
+        isFailed
+          ? "border-[#ffb4ab]/30 bg-[#93000a]/20"
+          : "border-[#2cebcf]/35 bg-[#2cebcf]/10 hover:border-[#00e5ff]/65 hover:bg-[#00e5ff]/12"
+      }`}
+      to={`/studio?figureId=${encodeURIComponent(figure.id)}`}
+    >
+      <span className="flex gap-3">
+        {isFailed ? (
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#ffb4ab]" />
+        ) : (
+          <ArrowDown className="generation-result-arrow mt-0.5 h-5 w-5 shrink-0 text-[#2cebcf]" />
+        )}
+        <span>
+          <span className="block text-sm font-bold text-white">{message}</span>
+          <span className="mt-1 block text-xs leading-5 text-[#bac9cc]">
+            The backend remains the source of truth for status and ready assets.
+          </span>
+        </span>
+      </span>
+      <span className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition group-hover:bg-[#00e5ff]/10">
+        {actionLabel}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </span>
+    </Link>
+  );
+}
+
+function GenerationSetupDialog({
+  composedPromptCharacterCount,
+  creditBalance,
+  estimatedBalanceAfterSubmit,
+  isGenerating,
+  isPromptTooLong,
+  modelGender,
+  modelSource,
+  outputType,
+  promptCharacterCount,
+  selectedStyleIntent,
+  onClose,
+  onGenerate,
+  onModelGenderChange,
+  onOutputTypeChange,
+}: {
+  composedPromptCharacterCount: number;
+  creditBalance: number;
+  estimatedBalanceAfterSubmit: number;
+  isGenerating: boolean;
+  isPromptTooLong: boolean;
+  modelGender: ModelGender;
+  modelSource: ModelSource;
+  outputType: GenerationOutputType;
+  promptCharacterCount: number;
+  selectedStyleIntent: StyleIntent | undefined;
+  onClose: () => void;
+  onGenerate: () => void;
+  onModelGenderChange: (gender: ModelGender) => void;
+  onOutputTypeChange: (outputType: GenerationOutputType) => void;
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const outputTypeLabel =
+    GENERATION_OUTPUT_TYPES.find((option) => option.id === outputType)?.label ??
+    "2D Preview";
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !isGenerating) {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    closeButtonRef.current?.focus();
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isGenerating, onClose]);
+
+  return (
+    <div
+      aria-labelledby="generation-setup-dialog-title"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      role="dialog"
+    >
+      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-lg border border-[#00e5ff]/30 bg-[#141313] shadow-2xl shadow-[#00e5ff]/10">
+        <header className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-5 sm:p-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
+              Studio request
+            </p>
+            <h2
+              className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl"
+              id="generation-setup-dialog-title"
+            >
+              Generation setup
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#bac9cc]">
+              Confirm the request details before the backend consumes one
+              generation credit.
+            </p>
+          </div>
+          <button
+            aria-label="Close generation setup"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isGenerating}
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+
+        <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="space-y-6">
+            <section>
+              <h3 className="text-sm font-bold text-white">A. Model source</h3>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <button
+                  aria-pressed={modelSource === "default"}
+                  className="rounded-lg border border-[#00e5ff]/65 bg-[#00e5ff]/10 p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  type="button"
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold text-[#c3f5ff]">
+                    <Box className="h-4 w-4" />
+                    Default model
+                  </span>
+                  <span className="mt-2 block text-xs leading-5 text-[#bac9cc]">
+                    Use a neutral studio mannequin for the generated fashion
+                    concept.
+                  </span>
+                </button>
+                <button
+                  aria-disabled="true"
+                  className="cursor-not-allowed rounded-lg border border-white/[0.08] bg-white/[0.025] p-4 text-left opacity-70"
+                  disabled
+                  type="button"
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold text-[#bac9cc]">
+                    <UserRound className="h-4 w-4" />
+                    My uploaded image
+                  </span>
+                  <span className="mt-2 block text-xs leading-5 text-[#849396]">
+                    Use your uploaded profile/selfie image as reference.
+                  </span>
+                  <span className="mt-2 block text-xs font-semibold leading-5 text-[#ffeac0]">
+                    Personal image generation is coming soon. Use the default
+                    model for now.
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            {modelSource === "default" ? (
+              <section>
+                <h3 className="text-sm font-bold text-white">
+                  B. Default model gender
+                </h3>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {MODEL_GENDERS.map((gender) => {
+                    const isSelected = gender.id === modelGender;
+
+                    return (
+                      <button
+                        aria-pressed={isSelected}
+                        className={`min-h-11 rounded-md border px-3 py-2 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                          isSelected
+                            ? "border-[#00e5ff]/65 bg-[#00e5ff]/12 text-[#c3f5ff]"
+                            : "border-white/[0.12] text-[#bac9cc] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10"
+                        }`}
+                        key={gender.id}
+                        type="button"
+                        onClick={() => onModelGenderChange(gender.id)}
+                      >
+                        {gender.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
+
+            <section>
+              <h3 className="text-sm font-bold text-white">C. Output type</h3>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {GENERATION_OUTPUT_TYPES.map((option) => {
+                  const isSelected = option.id === outputType;
+
+                  return (
+                    <button
+                      aria-pressed={isSelected}
+                      className={`rounded-lg border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                        isSelected
+                          ? "border-[#00e5ff]/65 bg-[#00e5ff]/10"
+                          : "border-white/[0.12] bg-white/[0.025] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10"
+                      }`}
+                      key={option.id}
+                      type="button"
+                      onClick={() => onOutputTypeChange(option.id)}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-bold text-[#e5e2e1]">
+                        {option.id === "3d" ? (
+                          <Box className="h-4 w-4" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
+                        {option.label}
+                      </span>
+                      <span className="mt-2 block text-xs leading-5 text-[#849396]">
+                        {option.helper}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+
+          <aside className="h-fit rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4">
+            <h3 className="text-sm font-bold text-white">D. Submit summary</h3>
+            <dl className="mt-4 space-y-3 text-xs">
+              <div className="flex justify-between gap-3">
+                <dt className="text-[#849396]">Generation cost</dt>
+                <dd className="font-bold text-white">1 credit</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-[#849396]">Current balance</dt>
+                <dd className="font-bold text-[#9cf0ff]">{creditBalance}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-[#849396]">Balance after submit</dt>
+                <dd className="font-bold text-[#c9fff6]">
+                  {estimatedBalanceAfterSubmit}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-[#849396]">Prompt length</dt>
+                <dd className="font-bold text-white">{promptCharacterCount}</dd>
+              </div>
+              <div className="border-t border-[#3b494c]/70 pt-3">
+                <dt className="text-[#849396]">Style direction</dt>
+                <dd className="mt-1 font-semibold leading-5 text-[#e5e2e1]">
+                  {selectedStyleIntent?.label ?? "None selected"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[#849396]">Model source</dt>
+                <dd className="mt-1 font-semibold text-[#e5e2e1]">
+                  Default model
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[#849396]">Default model gender</dt>
+                <dd className="mt-1 font-semibold capitalize text-[#e5e2e1]">
+                  {modelGender}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[#849396]">Output type</dt>
+                <dd className="mt-1 font-semibold text-[#e5e2e1]">
+                  {outputTypeLabel}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-4 border-t border-[#3b494c]/70 pt-3 text-xs leading-5 text-[#849396]">
+              Composed request: {composedPromptCharacterCount}/
+              {MAX_GENERATION_PROMPT_LENGTH} chars
+            </p>
+            {isPromptTooLong ? (
+              <p
+                className="mt-3 text-xs font-semibold leading-5 text-[#ffb4ab]"
+                role="alert"
+              >
+                {PROMPT_TOO_LONG_MESSAGE}
+              </p>
+            ) : null}
+          </aside>
+        </div>
+
+        <footer className="flex flex-col-reverse gap-3 border-t border-[#3b494c]/70 p-5 sm:flex-row sm:justify-end sm:p-6">
+          <button
+            className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isGenerating}
+            type="button"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isGenerating || isPromptTooLong}
+            type="button"
+            onClick={onGenerate}
+          >
+            {isGenerating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {isGenerating ? "Submitting" : "Generate now"}
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const user = useAuthStore((state) => state.user);
   const displayName = user?.displayName || user?.fullName || "Creator";
@@ -759,6 +1111,10 @@ export function DashboardPage() {
   const [prompt, setPrompt] = useState("");
   const [selectedStyleIntentId, setSelectedStyleIntentId] =
     useState<StyleIntentId | null>(null);
+  const [modelSource] = useState<ModelSource>("default");
+  const [modelGender, setModelGender] = useState<ModelGender>("unisex");
+  const [outputType, setOutputType] = useState<GenerationOutputType>("2d");
+  const [isGenerationSetupOpen, setIsGenerationSetupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFiguresLoading, setIsFiguresLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -774,6 +1130,7 @@ export function DashboardPage() {
   const isMountedRef = useRef(true);
   const pollingStartedAtRef = useRef<number | null>(null);
   const pollingFigureIdRef = useRef<string | null>(null);
+  const generateButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const loadBillingSummary = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -942,10 +1299,15 @@ export function DashboardPage() {
   const selectedStyleIntent = STYLE_INTENTS.find(
     (styleIntent) => styleIntent.id === selectedStyleIntentId,
   );
-  const styleDirectionCharacterCount =
-    getStyleDirectionSuffix(selectedStyleIntent).length;
-  const composedPromptCharacterCount =
-    trimmedPrompt.length + styleDirectionCharacterCount;
+  const composedPrompt = composeGenerationPrompt(
+    trimmedPrompt,
+    selectedStyleIntent,
+    modelGender,
+    outputType,
+  );
+  const setupDetailsCharacterCount =
+    composedPrompt.length - trimmedPrompt.length;
+  const composedPromptCharacterCount = composedPrompt.length;
   const isComposedPromptTooLong =
     composedPromptCharacterCount > MAX_GENERATION_PROMPT_LENGTH;
   const estimatedBalanceAfterSubmit = Math.max(creditBalance - 1, 0);
@@ -975,6 +1337,11 @@ export function DashboardPage() {
     setSelectedFigure(null);
   }, []);
 
+  const handleCloseGenerationSetup = useCallback(() => {
+    setIsGenerationSetupOpen(false);
+    window.requestAnimationFrame(() => generateButtonRef.current?.focus());
+  }, []);
+
   const handleDownloadFigureAsset = useCallback(
     async (figure: FigureDto, kind: FigureAssetKind) => {
       const url =
@@ -1001,7 +1368,7 @@ export function DashboardPage() {
     [],
   );
 
-  async function handleGenerate(event: FormEvent<HTMLFormElement>) {
+  function handleGenerate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!trimmedPrompt || isGenerating) {
@@ -1018,13 +1385,29 @@ export function DashboardPage() {
       return;
     }
 
-    const composedPrompt = composeGenerationPrompt(
-      trimmedPrompt,
-      selectedStyleIntent,
-    );
+    setGenerationError(null);
+    setIsGenerationSetupOpen(true);
+  }
+
+  async function handleGenerateNow() {
+    if (!trimmedPrompt || isGenerating) {
+      return;
+    }
+
+    if (hasLoadedZeroCredits) {
+      handleCloseGenerationSetup();
+      setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+      return;
+    }
+
+    if (isComposedPromptTooLong) {
+      setGenerationError(PROMPT_TOO_LONG_MESSAGE);
+      return;
+    }
 
     setIsGenerating(true);
     setGenerationError(null);
+    handleCloseGenerationSetup();
 
     try {
       const figure = await figuresApi.generateFigure({
@@ -1241,9 +1624,9 @@ export function DashboardPage() {
                         and mood.
                       </span>
                       <span>
-                        {selectedStyleIntent
-                          ? `${trimmedPrompt.length} prompt chars + ${styleDirectionCharacterCount} style direction chars / ${MAX_GENERATION_PROMPT_LENGTH}`
-                          : `${trimmedPrompt.length}/${MAX_GENERATION_PROMPT_LENGTH}`}
+                        {trimmedPrompt.length} prompt chars +{" "}
+                        {setupDetailsCharacterCount} setup detail chars /{" "}
+                        {MAX_GENERATION_PROMPT_LENGTH}
                       </span>
                     </div>
                     {isComposedPromptTooLong ? (
@@ -1337,6 +1720,7 @@ export function DashboardPage() {
                     <button
                       className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={!canGenerate}
+                      ref={generateButtonRef}
                       type="submit"
                     >
                       {isGenerating ? (
@@ -1357,15 +1741,18 @@ export function DashboardPage() {
                   </div>
 
                   {activeFigure ? (
-                    <ActiveFigurePanel
-                      downloadingAssetKey={downloadingAssetKey}
-                      figure={activeFigure}
-                      isPolling={isPolling}
-                      onDownload={(figure, kind) =>
-                        void handleDownloadFigureAsset(figure, kind)
-                      }
-                      onView={handleViewFigure}
-                    />
+                    <>
+                      <GenerationResultNotice figure={activeFigure} />
+                      <ActiveFigurePanel
+                        downloadingAssetKey={downloadingAssetKey}
+                        figure={activeFigure}
+                        isPolling={isPolling}
+                        onDownload={(figure, kind) =>
+                          void handleDownloadFigureAsset(figure, kind)
+                        }
+                        onView={handleViewFigure}
+                      />
+                    </>
                   ) : null}
                 </form>
               </article>
@@ -1564,6 +1951,30 @@ export function DashboardPage() {
         isOpen={isPaywallOpen}
         onClose={() => setIsPaywallOpen(false)}
       />
+      {isGenerationSetupOpen ? (
+        <GenerationSetupDialog
+          composedPromptCharacterCount={composedPromptCharacterCount}
+          creditBalance={creditBalance}
+          estimatedBalanceAfterSubmit={estimatedBalanceAfterSubmit}
+          isGenerating={isGenerating}
+          isPromptTooLong={isComposedPromptTooLong}
+          modelGender={modelGender}
+          modelSource={modelSource}
+          outputType={outputType}
+          promptCharacterCount={trimmedPrompt.length}
+          selectedStyleIntent={selectedStyleIntent}
+          onClose={handleCloseGenerationSetup}
+          onGenerate={() => void handleGenerateNow()}
+          onModelGenderChange={(gender) => {
+            setModelGender(gender);
+            setGenerationError(null);
+          }}
+          onOutputTypeChange={(selectedOutputType) => {
+            setOutputType(selectedOutputType);
+            setGenerationError(null);
+          }}
+        />
+      ) : null}
       {selectedFigure ? (
         <FigurePreviewDialog
           downloadingAssetKey={downloadingAssetKey}
