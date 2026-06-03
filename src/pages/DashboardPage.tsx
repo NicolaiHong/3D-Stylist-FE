@@ -338,7 +338,7 @@ function FigureStatusBadge({ status }: { status: FigureStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] ${getFigureStatusTone(
+      className={`dashboard-utility-label inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-bold ${getFigureStatusTone(
         status,
       )}`}
     >
@@ -414,7 +414,7 @@ function FigureCard({
           <FigureStatusBadge status={figure.status} />
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
+          <p className="dashboard-utility-label font-bold text-[#849396]">
             {t("dashboard.figure.prompt")}
           </p>
           <p className="mt-1 min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
@@ -422,7 +422,7 @@ function FigureCard({
           </p>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
+          <p className="dashboard-utility-label font-bold text-[#849396]">
             {t("dashboard.figure.created")}
           </p>
           <p className="mt-1 text-xs font-semibold text-[#bac9cc]">
@@ -560,7 +560,7 @@ function FigurePreviewDialog({
       <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-lg border border-[#3b494c] bg-[#141313] shadow-2xl shadow-black/50">
         <div className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-4 sm:p-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
+            <p className="dashboard-utility-label font-bold text-[#00e5ff]">
               {t("dashboard.dialog.generatedResult")}
             </p>
             <h2
@@ -601,7 +601,7 @@ function FigurePreviewDialog({
               ) : null}
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
+              <p className="dashboard-utility-label font-bold text-[#849396]">
                 {t("dashboard.figure.prompt")}
               </p>
               <p className="mt-2 text-sm leading-6 text-[#e5e2e1]">
@@ -691,7 +691,7 @@ function ActiveFigurePanel({
         <div className="flex flex-wrap items-center gap-2">
           <FigureStatusBadge status={figure.status} />
           {isPolling ? (
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#bac9cc]">
+            <span className="dashboard-utility-label inline-flex items-center gap-2 font-bold text-[#bac9cc]">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               {t("dashboard.active.syncing")}
             </span>
@@ -903,16 +903,16 @@ function GenerationSetupDialog({
       <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-lg border border-[#00e5ff]/30 bg-[#141313] shadow-2xl shadow-[#00e5ff]/10">
         <header className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-5 sm:p-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
+            <p className="dashboard-label font-bold text-[#00e5ff]">
               {t("dashboard.setup.eyebrow")}
             </p>
             <h2
-              className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl"
+              className="mt-2 font-display text-[1.6rem] font-semibold leading-[1.16] text-white sm:text-3xl"
               id="generation-setup-dialog-title"
             >
               {t("dashboard.setup.title")}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#bac9cc]">
+            <p className="dashboard-helper-copy mt-2 max-w-2xl text-[#bac9cc]">
               {t("dashboard.setup.body")}
             </p>
           </div>
@@ -1518,13 +1518,13 @@ export function DashboardPage() {
         <div className="mx-auto w-full max-w-[1200px] space-y-6">
           <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
+              <p className="dashboard-label font-bold text-[#00e5ff]">
                 {t("dashboard.header.eyebrow")}
               </p>
-              <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
+              <h1 className="dashboard-page-title mt-3 font-display font-semibold text-white">
                 {t("dashboard.header.greeting", { name: displayName })}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
+              <p className="dashboard-copy mt-3 max-w-2xl text-[#bac9cc]">
                 {t("dashboard.header.body")}
               </p>
             </div>
@@ -1540,10 +1540,10 @@ export function DashboardPage() {
           {pendingOrder ? (
             <section className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-[#ffeac0]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-3">
+                <div className="flex min-w-0 gap-3">
                   <CalendarClock className="mt-0.5 h-5 w-5 shrink-0" />
-                  <div>
-                    <h2 className="text-sm font-bold text-white">
+                  <div className="min-w-0">
+                    <h2 className="text-[0.95rem] font-bold leading-6 text-white">
                       {t("dashboard.pending.forProduct", {
                         state: isPendingOrderWaitingForAdminVerification
                           ? t("dashboard.pending.waiting")
@@ -1551,7 +1551,7 @@ export function DashboardPage() {
                         product: getProductName(pendingOrder),
                       })}
                     </h2>
-                    <p className="mt-1 text-sm leading-6 text-[#ffeac0]/78">
+                    <p className="mt-1 text-[0.95rem] leading-6 text-[#ffeac0]/78">
                       {isPendingOrderWaitingForAdminVerification
                         ? t("dashboard.pending.waitingBody")
                         : t("dashboard.pending.transferBody")}
@@ -1565,7 +1565,7 @@ export function DashboardPage() {
                   </div>
                 </div>
                 <Link
-                  className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                  className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-center text-sm font-bold leading-5 text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96] sm:w-auto"
                   to={`/credits/checkout/${pendingOrder.id}`}
                 >
                   {isPendingOrderWaitingForAdminVerification
@@ -1614,28 +1614,28 @@ export function DashboardPage() {
                   onSubmit={(event) => void handleGenerate(event)}
                 >
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div>
-                      <span className="inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#9cf0ff]">
+                    <div className="min-w-0">
+                      <span className="dashboard-label inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 font-bold text-[#9cf0ff]">
                         <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
                         {t("dashboard.generate.eyebrow")}
                       </span>
-                      <h2 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-tight text-white">
+                      <h2 className="dashboard-generation-title mt-4 max-w-lg font-display font-semibold text-white">
                         {t("dashboard.generate.title")}
                       </h2>
-                      <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc]">
+                      <p className="dashboard-copy mt-3 max-w-[38rem] text-[#bac9cc]">
                         {t("dashboard.generate.body")}
                       </p>
                     </div>
-                    <div className="grid gap-2 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-sm text-[#bac9cc] sm:min-w-[220px]">
+                    <div className="grid w-full gap-2.5 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-[0.9375rem] leading-6 text-[#bac9cc] sm:w-auto sm:min-w-[220px] xl:w-[248px] xl:shrink-0">
                       <div className="flex items-center justify-between gap-4">
-                        <span>{t("dashboard.generate.cost")}</span>
-                        <span className="font-bold text-white">
+                        <span className="min-w-0">{t("dashboard.generate.cost")}</span>
+                        <span className="text-right font-bold text-white">
                           {t("dashboard.generate.oneCredit")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
-                        <span>{t("dashboard.generate.balance")}</span>
-                        <span className="font-bold text-[#9cf0ff]">
+                        <span className="min-w-0">{t("dashboard.generate.balance")}</span>
+                        <span className="text-right font-bold text-[#9cf0ff]">
                           {t("dashboard.generate.credits", {
                             count: creditBalance,
                           })}
@@ -1643,8 +1643,8 @@ export function DashboardPage() {
                       </div>
                       {summary && creditBalance > 0 ? (
                         <div className="flex items-center justify-between gap-4">
-                          <span>{t("dashboard.generate.balanceAfter")}</span>
-                          <span className="font-bold text-[#c9fff6]">
+                          <span className="min-w-0">{t("dashboard.generate.balanceAfter")}</span>
+                          <span className="text-right font-bold text-[#c9fff6]">
                             {t("dashboard.generate.credits", {
                               count: estimatedBalanceAfterSubmit,
                             })}
@@ -1671,7 +1671,7 @@ export function DashboardPage() {
                           : ""
                       }`}
                       aria-invalid={isComposedPromptTooLong}
-                      className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-[0.96875rem] leading-7 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={isGenerating}
                       id="generation-prompt"
                       maxLength={MAX_GENERATION_PROMPT_LENGTH}
@@ -1683,13 +1683,13 @@ export function DashboardPage() {
                       }}
                     />
                     <div
-                      className="mt-2 flex flex-col gap-2 text-xs text-[#849396] sm:flex-row sm:items-center sm:justify-between"
+                      className="mt-2 flex flex-col gap-2 text-[#849396] sm:flex-row sm:items-start sm:justify-between"
                       id="generation-prompt-help"
                     >
-                      <span>
+                      <span className="dashboard-helper-copy min-w-0">
                         {t("dashboard.generate.promptHelp")}
                       </span>
-                      <span>
+                      <span className="dashboard-utility-label font-semibold tabular-nums sm:max-w-[260px] sm:text-right">
                         {t("dashboard.generate.promptCount", {
                           promptCount: trimmedPrompt.length,
                           setupCount: setupDetailsCharacterCount,
@@ -1709,10 +1709,10 @@ export function DashboardPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-bold text-[#e5e2e1]">
+                    <p className="text-[0.95rem] font-bold leading-6 text-[#e5e2e1]">
                       {t("dashboard.generate.styleIntent")}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-[#849396]">
+                    <p className="dashboard-helper-copy mt-1 text-[#849396]">
                       {t("dashboard.generate.styleHelp")}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -1723,7 +1723,7 @@ export function DashboardPage() {
                         return (
                           <button
                             aria-pressed={isSelected}
-                            className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
+                            className={`dashboard-chip inline-flex min-h-10 max-w-full items-center justify-center rounded-md border px-3 py-2 text-left font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
                               isSelected
                                 ? "border-[#00e5ff]/70 bg-[#00e5ff]/15 text-[#c3f5ff]"
                                 : "border-white/[0.12] bg-white/[0.03] text-[#bac9cc] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 hover:text-[#c3f5ff]"
@@ -1783,9 +1783,9 @@ export function DashboardPage() {
                     </div>
                   ) : null}
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-center text-sm font-bold leading-5 text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={!canGenerate}
                       ref={generateButtonRef}
                       type="submit"
@@ -1800,7 +1800,7 @@ export function DashboardPage() {
                         : t("dashboard.generate.generate")}
                     </button>
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-center text-sm font-bold leading-5 text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                       type="button"
                       onClick={() => setIsPaywallOpen(true)}
                     >
@@ -1830,14 +1830,14 @@ export function DashboardPage() {
                 <div className="flex items-start justify-between gap-4">
                   <Database className="h-6 w-6 text-[#bac9cc]" />
                   <Link
-                    className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.16em] text-[#00e5ff] transition hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                    className="dashboard-utility-label inline-flex items-center gap-1 font-bold text-[#00e5ff] transition hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                     to="/credits"
                   >
                     {t("dashboard.card.topUp")}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#bac9cc]">
+                <p className="dashboard-label mt-5 font-bold text-[#bac9cc]">
                   {t("dashboard.card.creditBalance")}
                 </p>
                 <div className="mt-2 flex items-baseline gap-2">
@@ -1848,7 +1848,7 @@ export function DashboardPage() {
                     {t("shell.nav.credits").toLowerCase()}
                   </span>
                 </div>
-                <p className="mt-4 border-t border-[#3b494c]/70 pt-4 text-sm leading-6 text-[#bac9cc]">
+                <p className="dashboard-helper-copy mt-4 border-t border-[#3b494c]/70 pt-4 text-[#bac9cc]">
                   {t("dashboard.card.creditRule")}
                 </p>
               </article>
@@ -1858,14 +1858,14 @@ export function DashboardPage() {
                   <span className="flex h-11 w-11 items-center justify-center rounded-md bg-[#00e5ff]/10 text-[#00e5ff]">
                     <CreditCard className="h-5 w-5" />
                   </span>
-                  <span className="rounded-md border border-white/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#bac9cc]">
+                  <span className="dashboard-utility-label rounded-md border border-white/10 px-2.5 py-1 font-bold text-[#bac9cc]">
                     {getPlanTone(summary, t)}
                   </span>
                 </div>
-                <h2 className="mt-5 font-display text-3xl font-semibold text-white">
+                <h2 className="mt-5 font-display text-[1.7rem] font-semibold leading-[1.16] text-white sm:text-3xl">
                   {summary?.plan.name ?? t("dashboard.card.free")}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
                   {summary?.plan.status === "active"
                     ? t("dashboard.card.activePlanBody")
                     : t("dashboard.card.freePlanBody")}
@@ -1893,10 +1893,10 @@ export function DashboardPage() {
                     <LockKeyhole className="h-5 w-5" />
                   )}
                 </div>
-                <h2 className="mt-5 font-display text-2xl font-semibold text-white">
+                <h2 className="mt-5 font-display text-[1.45rem] font-semibold leading-[1.18] text-white sm:text-2xl">
                   {t("dashboard.card.exportAccess")}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
                   {summary?.capabilities.canExportModel
                     ? t("dashboard.card.exportConfirmed")
                     : t("dashboard.card.exportBlocked")}
@@ -1919,13 +1919,13 @@ export function DashboardPage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-md bg-white/[0.08] text-[#bac9cc]">
                   <UserRound className="h-5 w-5" />
                 </div>
-                <h2 className="mt-5 font-display text-2xl font-semibold text-white">
+                <h2 className="mt-5 font-display text-[1.45rem] font-semibold leading-[1.18] text-white sm:text-2xl">
                   {t("dashboard.card.account")}
                 </h2>
                 <p className="mt-2 truncate text-sm font-semibold text-[#e5e2e1]">
                   {user?.email || t("dashboard.card.noEmail")}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
                   {t("dashboard.card.accountBody")}
                 </p>
                 <Link
@@ -1941,7 +1941,7 @@ export function DashboardPage() {
           <section className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="font-display text-2xl font-semibold text-white">
+                <h2 className="font-display text-[1.6rem] font-semibold leading-[1.16] text-white sm:text-2xl">
                   {t("dashboard.recent.title")}
                 </h2>
                 <p className="mt-1 text-sm text-[#bac9cc]">

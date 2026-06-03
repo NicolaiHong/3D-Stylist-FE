@@ -26,34 +26,15 @@ import {
 import { getApiErrorMessage } from "../services/apiClient";
 import { BILLING_CART_STORAGE_KEY } from "./CreditsPage";
 import { getDisplayLabel } from "../i18n/displayMaps";
+import { formatI18nCurrency, formatI18nDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 import type { Language } from "../i18n/types";
 
 type CopiedField = "account" | "transfer";
+type Translate = ReturnType<typeof useI18n>["t"];
 
-function formatCurrency(value: number, currency = "VND") {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatDateTime(value: string | null | undefined) {
-  if (!value) {
-    return "Not returned";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function getOrderProductName(order: BillingOrder | null) {
-  return order?.items[0]?.productName ?? "Checkout item";
+function getOrderProductName(order: BillingOrder | null, t: Translate) {
+  return order?.items[0]?.productName ?? t("checkout.productFallback");
 }
 
 function getTransferContent(
@@ -68,9 +49,13 @@ function getTransferContent(
   );
 }
 
-function getVerificationLabel(order: BillingOrder | null, language: Language) {
+function getVerificationLabel(
+  order: BillingOrder | null,
+  language: Language,
+  t: Translate,
+) {
   if (!order) {
-    return "Preparing checkout";
+    return t("checkout.preparing");
   }
 
   if (order.status === "paid") {
@@ -99,31 +84,31 @@ function getVerificationLabel(order: BillingOrder | null, language: Language) {
   return getDisplayLabel("verificationStatus", "awaiting_transfer", language);
 }
 
-function getStatusDescription(order: BillingOrder | null) {
+function getStatusDescription(order: BillingOrder | null, t: Translate) {
   if (!order) {
-    return "Checkout is preparing your VietQR instructions.";
+    return t("checkout.status.preparing");
   }
 
   if (order.status === "paid") {
-    return "Your transfer has been verified and marked paid. Billing access is now confirmed.";
+    return t("checkout.status.paid");
   }
 
   if (order.status === "expired") {
-    return "This order expired. Return to credits and create a fresh checkout before transferring.";
+    return t("checkout.status.expired");
   }
 
   if (order.status === "failed" || order.status === "cancelled") {
-    return "This checkout is no longer payable. Return to credits and start a new checkout.";
+    return t("checkout.status.terminal");
   }
 
   if (
     order.paymentVerification === "pending_admin_verification" ||
     order.paymentVerification === "user_reported_transferred"
   ) {
-    return "We recorded your transfer report. Your plan or credits activate after admin confirmation.";
+    return t("checkout.status.reported");
   }
 
-  return "Transfer the exact amount with the unchanged content, then report it here.";
+  return t("checkout.status.awaiting");
 }
 
 function getProgressIndex(order: BillingOrder | null) {
@@ -150,17 +135,18 @@ function getProgressIndex(order: BillingOrder | null) {
 }
 
 function PaymentProgress({ order }: { order: BillingOrder | null }) {
+  const { t } = useI18n();
   const steps = [
-    { label: "Waiting for transfer", icon: Clock3 },
-    { label: "Transfer reported", icon: PackageCheck },
-    { label: "Admin verification", icon: ShieldCheck },
-    { label: "Paid", icon: CheckCircle2 },
+    { label: t("checkout.progress.waiting"), icon: Clock3 },
+    { label: t("checkout.progress.reported"), icon: PackageCheck },
+    { label: t("checkout.progress.admin"), icon: ShieldCheck },
+    { label: t("checkout.progress.paid"), icon: CheckCircle2 },
   ];
   const activeIndex = getProgressIndex(order);
 
   return (
     <section
-      aria-label="Payment progress"
+      aria-label={t("checkout.progress.label")}
       className="rounded-lg border border-[#262626] bg-[#121212] p-4 sm:p-5"
     >
       <div className="grid gap-3 sm:grid-cols-4">
@@ -203,30 +189,40 @@ function CheckoutOrderSummary({
   order: BillingOrder;
   payment: VietQrPaymentInstruction | null;
 }) {
+  const { language, t } = useI18n();
+
   return (
     <section className="grid gap-3 sm:grid-cols-3">
       <div className="rounded-lg border border-[#262626] bg-[#121212] p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-          Selected product
+          {t("checkout.summary.product")}
         </p>
         <p className="mt-2 text-lg font-semibold text-white">
-          {getOrderProductName(order)}
+          {getOrderProductName(order, t)}
         </p>
       </div>
       <div className="rounded-lg border border-[#262626] bg-[#121212] p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-          Exact amount
+          {t("checkout.summary.amount")}
         </p>
         <p className="mt-2 font-display text-2xl font-semibold text-[#00e5ff]">
-          {formatCurrency(payment?.amount ?? order.totalAmount, order.currency)}
+          {formatI18nCurrency(
+            payment?.amount ?? order.totalAmount,
+            language,
+            order.currency,
+          )}
         </p>
       </div>
       <div className="rounded-lg border border-[#262626] bg-[#121212] p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-          Expires
+          {t("checkout.summary.expires")}
         </p>
         <p className="mt-2 text-lg font-semibold text-white">
-          {formatDateTime(order.expiresAt)}
+          {formatI18nDateTime(
+            order.expiresAt,
+            language,
+            t("common.notReturned"),
+          )}
         </p>
       </div>
     </section>
@@ -250,6 +246,8 @@ function DetailRow({
   copied?: boolean;
   onCopy?: () => void;
 }) {
+  const { t } = useI18n();
+
   return (
     <div
       className={`grid gap-2 rounded-md border p-3 ${
@@ -273,7 +271,7 @@ function DetailRow({
             ) : (
               <Clipboard className="h-3.5 w-3.5" />
             )}
-            {copied ? "Copied" : copyLabel ?? "Copy"}
+            {copied ? t("common.copied") : copyLabel ?? t("common.copy")}
           </button>
         ) : null}
       </div>
@@ -299,8 +297,10 @@ function BankTransferDetails({
   copiedField: CopiedField | null;
   onCopy: (value: string | null | undefined, field: CopiedField) => void;
 }) {
-  const transferContent = getTransferContent(payment, order) ?? "Not returned";
-  const accountNumber = payment?.bank.accountNumber ?? "Not returned";
+  const { language, t } = useI18n();
+  const transferContent =
+    getTransferContent(payment, order) ?? t("common.notReturned");
+  const accountNumber = payment?.bank.accountNumber ?? t("common.notReturned");
 
   return (
     <section className="flex h-full flex-col justify-between gap-5 p-5 sm:p-6 lg:p-6">
@@ -309,45 +309,45 @@ function BankTransferDetails({
           <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[#00e5ff]" />
           <div>
             <h2 className="font-display text-2xl font-semibold text-white">
-              Bank transfer details
+              {t("checkout.detail.bankTitle")}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-              Use these details if the QR scan fails. Keep the amount and
-              transfer content exactly as shown.
+              {t("checkout.detail.bankBody")}
             </p>
           </div>
         </div>
 
         <dl className="grid gap-3">
           <DetailRow
-            label="Bank name"
-            value={payment?.bank.bankName || "Configured bank"}
+            label={t("checkout.detail.bankName")}
+            value={payment?.bank.bankName || t("checkout.detail.configuredBank")}
           />
           <DetailRow
             copied={copiedField === "account"}
-            copyLabel="Copy account"
+            copyLabel={t("checkout.detail.copyAccount")}
             isMono
-            label="Account number"
+            label={t("checkout.detail.accountNumber")}
             value={accountNumber}
             onCopy={() => onCopy(payment?.bank.accountNumber, "account")}
           />
           <DetailRow
-            label="Account holder"
-            value={payment?.bank.accountName || "Not returned"}
+            label={t("checkout.detail.accountHolder")}
+            value={payment?.bank.accountName || t("common.notReturned")}
           />
           <DetailRow
-            label="Amount"
-            value={formatCurrency(
+            label={t("checkout.detail.amount")}
+            value={formatI18nCurrency(
               payment?.amount ?? order.totalAmount,
+              language,
               order.currency,
             )}
           />
           <DetailRow
             copied={copiedField === "transfer"}
-            copyLabel="Copy content"
+            copyLabel={t("checkout.detail.copyContent")}
             isEmphasized
             isMono
-            label="Transfer content / order code"
+            label={t("checkout.detail.transferContent")}
             value={transferContent}
             onCopy={() => onCopy(getTransferContent(payment, order), "transfer")}
           />
@@ -358,25 +358,26 @@ function BankTransferDetails({
 }
 
 function PaymentInstructionCards() {
+  const { t } = useI18n();
   const steps = [
     {
-      title: "Open banking app",
-      body: "Use your bank app or any app that supports VietQR transfer.",
+      title: t("checkout.instructions.openApp.title"),
+      body: t("checkout.instructions.openApp.body"),
       icon: Smartphone,
     },
     {
-      title: "Scan QR or enter details",
-      body: "Scan the QR code, or copy the bank account and transfer content below.",
+      title: t("checkout.instructions.scan.title"),
+      body: t("checkout.instructions.scan.body"),
       icon: ScanLine,
     },
     {
-      title: "Transfer exact amount",
-      body: "Do not edit the transfer content. The order code helps us match your payment.",
+      title: t("checkout.instructions.amount.title"),
+      body: t("checkout.instructions.amount.body"),
       icon: LockKeyhole,
     },
     {
-      title: "Click I have transferred",
-      body: "After sending the transfer, report it here and wait for admin verification.",
+      title: t("checkout.instructions.report.title"),
+      body: t("checkout.instructions.report.body"),
       icon: PackageCheck,
     },
   ];
@@ -418,7 +419,7 @@ function CheckoutStatusPanel({
   onRefresh: () => void;
 }) {
   const { language, t } = useI18n();
-  const label = getVerificationLabel(order, language);
+  const label = getVerificationLabel(order, language, t);
   const isPaid = order.status === "paid";
   const isTerminal =
     order.status === "expired" ||
@@ -449,15 +450,14 @@ function CheckoutStatusPanel({
         <div>
           <p className="text-sm font-bold text-white">{label}</p>
           <p className="mt-2 text-sm leading-6 text-[#e5e2e1]/80">
-            {getStatusDescription(order)}
+            {getStatusDescription(order, t)}
           </p>
         </div>
       </div>
 
       {!isPaid && !isTerminal ? (
         <p className="mt-4 text-xs font-semibold leading-5 text-[#ffeac0]">
-          This only reports your transfer. Credits or plan access start after
-          admin verification. This app does not auto-detect bank transfers.
+          {t("checkout.report.warning")}
         </p>
       ) : null}
 
@@ -485,7 +485,7 @@ function CheckoutStatusPanel({
           className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
           to="/credits"
         >
-          Back to credits
+          {t("checkout.backToCredits")}
         </Link>
       </div>
     </section>
@@ -493,6 +493,7 @@ function CheckoutStatusPanel({
 }
 
 export function CheckoutPage() {
+  const { language, t } = useI18n();
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -595,7 +596,7 @@ export function CheckoutPage() {
         );
       }, 1800);
     } catch {
-      setActionError("Copy failed. Select the value and copy it manually.");
+      setActionError(t("checkout.copyFailed"));
     }
   }
 
@@ -614,12 +615,12 @@ export function CheckoutPage() {
               to="/credits"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to credits
+              {t("checkout.backToCredits")}
             </Link>
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#c3f5ff]">
                 <LockKeyhole className="h-4 w-4" />
-                Manual VietQR checkout
+                {t("checkout.badge")}
               </span>
               <button
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -627,21 +628,20 @@ export function CheckoutPage() {
                 onClick={() => void loadCheckout()}
               >
                 <RefreshCw className="h-4 w-4" />
-                Refresh status
+                {t("checkout.refreshStatus")}
               </button>
             </div>
           </div>
 
           <header className="rounded-lg border border-[#262626] bg-[#121212] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-              VietQR bank transfer
+              {t("checkout.header.eyebrow")}
             </p>
             <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-              Complete your payment
+              {t("checkout.header.title")}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-              Scan the VietQR code or enter the bank details manually. Your plan
-              or credits activate after admin verification.
+              {t("checkout.header.body")}
             </p>
           </header>
 
@@ -654,7 +654,7 @@ export function CheckoutPage() {
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                 <div>
                   <h2 className="text-sm font-bold text-white">
-                    Checkout failed to load
+                    {t("checkout.error.title")}
                   </h2>
                   <p className="mt-1 text-sm text-[#ffdad6]/80">{error}</p>
                 </div>
@@ -693,17 +693,19 @@ export function CheckoutPage() {
                     <div className="flex h-full min-h-[430px] flex-col items-center justify-center gap-5">
                       <div className="text-center">
                         <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#00e5ff]">
-                          Scan to pay
+                          {t("checkout.qr.eyebrow")}
                         </p>
                         <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                          VietQR for this exact order
+                          {t("checkout.qr.body")}
                         </p>
                       </div>
 
                       <div className="flex w-full max-w-[340px] items-center justify-center rounded-lg border border-[#00e5ff]/20 bg-white p-4 shadow-[0_0_42px_rgba(0,229,255,0.08)]">
                         {payment?.qr.imageUrl && !qrFailed ? (
                           <img
-                            alt={`VietQR code for ${getOrderProductName(order)}`}
+                            alt={t("checkout.qr.alt", {
+                              product: getOrderProductName(order, t),
+                            })}
                             className="aspect-square w-full object-contain"
                             src={payment.qr.imageUrl}
                             onError={() => setQrFailed(true)}
@@ -712,18 +714,23 @@ export function CheckoutPage() {
                           <div className="flex aspect-square w-full flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-white p-6 text-center text-slate-800">
                             <AlertTriangle className="h-9 w-9 text-amber-600" />
                             <p className="mt-4 text-sm font-bold">
-                              QR image unavailable
+                              {t("checkout.qr.unavailable")}
                             </p>
                             <p className="mt-2 text-xs leading-5 text-slate-600">
-                              Enter the bank details and transfer content
-                              manually.
+                              {t("checkout.qr.manual")}
                             </p>
                           </div>
                         )}
                       </div>
 
                       <div className="rounded-full border border-[#3b494c] bg-[#1c1b1b] px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#c3f5ff]">
-                        Expires {formatDateTime(order.expiresAt)}
+                        {t("checkout.expiresAt", {
+                          date: formatI18nDateTime(
+                            order.expiresAt,
+                            language,
+                            t("common.notReturned"),
+                          ),
+                        })}
                       </div>
                     </div>
                   </div>
@@ -757,11 +764,10 @@ export function CheckoutPage() {
                       <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
                       <div>
                         <h2 className="text-sm font-bold text-white">
-                          Manual verification
+                          {t("checkout.manualVerification.title")}
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                          This checkout does not auto-detect bank transfers.
-                          Keep your receipt until the payment is marked paid.
+                          {t("checkout.manualVerification.body")}
                         </p>
                       </div>
                     </div>
@@ -777,20 +783,21 @@ export function CheckoutPage() {
 }
 
 function ShoppingCartFallback() {
+  const { t } = useI18n();
+
   return (
     <>
       <p className="font-display text-2xl font-semibold text-white">
-        No checkout item selected
+        {t("checkout.empty.title")}
       </p>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#bac9cc]">
-        Add a plan or credit pack to cart first, then checkout will create a
-        VietQR order.
+        {t("checkout.empty.body")}
       </p>
       <Link
         className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
         to="/credits"
       >
-        Choose product
+        {t("checkout.empty.chooseProduct")}
       </Link>
     </>
   );

@@ -9,6 +9,10 @@ const displayKeyByScope: Record<string, Record<string, string>> = {
   accountStatus: {
     active: "display.status.active",
     blocked: "display.status.blocked",
+    inactive: "display.status.inactive",
+    free: "display.status.free",
+    complete: "display.status.complete",
+    incomplete: "display.status.incomplete",
   },
   orderStatus: {
     pending: "display.order.pending",
@@ -50,10 +54,21 @@ const displayKeyByScope: Record<string, Record<string, string>> = {
   healthStatus: {
     ok: "display.health.ok",
     unknown: "display.health.unknown",
+    not_returned: "display.health.notReturned",
     configured: "display.health.configured",
     pending: "display.health.pending",
     enabled: "display.health.enabled",
     disabled: "display.health.disabled",
+  },
+  booleanStatus: {
+    verified: "display.boolean.verified",
+    not_verified: "display.boolean.notVerified",
+  },
+  catalogIssue: {
+    inactive: "display.catalogIssue.inactive",
+    invalid_price: "display.catalogIssue.invalidPrice",
+    missing_credits: "display.catalogIssue.missingCredits",
+    missing_plan: "display.catalogIssue.missingPlan",
   },
 };
 
@@ -101,7 +116,9 @@ export function getKnownDisplayLabel(
     }
   }
 
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return interpolate(
+    messages[language]["display.unknownValue"] ??
+      messages.en["display.unknownValue"],
+    value,
+  );
 }

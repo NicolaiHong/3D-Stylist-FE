@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  --font-ui: "Be Vietnam Pro", "Inter", "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #17201d;
   background: #f6f4ef;
   font-synthesis: none;
@@ -19,11 +20,56 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: var(--font-ui);
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
+}
+
+.dashboard-page-title {
+  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+  line-height: 1.14;
+  letter-spacing: 0;
+}
+
+.dashboard-generation-title {
+  font-size: clamp(1.625rem, 1.45rem + 0.8vw, 2.25rem);
+  line-height: 1.16;
+  letter-spacing: 0;
+}
+
+.dashboard-copy {
+  font-size: clamp(0.96875rem, 0.94rem + 0.12vw, 1.0625rem);
+  line-height: 1.62;
+}
+
+.dashboard-helper-copy {
+  font-size: 0.96875rem;
+  line-height: 1.58;
+}
+
+.dashboard-label {
+  font-size: 0.78rem;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.dashboard-utility-label {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+.dashboard-chip {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  letter-spacing: 0;
 }
 
 .atelier-grid {

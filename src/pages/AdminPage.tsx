@@ -43,8 +43,15 @@ import {
 } from "../features/admin/admin.types";
 import { useAuthStore } from "../features/auth/auth.store";
 import { getApiErrorMessage } from "../services/apiClient";
-import { getKnownDisplayLabel } from "../i18n/displayMaps";
+import { getDisplayLabel, getKnownDisplayLabel } from "../i18n/displayMaps";
+import {
+  formatI18nCurrency,
+  formatI18nDate,
+  formatI18nDateTime,
+  formatI18nNumber,
+} from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
+import type { Language } from "../i18n/types";
 
 type OrderStatusFilter = AdminOrderStatus | "all";
 type PaymentStatusFilter = AdminPaymentStatus | "all";
@@ -68,9 +75,9 @@ const transactionStatusOptions: PaymentStatusFilter[] = [
 ];
 
 const rangeOptions: Array<{ label: string; value: AdminRange }> = [
-  { label: "7 days", value: ADMIN_RANGES.SEVEN_DAYS },
-  { label: "30 days", value: ADMIN_RANGES.THIRTY_DAYS },
-  { label: "All time", value: ADMIN_RANGES.ALL },
+  { label: "admin.range.7d", value: ADMIN_RANGES.SEVEN_DAYS },
+  { label: "admin.range.30d", value: ADMIN_RANGES.THIRTY_DAYS },
+  { label: "admin.range.all", value: ADMIN_RANGES.ALL },
 ];
 
 const emptyUsersPage: AdminPagination<AdminUser> = {
@@ -107,62 +114,52 @@ const emptyProductsResult: AdminProductsResult = {
   },
 };
 
-function formatNumber(value: number | null | undefined) {
-  return new Intl.NumberFormat("en").format(value ?? 0);
+type Translate = ReturnType<typeof useI18n>["t"];
+
+function formatNumber(value: number | null | undefined, language: Language) {
+  return formatI18nNumber(value, language);
 }
 
-function formatCurrency(value: number | null | undefined, currency = "VND") {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value ?? 0);
+function formatCurrency(
+  value: number | null | undefined,
+  language: Language,
+  currency = "VND",
+) {
+  return formatI18nCurrency(value, language, currency);
 }
 
-function formatDateTime(value: string | null | undefined) {
-  if (!value) {
-    return "Not returned";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+function formatDateTime(
+  value: string | null | undefined,
+  language: Language,
+  t: Translate,
+) {
+  return formatI18nDateTime(value, language, t("common.notReturned"));
 }
 
-function formatDate(value: string | null | undefined) {
-  if (!value) {
-    return "Not returned";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+function formatDate(
+  value: string | null | undefined,
+  language: Language,
+  t: Translate,
+) {
+  return formatI18nDate(value, language, t("common.notReturned"));
 }
 
-function shortId(value: string | null | undefined) {
-  return value ? value.slice(0, 8) : "unknown";
-}
-
-function titleCase(value: string) {
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+function shortId(value: string | null | undefined, t: Translate) {
+  return value ? value.slice(0, 8) : t("common.unknown");
 }
 
 function getUserLabel(user: {
   displayName: string | null;
   email: string | null;
-}) {
-  return user.displayName || user.email || "Unnamed user";
+}, t: Translate) {
+  return user.displayName || user.email || t("admin.table.unnamedUser");
 }
 
-function getInitials(user: { displayName: string | null; email: string | null }) {
-  const label = getUserLabel(user);
+function getInitials(
+  user: { displayName: string | null; email: string | null },
+  t: Translate,
+) {
+  const label = getUserLabel(user, t);
   return label
     .split(/\s+/)
     .filter(Boolean)
@@ -175,12 +172,12 @@ function getOrderProduct(order: AdminOrder) {
   return order.items[0] ?? null;
 }
 
-function getOrderTransferContent(order: AdminOrder) {
+function getOrderTransferContent(order: AdminOrder, t: Translate) {
   return (
     order.transferContent ??
     order.bankTransferContent ??
     order.orderCode ??
-    "Not returned"
+    t("common.notReturned")
   );
 }
 
@@ -223,19 +220,19 @@ function getManualMarkPaidEnabled(health: AdminHealth | null) {
 
 function getProductIssue(product: AdminProduct) {
   if (!product.isActive) {
-    return "Inactive";
+    return "inactive";
   }
 
   if (product.priceVnd <= 0) {
-    return "Invalid price";
+    return "invalid_price";
   }
 
   if (product.credits === null || product.credits <= 0) {
-    return "Missing credits";
+    return "missing_credits";
   }
 
   if (product.kind === "subscription_plan" && !product.planCode) {
-    return "Missing plan";
+    return "missing_plan";
   }
 
   return null;
@@ -373,11 +370,13 @@ function KpiCard({
 }
 
 function AdminEmptyState({ message }: { message: string }) {
+  const { t } = useI18n();
+
   return (
     <div className="p-8 text-center">
       <p className="text-sm font-bold text-white">{message}</p>
       <p className="mt-2 text-sm text-[#849396]">
-        Refresh after new payment activity is available.
+        {t("admin.empty.refreshHint")}
       </p>
     </div>
   );
@@ -411,6 +410,8 @@ function SectionSelect<TValue extends string>({
   options: TValue[];
   onChange: (value: TValue) => void;
 }) {
+  const { language, t } = useI18n();
+
   return (
     <label className="flex min-w-[148px] flex-col gap-1.5 text-xs font-bold uppercase text-[#849396]">
       {label}
@@ -421,7 +422,7 @@ function SectionSelect<TValue extends string>({
       >
         {options.map((option) => (
           <option key={option} value={option}>
-            {option === "all" ? "All" : titleCase(option)}
+            {option === "all" ? t("admin.filter.all") : getKnownDisplayLabel(option, language)}
           </option>
         ))}
       </select>
@@ -436,12 +437,14 @@ function UsersTable({
   users: AdminUser[];
   isLoading: boolean;
 }) {
+  const { language, t } = useI18n();
+
   if (isLoading) {
     return <TableSkeleton columns={5} />;
   }
 
   if (users.length === 0) {
-    return <AdminEmptyState message="No users found" />;
+    return <AdminEmptyState message={t("admin.empty.users")} />;
   }
 
   return (
@@ -449,11 +452,13 @@ function UsersTable({
       <table className="min-w-[820px] w-full text-left">
         <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
           <tr>
-            <th className="px-5 py-3 font-bold">User</th>
-            <th className="px-5 py-3 font-bold">Role</th>
-            <th className="px-5 py-3 font-bold">Onboarding</th>
-            <th className="px-5 py-3 font-bold">Plan</th>
-            <th className="px-5 py-3 font-bold">Joined</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.user")}</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.role")}</th>
+            <th className="px-5 py-3 font-bold">
+              {t("admin.table.onboarding")}
+            </th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.plan")}</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.joined")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#3b494c]/60">
@@ -469,15 +474,15 @@ function UsersTable({
                         src={adminUser.avatarUrl}
                       />
                     ) : (
-                      getInitials(adminUser)
+                      getInitials(adminUser, t)
                     )}
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-white">
-                      {adminUser.displayName || "Unnamed user"}
+                      {adminUser.displayName || t("admin.table.unnamedUser")}
                     </p>
                     <p className="truncate text-xs text-[#bac9cc]">
-                      {adminUser.email || "No email"}
+                      {adminUser.email || t("admin.table.noEmail")}
                     </p>
                   </div>
                 </div>
@@ -486,18 +491,25 @@ function UsersTable({
                 <StatusBadge status={adminUser.role} />
               </td>
               <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                {adminUser.onboardingCompleted ? "Complete" : "Incomplete"}
+                {adminUser.onboardingCompleted
+                  ? getKnownDisplayLabel("complete", language)
+                  : getKnownDisplayLabel("incomplete", language)}
               </td>
               <td className="px-5 py-4">
                 <p className="text-sm font-bold text-white">
-                  {titleCase(adminUser.billing.planCode)}
+                  {adminUser.billing.planCode}
                 </p>
                 <p className="mt-1 text-xs text-[#bac9cc]">
-                  {formatNumber(adminUser.billing.creditBalance)} credits
+                  {t("admin.table.credits", {
+                    count: formatNumber(
+                      adminUser.billing.creditBalance,
+                      language,
+                    ),
+                  })}
                 </p>
               </td>
               <td className="px-5 py-4 text-sm text-[#bac9cc]">
-                {formatDate(adminUser.createdAt)}
+                {formatDate(adminUser.createdAt, language, t)}
               </td>
             </tr>
           ))}
@@ -520,6 +532,7 @@ function OrdersTable({
   markingOrderId: string | null;
   onRequestMarkPaid: (order: AdminOrder) => void;
 }) {
+  const { language, t } = useI18n();
   const manualMarkPaidEnabled = getManualMarkPaidEnabled(health);
 
   if (isLoading) {
@@ -527,7 +540,7 @@ function OrdersTable({
   }
 
   if (orders.length === 0) {
-    return <AdminEmptyState message="No orders match this filter" />;
+    return <AdminEmptyState message={t("admin.empty.orders")} />;
   }
 
   return (
@@ -535,14 +548,18 @@ function OrdersTable({
       <table className="min-w-[1060px] w-full text-left">
         <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
           <tr>
-            <th className="px-5 py-3 font-bold">Order</th>
-            <th className="px-5 py-3 font-bold">User</th>
-            <th className="px-5 py-3 font-bold">Product</th>
-            <th className="px-5 py-3 font-bold">Amount</th>
-            <th className="px-5 py-3 font-bold">Transfer</th>
-            <th className="px-5 py-3 font-bold">Method</th>
-            <th className="px-5 py-3 font-bold">Status</th>
-            <th className="px-5 py-3 font-bold">Action</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.order")}</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.user")}</th>
+            <th className="px-5 py-3 font-bold">
+              {t("admin.table.product")}
+            </th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.amount")}</th>
+            <th className="px-5 py-3 font-bold">
+              {t("admin.table.transfer")}
+            </th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.method")}</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.status")}</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.action")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#3b494c]/60">
@@ -557,40 +574,48 @@ function OrdersTable({
               <tr className="transition hover:bg-white/[0.035]" key={order.id}>
                 <td className="px-5 py-4">
                   <p className="font-mono text-xs font-bold text-[#e5e2e1]">
-                    {shortId(order.id)}
+                    {shortId(order.id, t)}
                   </p>
                   <p className="mt-1 text-xs text-[#849396]">
-                    {formatDateTime(order.createdAt)}
+                    {formatDateTime(order.createdAt, language, t)}
                   </p>
                 </td>
                 <td className="px-5 py-4">
                   <p className="max-w-[180px] truncate text-sm font-bold text-white">
-                    {getUserLabel(order.user)}
+                    {getUserLabel(order.user, t)}
                   </p>
                   <p className="mt-1 max-w-[180px] truncate text-xs text-[#bac9cc]">
-                    {order.user.email || "No email"}
+                    {order.user.email || t("admin.table.noEmail")}
                   </p>
                 </td>
                 <td className="px-5 py-4">
                   <p className="text-sm font-bold text-white">
-                    {product?.productName ?? "Unknown product"}
+                    {product?.productName ?? t("admin.table.unknownProduct")}
                   </p>
                   <p className="mt-1 text-xs text-[#bac9cc]">
-                    {product?.productCode ?? "No code"}
+                    {product?.productCode ?? t("admin.table.noCode")}
                   </p>
                 </td>
                 <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                  {formatCurrency(order.totalAmount, order.currency)}
+                  {formatCurrency(
+                    order.totalAmount,
+                    language,
+                    order.currency,
+                  )}
                 </td>
                 <td className="px-5 py-4">
                   <p className="max-w-[180px] truncate font-mono text-xs font-bold text-[#ffeac0]">
-                    {getOrderTransferContent(order)}
+                    {getOrderTransferContent(order, t)}
                   </p>
                   <p className="mt-1 text-xs text-[#849396]">
-                    {order.paymentVerification ?? "awaiting_transfer"}
+                    {getDisplayLabel(
+                      "verificationStatus",
+                      order.paymentVerification ?? "awaiting_transfer",
+                      language,
+                    )}
                   </p>
                 </td>
-                <td className="px-5 py-4 text-sm font-bold uppercase text-[#bac9cc]">
+                <td className="px-5 py-4 font-mono text-xs font-bold text-[#bac9cc]">
                   {getOrderPaymentMethod(order)}
                 </td>
                 <td className="px-5 py-4">
@@ -607,11 +632,11 @@ function OrdersTable({
                       {markingOrderId === order.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : null}
-                      Verify transfer and mark paid
+                      {t("admin.table.verifyTransfer")}
                     </button>
                   ) : (
                     <span className="text-xs font-semibold text-[#849396]">
-                      No action
+                      {t("admin.table.noAction")}
                     </span>
                   )}
                 </td>
@@ -631,12 +656,14 @@ function TransactionsTable({
   transactions: AdminPaymentTransaction[];
   isLoading: boolean;
 }) {
+  const { language, t } = useI18n();
+
   if (isLoading) {
     return <TableSkeleton columns={7} />;
   }
 
   if (transactions.length === 0) {
-    return <AdminEmptyState message="No payment transactions yet" />;
+    return <AdminEmptyState message={t("admin.empty.transactions")} />;
   }
 
   return (
@@ -644,13 +671,19 @@ function TransactionsTable({
       <table className="min-w-[980px] w-full text-left">
         <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
           <tr>
-            <th className="px-5 py-3 font-bold">Transaction</th>
-            <th className="px-5 py-3 font-bold">Order</th>
-            <th className="px-5 py-3 font-bold">User</th>
-            <th className="px-5 py-3 font-bold">Provider</th>
-            <th className="px-5 py-3 font-bold">Status</th>
-            <th className="px-5 py-3 font-bold">Signature</th>
-            <th className="px-5 py-3 font-bold">Amount</th>
+            <th className="px-5 py-3 font-bold">
+              {t("admin.table.transaction")}
+            </th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.order")}</th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.user")}</th>
+            <th className="px-5 py-3 font-bold">
+              {t("admin.table.provider")}
+            </th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.status")}</th>
+            <th className="px-5 py-3 font-bold">
+              {t("admin.table.signature")}
+            </th>
+            <th className="px-5 py-3 font-bold">{t("admin.table.amount")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#3b494c]/60">
@@ -658,34 +691,44 @@ function TransactionsTable({
             <tr className="transition hover:bg-white/[0.035]" key={transaction.id}>
               <td className="px-5 py-4">
                 <p className="font-mono text-xs font-bold text-white">
-                  {transaction.txnRef || shortId(transaction.id)}
+                  {transaction.txnRef || shortId(transaction.id, t)}
                 </p>
                 <p className="mt-1 text-xs text-[#849396]">
-                  {formatDateTime(transaction.processedAt ?? transaction.createdAt)}
+                  {formatDateTime(
+                    transaction.processedAt ?? transaction.createdAt,
+                    language,
+                    t,
+                  )}
                 </p>
               </td>
               <td className="px-5 py-4 font-mono text-xs font-bold text-[#bac9cc]">
-                {shortId(transaction.orderId)}
+                {shortId(transaction.orderId, t)}
               </td>
               <td className="px-5 py-4">
                 <p className="max-w-[170px] truncate text-sm font-bold text-white">
-                  {getUserLabel(transaction.user)}
+                  {getUserLabel(transaction.user, t)}
                 </p>
                 <p className="mt-1 max-w-[170px] truncate text-xs text-[#bac9cc]">
-                  {transaction.user.email || "No email"}
+                  {transaction.user.email || t("admin.table.noEmail")}
                 </p>
               </td>
-              <td className="px-5 py-4 text-sm font-bold uppercase text-[#bac9cc]">
+              <td className="px-5 py-4 font-mono text-xs font-bold text-[#bac9cc]">
                 {transaction.provider}
               </td>
               <td className="px-5 py-4">
                 <StatusBadge status={transaction.status} />
               </td>
               <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                {transaction.signatureVerified ? "Verified" : "Not verified"}
+                {transaction.signatureVerified
+                  ? getDisplayLabel("booleanStatus", "verified", language)
+                  : getDisplayLabel("booleanStatus", "not_verified", language)}
               </td>
               <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                {formatCurrency(transaction.amount, transaction.currency)}
+                {formatCurrency(
+                  transaction.amount,
+                  language,
+                  transaction.currency,
+                )}
               </td>
             </tr>
           ))}
@@ -702,24 +745,25 @@ function HealthPanel({
   health: AdminHealth | null;
   isLoading: boolean;
 }) {
+  const { language, t } = useI18n();
   const rows = [
     {
-      label: "API",
+      label: t("admin.health.api"),
       value: health?.api?.status ?? health?.status ?? "unknown",
     },
     {
-      label: "Database",
-      value: health?.database?.status ?? "not returned",
+      label: t("admin.health.database"),
+      value: health?.database?.status ?? "not_returned",
       detail: health?.database?.latencyMs
         ? `${health.database.latencyMs}ms`
         : undefined,
     },
     {
-      label: "VietQR",
+      label: t("admin.health.vietqr"),
       value: health?.billing?.vietQrConfigured ? "configured" : "pending",
     },
     {
-      label: "Manual mark-paid",
+      label: t("admin.health.manualMarkPaid"),
       value: health?.billing?.manualMarkPaidEnabled ? "enabled" : "disabled",
     },
   ];
@@ -727,8 +771,8 @@ function HealthPanel({
   return (
     <AdminPanel className="lg:col-span-5">
       <PanelHeader
-        title="System Health"
-        description="Configuration presence only. Secret values stay server-side."
+        title={t("admin.health.title")}
+        description={t("admin.health.description")}
       />
       {isLoading ? (
         <div className="space-y-3 p-5">
@@ -757,7 +801,9 @@ function HealthPanel({
             </div>
           ))}
           <div className="px-5 py-4 text-xs font-semibold text-[#849396]">
-            Last checked: {formatDateTime(health?.timestamp)}
+            {t("admin.health.lastChecked", {
+              date: formatDateTime(health?.timestamp, language, t),
+            })}
           </div>
         </div>
       )}
@@ -772,13 +818,14 @@ function SubscriptionCreditPanel({
   stats: AdminStats | null;
   isLoading: boolean;
 }) {
+  const { language, t } = useI18n();
   const planTotal = stats?.subscriptions.active ?? 0;
 
   return (
     <AdminPanel className="lg:col-span-7">
       <PanelHeader
-        title="Subscriptions And Credits"
-        description="Sandbox grants and credit ledger totals from backend billing state."
+        title={t("admin.subscriptions.title")}
+        description={t("admin.subscriptions.description")}
       />
       {isLoading ? (
         <div className="grid gap-4 p-5 md:grid-cols-2">
@@ -789,25 +836,25 @@ function SubscriptionCreditPanel({
         <div className="grid gap-6 p-5 md:grid-cols-2">
           <div>
             <p className="text-xs font-bold uppercase text-[#849396]">
-              Active subscriptions
+              {t("admin.subscriptions.active")}
             </p>
             <p className="mt-3 font-display text-4xl font-semibold text-white">
-              {formatNumber(planTotal)}
+              {formatNumber(planTotal, language)}
             </p>
             <div className="mt-6 space-y-4">
               {(stats?.subscriptions.byPlan ?? []).length === 0 ? (
                 <p className="text-sm text-[#bac9cc]">
-                  No active subscription rows returned.
+                  {t("admin.subscriptions.empty")}
                 </p>
               ) : (
                 stats?.subscriptions.byPlan.map((plan) => (
                   <div key={plan.planCode}>
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <span className="font-semibold text-[#e5e2e1]">
-                        {titleCase(plan.planCode)}
+                        {plan.planCode}
                       </span>
                       <span className="text-[#00e5ff]">
-                        {formatNumber(plan.count)}
+                        {formatNumber(plan.count, language)}
                       </span>
                     </div>
                     <MiniRatioBar total={planTotal} value={plan.count} />
@@ -818,22 +865,26 @@ function SubscriptionCreditPanel({
           </div>
           <div className="border-t border-[#3b494c]/70 pt-5 md:border-l md:border-t-0 md:pl-6 md:pt-0">
             <p className="text-xs font-bold uppercase text-[#849396]">
-              Credit ledger
+              {t("admin.credits.ledger")}
             </p>
             <p className="mt-3 font-display text-4xl font-semibold text-white">
-              {formatNumber(stats?.credits.totalBalance)}
+              {formatNumber(stats?.credits.totalBalance, language)}
             </p>
             <div className="mt-6 grid gap-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-[#bac9cc]">Purchased in range</span>
+                <span className="text-[#bac9cc]">
+                  {t("admin.credits.purchased")}
+                </span>
                 <span className="font-bold text-white">
-                  {formatNumber(stats?.credits.purchasedInRange)}
+                  {formatNumber(stats?.credits.purchasedInRange, language)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-[#bac9cc]">Consumed in range</span>
+                <span className="text-[#bac9cc]">
+                  {t("admin.credits.consumed")}
+                </span>
                 <span className="font-bold text-white">
-                  {formatNumber(stats?.credits.consumedInRange)}
+                  {formatNumber(stats?.credits.consumedInRange, language)}
                 </span>
               </div>
             </div>
@@ -851,31 +902,46 @@ function CatalogPanel({
   productsResult: AdminProductsResult;
   isLoading: boolean;
 }) {
+  const { language, t } = useI18n();
+
   return (
     <AdminPanel>
       <PanelHeader
-        title="Product Catalog"
-        description="Read-only status for the six MVP billing products."
+        title={t("admin.catalog.title")}
+        description={t("admin.catalog.description")}
         action={
           <span className="text-sm font-bold text-[#bac9cc]">
-            {productsResult.summary.active}/{productsResult.summary.total} active
+            {t("admin.catalog.activeCount", {
+              active: productsResult.summary.active,
+              total: productsResult.summary.total,
+            })}
           </span>
         }
       />
       {isLoading ? (
         <TableSkeleton columns={5} />
       ) : productsResult.products.length === 0 ? (
-        <AdminEmptyState message="No products returned" />
+        <AdminEmptyState message={t("admin.empty.products")} />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-[900px] w-full text-left">
             <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
               <tr>
-                <th className="px-5 py-3 font-bold">Product</th>
-                <th className="px-5 py-3 font-bold">Kind</th>
-                <th className="px-5 py-3 font-bold">Price</th>
-                <th className="px-5 py-3 font-bold">Credits</th>
-                <th className="px-5 py-3 font-bold">Status</th>
+                <th className="px-5 py-3 font-bold">
+                  {t("admin.table.product")}
+                </th>
+                <th className="px-5 py-3 font-bold">
+                  {t("admin.catalog.kind")}
+                </th>
+                <th className="px-5 py-3 font-bold">
+                  {t("admin.catalog.price")}
+                </th>
+                <th className="px-5 py-3 font-bold">
+                  {t("admin.catalog.credits")}
+                </th>
+                <th className="px-5 py-3 font-bold">
+                  {t("admin.table.status")}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#3b494c]/60">
@@ -892,7 +958,7 @@ function CatalogPanel({
                     </td>
                     <td className="px-5 py-4">
                       <p className="text-sm font-semibold text-[#e5e2e1]">
-                        {titleCase(product.kind)}
+                        {getDisplayLabel("productKind", product.kind, language)}
                       </p>
                       <p className="mt-1 text-xs text-[#849396]">
                         {product.interval ?? "one-time"}
@@ -900,7 +966,11 @@ function CatalogPanel({
                       </p>
                     </td>
                     <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                      {formatCurrency(product.priceVnd, product.currency)}
+                      {formatCurrency(
+                        product.priceVnd,
+                        language,
+                        product.currency,
+                      )}
                     </td>
                     <td className="px-5 py-4 text-sm text-[#bac9cc]">
                       {product.credits ?? 0}
@@ -917,7 +987,9 @@ function CatalogPanel({
       )}
       {!isLoading && productsResult.summary.missingMvpProducts.length > 0 ? (
         <div className="border-t border-[#f3bf26]/25 bg-[#f3bf26]/10 px-5 py-4 text-sm text-[#ffeac0]">
-          Missing MVP products: {productsResult.summary.missingMvpProducts.join(", ")}
+          {t("admin.catalog.missing", {
+            products: productsResult.summary.missingMvpProducts.join(", "),
+          })}
         </div>
       ) : null}
     </AdminPanel>
@@ -935,6 +1007,7 @@ function ManualMarkPaidDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { language, t } = useI18n();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const isSubmittingRef = useRef(isSubmitting);
@@ -1023,17 +1096,17 @@ function ManualMarkPaidDialog({
         <div className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-5">
           <div>
             <p className="text-xs font-bold uppercase text-[#f3bf26]">
-              Manual verification
+              {t("admin.dialog.eyebrow")}
             </p>
             <h2
               className="mt-2 font-display text-2xl font-semibold text-white"
               id="manual-mark-paid-title"
             >
-              Verify this transfer and mark it paid?
+              {t("admin.dialog.title")}
             </h2>
           </div>
           <button
-            aria-label="Close mark paid dialog"
+            aria-label={t("admin.dialog.closeAria")}
             className="flex h-10 w-10 items-center justify-center rounded-md border border-white/10 text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSubmitting}
             type="button"
@@ -1047,65 +1120,73 @@ function ManualMarkPaidDialog({
             className="text-sm leading-6 text-[#bac9cc]"
             id="manual-mark-paid-description"
           >
-            Check the external bank app or statement first. This app does not
-            reconcile bank transfers automatically. Confirm the transfer
-            amount and transfer content match before continuing.
+            {t("admin.dialog.description")}
           </p>
           <dl className="grid gap-3 text-sm">
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Order ID</dt>
+              <dt className="text-[#849396]">{t("admin.dialog.orderId")}</dt>
               <dd className="break-all font-mono font-bold text-white sm:text-right">
-                {shortId(order.id)}
+                {shortId(order.id, t)}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Customer</dt>
+              <dt className="text-[#849396]">{t("admin.dialog.customer")}</dt>
               <dd className="break-words font-bold text-white sm:text-right">
-                {getUserLabel(order.user)}
+                {getUserLabel(order.user, t)}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Product</dt>
+              <dt className="text-[#849396]">{t("admin.table.product")}</dt>
               <dd className="break-words font-bold text-white sm:text-right">
-                {product?.productName ?? "Unknown product"}
+                {product?.productName ?? t("admin.table.unknownProduct")}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Amount</dt>
+              <dt className="text-[#849396]">{t("admin.table.amount")}</dt>
               <dd className="font-bold text-white sm:text-right">
-                {formatCurrency(order.totalAmount, order.currency)}
+                {formatCurrency(order.totalAmount, language, order.currency)}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
               <dt className="text-[#849396]">
-                Transfer content / order code
+                {t("admin.dialog.transferContent")}
               </dt>
               <dd className="break-all font-mono font-bold text-[#ffeac0] sm:text-right">
-                {getOrderTransferContent(order)}
+                {getOrderTransferContent(order, t)}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Payment method</dt>
-              <dd className="font-bold text-white sm:text-right">
-                {titleCase(getOrderPaymentMethod(order))}
+              <dt className="text-[#849396]">
+                {t("admin.dialog.paymentMethod")}
+              </dt>
+              <dd className="font-mono text-xs font-bold text-white sm:text-right">
+                {getOrderPaymentMethod(order)}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Verification state</dt>
+              <dt className="text-[#849396]">
+                {t("admin.dialog.verificationState")}
+              </dt>
               <dd className="font-bold text-white sm:text-right">
-                {titleCase(order.paymentVerification ?? "awaiting_transfer")}
+                {getDisplayLabel(
+                  "verificationStatus",
+                  order.paymentVerification ?? "awaiting_transfer",
+                  language,
+                )}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Order status</dt>
+              <dt className="text-[#849396]">
+                {t("admin.dialog.orderStatus")}
+              </dt>
               <dd className="font-bold text-white sm:text-right">
-                {titleCase(order.status)}
+                {getDisplayLabel("orderStatus", order.status, language)}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
-              <dt className="text-[#849396]">Expires</dt>
+              <dt className="text-[#849396]">{t("admin.dialog.expires")}</dt>
               <dd className="font-bold text-white sm:text-right">
-                {formatDateTime(order.expiresAt)}
+                {formatDateTime(order.expiresAt, language, t)}
               </dd>
             </div>
           </dl>
@@ -1118,7 +1199,7 @@ function ManualMarkPaidDialog({
             onClick={onClose}
             ref={cancelButtonRef}
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#f3bf26] px-4 py-2.5 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96] disabled:cursor-not-allowed disabled:opacity-70"
@@ -1127,7 +1208,7 @@ function ManualMarkPaidDialog({
             onClick={onConfirm}
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Confirm verified transfer
+            {t("admin.dialog.confirm")}
           </button>
         </div>
       </div>
@@ -1136,6 +1217,7 @@ function ManualMarkPaidDialog({
 }
 
 export function AdminPage() {
+  const { language, t } = useI18n();
   const currentUser = useAuthStore((state) => state.user);
   const [range, setRange] = useState<AdminRange>(ADMIN_RANGES.THIRTY_DAYS);
   const [searchInput, setSearchInput] = useState("");
@@ -1163,7 +1245,10 @@ export function AdminPage() {
   const requestIdRef = useRef(0);
 
   const displayName =
-    currentUser?.displayName || currentUser?.fullName || currentUser?.email || "Admin";
+    currentUser?.displayName ||
+    currentUser?.fullName ||
+    currentUser?.email ||
+    t("display.role.admin");
 
   const loadAdminData = useCallback(
     async (showLoading = true) => {
@@ -1242,65 +1327,80 @@ export function AdminPage() {
   const kpis = useMemo(
     () => [
       {
-        label: "Total Users",
-        value: formatNumber(stats?.users.total),
-        detail: `${formatNumber(stats?.users.newInRange)} new in range`,
+        label: t("admin.kpi.totalUsers"),
+        value: formatNumber(stats?.users.total, language),
+        detail: t("admin.kpi.newInRange", {
+          count: formatNumber(stats?.users.newInRange, language),
+        }),
         icon: <UsersRound className="h-4 w-4" />,
         ratioValue: stats?.users.active,
         ratioTotal: stats?.users.total,
       },
       {
-        label: "Active Users",
-        value: formatNumber(stats?.users.active),
-        detail: `${formatNumber(stats?.users.blocked)} blocked accounts`,
+        label: t("admin.kpi.activeUsers"),
+        value: formatNumber(stats?.users.active, language),
+        detail: t("admin.kpi.blockedAccounts", {
+          count: formatNumber(stats?.users.blocked, language),
+        }),
         icon: <UserRound className="h-4 w-4" />,
         ratioValue: stats?.users.active,
         ratioTotal: stats?.users.total,
       },
       {
-        label: "Pending Orders",
-        value: formatNumber(stats?.orders.pending),
-        detail: `${formatNumber(stats?.orders.total)} total orders`,
+        label: t("admin.kpi.pendingOrders"),
+        value: formatNumber(stats?.orders.pending, language),
+        detail: t("admin.kpi.totalOrders", {
+          count: formatNumber(stats?.orders.total, language),
+        }),
         icon: <Clock3 className="h-4 w-4" />,
         ratioValue: stats?.orders.pending,
         ratioTotal: stats?.orders.total,
         tone: "amber" as const,
       },
       {
-        label: "Paid Orders",
-        value: formatNumber(stats?.orders.paid),
-        detail: `${formatNumber(stats?.orders.failed)} failed payments`,
+        label: t("admin.kpi.paidOrders"),
+        value: formatNumber(stats?.orders.paid, language),
+        detail: t("admin.kpi.failedPayments", {
+          count: formatNumber(stats?.orders.failed, language),
+        }),
         icon: <CheckCircle2 className="h-4 w-4" />,
         ratioValue: stats?.orders.paid,
         ratioTotal: stats?.orders.total,
       },
       {
-        label: "Manual Volume",
-        value: formatCurrency(stats?.orders.sandboxVolumeVnd),
-        detail: "Admin-confirmed order total",
+        label: t("admin.kpi.manualVolume"),
+        value: formatCurrency(stats?.orders.sandboxVolumeVnd, language),
+        detail: t("admin.kpi.manualVolumeDetail"),
         icon: <WalletCards className="h-4 w-4" />,
       },
       {
-        label: "Active Subs",
-        value: formatNumber(stats?.subscriptions.active),
-        detail: `${formatNumber(stats?.users.admins)} admin users`,
+        label: t("admin.kpi.activeSubs"),
+        value: formatNumber(stats?.subscriptions.active, language),
+        detail: t("admin.kpi.adminUsers", {
+          count: formatNumber(stats?.users.admins, language),
+        }),
         icon: <CreditCard className="h-4 w-4" />,
       },
       {
-        label: "Credit Balance",
-        value: formatNumber(stats?.credits.totalBalance),
-        detail: `${formatNumber(stats?.credits.purchasedInRange)} purchased in range`,
+        label: t("admin.kpi.creditBalance"),
+        value: formatNumber(stats?.credits.totalBalance, language),
+        detail: t("admin.kpi.purchasedInRange", {
+          count: formatNumber(stats?.credits.purchasedInRange, language),
+        }),
         icon: <Database className="h-4 w-4" />,
       },
       {
-        label: "Catalog Status",
-        value: `${formatNumber(stats?.products.active)}/${formatNumber(
+        label: t("admin.kpi.catalogStatus"),
+        value: `${formatNumber(stats?.products.active, language)}/${formatNumber(
           stats?.products.total,
+          language,
         )}`,
         detail:
           (stats?.products.missingMvpProducts.length ?? 0) > 0
-            ? `${stats?.products.missingMvpProducts.length} missing MVP products`
-            : "MVP catalog coverage",
+            ? t("admin.kpi.missingProducts", {
+                count: stats?.products.missingMvpProducts.length ?? 0,
+              })
+            : t("admin.kpi.catalogCoverage"),
         icon: <PackageCheck className="h-4 w-4" />,
         ratioValue: stats?.products.active,
         ratioTotal: stats?.products.total,
@@ -1310,7 +1410,7 @@ export function AdminPage() {
             : ("cyan" as const),
       },
     ],
-    [stats],
+    [language, stats, t],
   );
 
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1327,7 +1427,10 @@ export function AdminPage() {
       const result: AdminMarkPaidResult = await adminApi.markOrderPaid(order.id);
       setConfirmOrder(null);
       setActionSuccess(
-        `Order ${shortId(result.order.id)} returned ${result.order.status}.`,
+        t("admin.success.markPaid", {
+          orderId: shortId(result.order.id, t),
+          status: result.order.status,
+        }),
       );
       await loadAdminData(false);
     } catch (markPaidError) {
@@ -1338,21 +1441,19 @@ export function AdminPage() {
   }
 
   return (
-    <DashboardShell planLabel="Admin OS">
+    <DashboardShell planLabel={t("shell.adminPlan")}>
       <main className="min-h-screen overflow-x-hidden px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
         <div className="mx-auto w-full max-w-[1440px] space-y-6">
           <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] xl:items-end">
             <div>
               <p className="text-xs font-bold uppercase text-[#00e5ff]">
-                Admin Overview
+                {t("admin.header.eyebrow")}
               </p>
               <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Admin Operations
+                {t("admin.header.title")}
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Signed in as {displayName}. Monitor users, VietQR payment
-                verification, catalog readiness, and system health from one
-                admin-only view.
+                {t("admin.header.body", { name: displayName })}
               </p>
             </div>
 
@@ -1369,7 +1470,7 @@ export function AdminPage() {
                     type="button"
                     onClick={() => setRange(option.value)}
                   >
-                    {option.label}
+                    {t(option.label)}
                   </button>
                 ))}
                 <button
@@ -1383,7 +1484,7 @@ export function AdminPage() {
                   ) : (
                     <RefreshCw className="h-4 w-4" />
                   )}
-                  Refresh
+                  {t("common.refresh")}
                 </button>
               </div>
 
@@ -1392,11 +1493,11 @@ export function AdminPage() {
                 onSubmit={handleSearchSubmit}
               >
                 <label className="relative min-w-0 flex-1">
-                  <span className="sr-only">Search users and orders</span>
+                  <span className="sr-only">{t("admin.search.label")}</span>
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#849396]" />
                   <input
                     className="min-h-11 w-full rounded-md border border-[#3b494c] bg-[#1c1b1b] py-2 pl-10 pr-3 text-sm font-semibold text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff]"
-                    placeholder="Search users and orders"
+                    placeholder={t("admin.search.placeholder")}
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                   />
@@ -1406,7 +1507,7 @@ export function AdminPage() {
                   type="submit"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
-                  Apply
+                  {t("admin.search.apply")}
                 </button>
               </form>
             </div>
@@ -1422,7 +1523,7 @@ export function AdminPage() {
                   <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                   <div>
                     <h2 className="text-sm font-bold text-white">
-                      Admin dashboard failed to load
+                      {t("admin.error.title")}
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-[#ffdad6]/80">
                       {error}
@@ -1435,7 +1536,7 @@ export function AdminPage() {
                   onClick={() => void loadAdminData()}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Retry
+                  {t("common.retry")}
                 </button>
               </div>
             </section>
@@ -1485,12 +1586,14 @@ export function AdminPage() {
 
           <AdminPanel>
             <PanelHeader
-              title="Recent Orders"
-              description={`${ordersPage.total} matching orders. Manual mark-paid requires checking the bank app or statement outside this system. This app does not reconcile transfers automatically.`}
+              title={t("admin.orders.title")}
+              description={t("admin.orders.description", {
+                count: ordersPage.total,
+              })}
               action={
                 <div className="flex flex-wrap gap-3">
                   <SectionSelect
-                    label="Order status"
+                    label={t("admin.orders.statusFilter")}
                     options={orderStatusOptions}
                     value={orderStatus}
                     onChange={setOrderStatus}
@@ -1514,12 +1617,14 @@ export function AdminPage() {
           <section className="grid gap-5 xl:grid-cols-12">
             <AdminPanel className="xl:col-span-7">
               <PanelHeader
-                title="Payment Transactions"
-                description={`${transactionsPage.total} matching payment records. Gateway transactions remain secondary when present.`}
+                title={t("admin.transactions.title")}
+                description={t("admin.transactions.description", {
+                  count: transactionsPage.total,
+                })}
                 action={
                   <div className="flex flex-wrap gap-3">
                     <SectionSelect
-                      label="Payment status"
+                      label={t("admin.transactions.statusFilter")}
                       options={transactionStatusOptions}
                       value={transactionStatus}
                       onChange={setTransactionStatus}
@@ -1535,8 +1640,10 @@ export function AdminPage() {
 
             <AdminPanel className="xl:col-span-5">
               <PanelHeader
-                title="Recent Users"
-                description={`${usersPage.total} matching accounts. Safe fields only.`}
+                title={t("admin.users.title")}
+                description={t("admin.users.description", {
+                  count: usersPage.total,
+                })}
               />
               <UsersTable isLoading={isLoading} users={usersPage.items} />
             </AdminPanel>
@@ -1548,11 +1655,18 @@ export function AdminPage() {
           />
 
           <section className="flex flex-col gap-3 border-t border-[#3b494c]/70 py-6 text-xs font-semibold text-[#849396] sm:flex-row sm:items-center sm:justify-between">
-            <span>3D Stylist admin console · Week 03B VietQR operations</span>
+            <span>{t("admin.footer.console")}</span>
             <span>
-              Manual mark-paid:{" "}
-              {getManualMarkPaidEnabled(health) ? "enabled" : "disabled"}
-              {" · "}Pagination: page {ordersPage.page} of {ordersPage.totalPages}
+              {t("admin.footer.manualMarkPaid", {
+                state: getManualMarkPaidEnabled(health)
+                  ? t("common.enabled")
+                  : t("common.disabled"),
+              })}
+              {" · "}
+              {t("admin.footer.pagination", {
+                page: ordersPage.page,
+                totalPages: ordersPage.totalPages,
+              })}
             </span>
           </section>
         </div>

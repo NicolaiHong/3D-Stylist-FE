@@ -24,39 +24,20 @@ import {
 } from "../features/billing/billing.types";
 import { getApiErrorMessage } from "../services/apiClient";
 import { getDisplayLabel } from "../i18n/displayMaps";
+import { formatI18nCurrency, formatI18nDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 
 export const BILLING_CART_STORAGE_KEY = "3d-stylist.checkout.productCode";
 
 type ProductSelectionIntent = "add_to_cart" | "buy_now";
+type Translate = ReturnType<typeof useI18n>["t"];
 
 interface PendingSubscriptionChange {
   product: BillingProduct;
 }
 
-function formatCurrency(value: number, currency = "VND") {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatDateTime(value: string | null | undefined) {
-  if (!value) {
-    return "No expiry returned";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function getOrderProductName(order: BillingOrder) {
-  return order.items[0]?.productName ?? "Billing product";
+function getOrderProductName(order: BillingOrder, t: Translate) {
+  return order.items[0]?.productName ?? t("checkout.productFallback");
 }
 
 function isWaitingForAdminVerification(order: BillingOrder) {
@@ -66,30 +47,30 @@ function isWaitingForAdminVerification(order: BillingOrder) {
   );
 }
 
-function getPendingOrderCopy(order: BillingOrder) {
+function getPendingOrderCopy(order: BillingOrder, t: Translate) {
   if (isWaitingForAdminVerification(order)) {
     return {
-      title: "Waiting for admin verification",
-      guidance: "Your transfer report is recorded. Access has not changed yet.",
+      title: t("credits.pending.waitingTitle"),
+      guidance: t("credits.pending.waitingGuidance"),
     };
   }
 
   return {
-    title: "Transfer required",
-    guidance: "Open checkout to scan VietQR or copy bank details.",
+    title: t("credits.pending.transferTitle"),
+    guidance: t("credits.pending.transferGuidance"),
   };
 }
 
-function getPlanBenefit(product: BillingProduct) {
+function getPlanBenefit(product: BillingProduct, t: Translate) {
   if (product.planCode === "pro") {
-    return "Priority render and high quality texture";
+    return t("credits.plan.benefit.pro");
   }
 
   if (product.planCode === "creator") {
-    return "Faster queue and better texture";
+    return t("credits.plan.benefit.creator");
   }
 
-  return "Standard queue and basic export";
+  return t("credits.plan.benefit.default");
 }
 
 function statusTone(status: BillingOrder["status"]) {
@@ -134,6 +115,7 @@ function SubscriptionCancelDialog({
   onConfirm: () => void;
   onConfirmationChange: (value: string) => void;
 }) {
+  const { t } = useI18n();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const canConfirm = confirmationText === "cancel";
@@ -209,7 +191,7 @@ function SubscriptionCancelDialog({
             <AlertTriangle className="h-5 w-5" />
           </span>
           <button
-            aria-label="Close cancellation dialog"
+            aria-label={t("credits.cancel.closeAria")}
             className="flex h-10 w-10 items-center justify-center rounded-md text-[#bac9cc] transition hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isSubmitting}
             type="button"
@@ -220,33 +202,33 @@ function SubscriptionCancelDialog({
         </div>
 
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#f3bf26]">
-          Plan change blocked
+          {t("credits.cancel.eyebrow")}
         </p>
         <h2
           className="mt-3 font-display text-2xl font-semibold text-white"
           id="subscription-cancel-title"
         >
-          Cancel current subscription?
+          {t("credits.cancel.title")}
         </h2>
         <p
           className="mt-3 text-sm leading-6 text-[#bac9cc]"
           id="subscription-cancel-description"
         >
-          You are currently on {currentPlanName}. Cancellation is required
-          before changing to {selectedPlanName}.
+          {t("credits.cancel.description", {
+            currentPlan: currentPlanName,
+            selectedPlan: selectedPlanName,
+          })}
         </p>
 
         <div className="mt-5 rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-sm leading-6 text-[#ffeac0]">
-          Your current plan will stop unlocking paid export and download access.
-          No new VietQR order will be created until you choose the new plan
-          again.
+          {t("credits.cancel.warning")}
         </div>
 
         <label
           className="mt-5 block text-sm font-bold text-white"
           htmlFor="subscription-cancel-confirmation"
         >
-          Type 'cancel' to confirm
+          {t("credits.cancel.confirmLabel")}
         </label>
         <input
           aria-describedby={error ? "subscription-cancel-error" : undefined}
@@ -254,7 +236,7 @@ function SubscriptionCancelDialog({
           className="mt-2 h-12 w-full rounded-md border border-white/10 bg-[#0e0e0e] px-3 text-base text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-4 focus:ring-[#00e5ff]/15 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={isSubmitting}
           id="subscription-cancel-confirmation"
-          placeholder="type cancel to confirm"
+          placeholder={t("credits.cancel.placeholder")}
           ref={inputRef}
           type="text"
           value={confirmationText}
@@ -278,7 +260,7 @@ function SubscriptionCancelDialog({
             type="button"
             onClick={onClose}
           >
-            Keep current plan
+            {t("credits.cancel.keepCurrent")}
           </button>
           <button
             className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md bg-[#ffb4ab] px-4 py-2.5 text-sm font-bold text-[#3a0909] transition hover:bg-[#ffdad6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdad6] disabled:cursor-not-allowed disabled:opacity-60"
@@ -287,7 +269,7 @@ function SubscriptionCancelDialog({
             onClick={onConfirm}
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Cancel current plan
+            {t("credits.cancel.confirm")}
           </button>
         </div>
       </div>
@@ -308,6 +290,7 @@ function ProductActions({
   onAddToCart: (product: BillingProduct) => void;
   onBuyNow: (product: BillingProduct) => void;
 }) {
+  const { t } = useI18n();
   const isSelected = selectedProductCode === product.code;
 
   return (
@@ -319,7 +302,7 @@ function ProductActions({
         onClick={() => onAddToCart(product)}
       >
         <ShoppingCart className="h-4 w-4" />
-        {isSelected ? "In cart" : "Add to cart"}
+        {isSelected ? t("credits.actions.inCart") : t("credits.actions.addToCart")}
       </button>
       <button
         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
@@ -327,7 +310,7 @@ function ProductActions({
         type="button"
         onClick={() => onBuyNow(product)}
       >
-        Buy now
+        {t("credits.actions.buyNow")}
         <ArrowRight className="h-4 w-4" />
       </button>
     </div>
@@ -335,7 +318,7 @@ function ProductActions({
 }
 
 export function CreditsPage() {
-  const { language } = useI18n();
+  const { language, t } = useI18n();
   const navigate = useNavigate();
   const [catalog, setCatalog] = useState<BillingCatalog | null>(null);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -441,7 +424,9 @@ export function CreditsPage() {
     setActionMessage(null);
     window.localStorage.setItem(BILLING_CART_STORAGE_KEY, product.code);
     setCartProductCode(product.code);
-    setActionMessage(message ?? `${product.name} is ready for checkout.`);
+    setActionMessage(
+      message ?? t("credits.cart.ready", { product: product.name }),
+    );
     window.setTimeout(() => setIsCartUpdating(false), 150);
   }
 
@@ -492,7 +477,9 @@ export function CreditsPage() {
     }
 
     if (isCurrentSubscriptionProduct(selectedProduct)) {
-      setActionMessage(`${selectedProduct.name} is already your current plan.`);
+      setActionMessage(
+        t("credits.cart.currentPlan", { product: selectedProduct.name }),
+      );
       return;
     }
 
@@ -517,7 +504,7 @@ export function CreditsPage() {
       await loadBillingData(false);
       setCartProduct(
         pendingSubscriptionChange.product,
-        "Current plan cancelled. You can now continue with your new plan.",
+        t("credits.cart.currentPlanCancelled"),
       );
       setPendingSubscriptionChange(null);
       setCancellationText("");
@@ -541,29 +528,28 @@ export function CreditsPage() {
           <header className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-                Credits
+                {t("credits.header.eyebrow")}
               </p>
               <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Plans and credit packs.
+                {t("credits.header.title")}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Add one item to cart or buy now, then complete checkout with
-                VietQR bank transfer. Access activates after admin verification.
+                {t("credits.header.body")}
               </p>
             </div>
 
             <section className="grid grid-cols-2 gap-3">
               <div className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#bac9cc]">
-                  Current plan
+                  {t("credits.summary.currentPlan")}
                 </p>
                 <p className="mt-2 truncate font-display text-2xl font-semibold text-white">
-                  {summary?.plan.name ?? "Free"}
+                  {summary?.plan.name ?? t("credits.summary.free")}
                 </p>
               </div>
               <div className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#bac9cc]">
-                  Credits
+                  {t("credits.summary.credits")}
                 </p>
                 <p className="mt-2 font-display text-2xl font-semibold text-white">
                   {summary?.credits.balance ?? 0}
@@ -582,7 +568,7 @@ export function CreditsPage() {
                   <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                   <div>
                     <h2 className="text-sm font-bold text-white">
-                      Billing data failed to load
+                      {t("credits.error.title")}
                     </h2>
                     <p className="mt-1 text-sm text-[#ffdad6]/80">{error}</p>
                   </div>
@@ -593,7 +579,7 @@ export function CreditsPage() {
                   onClick={() => void loadBillingData()}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Retry
+                  {t("common.retry")}
                 </button>
               </div>
             </section>
@@ -613,24 +599,26 @@ export function CreditsPage() {
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-                    One-item cart
+                    {t("credits.cart.eyebrow")}
                   </p>
                   <h2 className="mt-2 font-display text-2xl font-semibold text-white">
                     {selectedProduct.name}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                    {formatCurrency(
+                    {formatI18nCurrency(
                       selectedProduct.priceVnd,
+                      language,
                       selectedProduct.currency,
                     )}
                     {" · "}
                     {selectedProduct.kind === "subscription_plan"
-                      ? "Monthly plan"
-                      : `${selectedProduct.credits ?? 0} HD credits`}
+                      ? t("credits.cart.monthlyPlan")
+                      : t("credits.cart.hdCredits", {
+                          count: selectedProduct.credits ?? 0,
+                        })}
                   </p>
                   <p className="mt-2 max-w-2xl text-xs font-semibold leading-5 text-[#c3f5ff]">
-                    Checkout creates a manual VietQR order. Access does not
-                    change until admin verification.
+                    {t("credits.cart.checkoutNote")}
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
@@ -640,7 +628,7 @@ export function CreditsPage() {
                     onClick={clearCart}
                   >
                     <Trash2 className="h-4 w-4" />
-                    Remove
+                    {t("credits.cart.remove")}
                   </button>
                   <button
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
@@ -651,7 +639,7 @@ export function CreditsPage() {
                     {isCartUpdating ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : null}
-                    Checkout
+                    {t("credits.cart.checkout")}
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -674,14 +662,14 @@ export function CreditsPage() {
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="h-5 w-5 text-[#00e5ff]" />
                   <h2 className="font-display text-2xl font-semibold text-white">
-                    Subscription plans
+                    {t("credits.plans.title")}
                   </h2>
                 </div>
                 <div className="grid gap-4 lg:grid-cols-3">
                   {plans.length === 0 ? (
-                    <EmptyCatalogState
-                      title="No subscription plans returned"
-                      body="Refresh billing data after the catalog endpoint is ready."
+                      <EmptyCatalogState
+                      title={t("credits.plans.emptyTitle")}
+                      body={t("credits.plans.emptyBody")}
                     />
                   ) : (
                     plans.map((plan) => {
@@ -700,33 +688,39 @@ export function CreditsPage() {
                                 {plan.name}
                               </h3>
                               <p className="mt-1 text-sm text-[#bac9cc]">
-                                Manual monthly plan
+                                {t("credits.plans.manualMonthly")}
                               </p>
                             </div>
                             {isCurrent ? (
                               <span className="rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#9cf0ff]">
-                                Current
+                                {t("credits.plans.current")}
                               </span>
                             ) : null}
                           </div>
                           <p className="mt-5 font-display text-3xl font-semibold text-white">
-                            {formatCurrency(plan.priceVnd, plan.currency)}
+                            {formatI18nCurrency(
+                              plan.priceVnd,
+                              language,
+                              plan.currency,
+                            )}
                             <span className="ml-2 text-sm font-semibold text-[#bac9cc]">
-                              / month
+                              {t("credits.plans.cadence")}
                             </span>
                           </p>
                           <ul className="mt-4 space-y-2.5 text-sm text-[#bac9cc]">
                             <li className="flex gap-2">
                               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
-                              {plan.credits ?? 0} included HD generations
+                              {t("credits.plan.includedGenerations", {
+                                count: plan.credits ?? 0,
+                              })}
                             </li>
                             <li className="flex gap-2">
                               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
-                              Download model and basic export
+                              {t("credits.plan.export")}
                             </li>
                             <li className="flex gap-2">
                               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
-                              {getPlanBenefit(plan)}
+                              {getPlanBenefit(plan, t)}
                             </li>
                           </ul>
                           <ProductActions
@@ -747,14 +741,14 @@ export function CreditsPage() {
                 <div className="flex items-center gap-3">
                   <Database className="h-5 w-5 text-[#00e5ff]" />
                   <h2 className="font-display text-2xl font-semibold text-white">
-                    Credit packs
+                    {t("credits.packs.title")}
                   </h2>
                 </div>
                 <div className="grid gap-4 lg:grid-cols-3">
                   {creditPacks.length === 0 ? (
-                    <EmptyCatalogState
-                      title="No credit packs returned"
-                      body="Refresh billing data after the catalog endpoint is ready."
+                      <EmptyCatalogState
+                      title={t("credits.packs.emptyTitle")}
+                      body={t("credits.packs.emptyBody")}
                     />
                   ) : (
                     creditPacks.map((pack) => (
@@ -768,18 +762,22 @@ export function CreditsPage() {
                               {pack.name}
                             </h3>
                             <p className="mt-1 text-sm text-[#bac9cc]">
-                              1 credit = 1 HD generation
+                              {t("credits.packs.rule")}
                             </p>
                           </div>
                           <WalletCards className="h-5 w-5 text-[#f3bf26]" />
                         </div>
                         <p className="mt-5 font-display text-3xl font-semibold text-white">
-                          {formatCurrency(pack.priceVnd, pack.currency)}
+                          {formatI18nCurrency(
+                            pack.priceVnd,
+                            language,
+                            pack.currency,
+                          )}
                         </p>
                         <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                          Adds {pack.credits ?? 0} credits after admin verifies
-                          the VietQR transfer. Credit packs do not unlock export
-                          by themselves.
+                          {t("credits.packs.body", {
+                            count: pack.credits ?? 0,
+                          })}
                         </p>
                         <ProductActions
                           product={pack}
@@ -797,11 +795,10 @@ export function CreditsPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="font-display text-2xl font-semibold text-white">
-                      Pending VietQR orders
+                      {t("credits.pending.title")}
                     </h2>
                     <p className="mt-1 text-sm text-[#bac9cc]">
-                      Resume a manual transfer or monitor admin verification
-                      after reporting it.
+                      {t("credits.pending.body")}
                     </p>
                   </div>
                   <button
@@ -810,7 +807,7 @@ export function CreditsPage() {
                     onClick={() => void loadBillingData(false)}
                   >
                     <RefreshCw className="h-4 w-4" />
-                    Refresh
+                    {t("common.refresh")}
                   </button>
                 </div>
 
@@ -818,16 +815,16 @@ export function CreditsPage() {
                   <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center">
                     <CreditCard className="mx-auto h-7 w-7 text-[#3b494c]" />
                     <p className="mt-3 text-sm font-bold text-white">
-                      No pending payments
+                      {t("credits.pending.emptyTitle")}
                     </p>
                     <p className="mt-1 text-sm text-[#bac9cc]">
-                      Choose a plan or credit pack to create one.
+                      {t("credits.pending.emptyBody")}
                     </p>
                   </div>
                 ) : (
                   <div className="grid gap-4">
                     {pendingOrders.map((order) => {
-                      const pendingCopy = getPendingOrderCopy(order);
+                      const pendingCopy = getPendingOrderCopy(order, t);
                       const transferContent =
                         order.bankTransferContent ?? order.orderCode;
 
@@ -842,21 +839,30 @@ export function CreditsPage() {
                               {pendingCopy.title}
                             </span>
                             <h3 className="mt-3 font-display text-xl font-semibold text-white">
-                              {getOrderProductName(order)}
+                              {getOrderProductName(order, t)}
                             </h3>
                             <p className="mt-2 text-sm text-[#bac9cc]">
-                              {formatCurrency(
+                              {formatI18nCurrency(
                                 order.totalAmount,
+                                language,
                                 order.currency,
                               )}
-                              {" · "}Expires {formatDateTime(order.expiresAt)}
+                              {" · "}
+                              {t("credits.pending.expires", {
+                                date: formatI18nDateTime(
+                                  order.expiresAt,
+                                  language,
+                                  t("common.notReturned"),
+                                ),
+                              })}
                             </p>
                             <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
                               {pendingCopy.guidance}
                             </p>
                             {transferContent ? (
                               <p className="mt-2 break-all font-mono text-xs font-bold text-[#ffeac0]">
-                                Transfer content / order code: {transferContent}
+                                {t("credits.pending.transferContent")}{" "}
+                                {transferContent}
                               </p>
                             ) : null}
                           </div>
@@ -867,7 +873,7 @@ export function CreditsPage() {
                               navigate(`/credits/checkout/${order.id}`)
                             }
                           >
-                            View checkout
+                            {t("credits.pending.viewCheckout")}
                             <ArrowRight className="h-4 w-4" />
                           </button>
                         </div>
@@ -880,15 +886,15 @@ export function CreditsPage() {
 
               <section className="space-y-4">
                 <h2 className="font-display text-2xl font-semibold text-white">
-                  Order history
+                  {t("credits.history.title")}
                 </h2>
                 {orders.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center">
                     <p className="text-sm font-bold text-white">
-                      No billing orders yet
+                      {t("credits.history.emptyTitle")}
                     </p>
                     <p className="mt-1 text-sm text-[#bac9cc]">
-                      VietQR orders will appear here after checkout starts.
+                      {t("credits.history.emptyBody")}
                     </p>
                   </div>
                 ) : (
@@ -901,7 +907,7 @@ export function CreditsPage() {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="truncate text-sm font-bold text-white">
-                              {getOrderProductName(order)}
+                              {getOrderProductName(order, t)}
                             </p>
                             <span
                               className={`rounded-md border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.12em] ${statusTone(
@@ -916,8 +922,19 @@ export function CreditsPage() {
                             </span>
                           </div>
                           <p className="mt-2 text-sm text-[#bac9cc]">
-                            {formatCurrency(order.totalAmount, order.currency)}
-                            {" · "}Created {formatDateTime(order.createdAt)}
+                            {formatI18nCurrency(
+                              order.totalAmount,
+                              language,
+                              order.currency,
+                            )}
+                            {" · "}
+                            {t("credits.history.created", {
+                              date: formatI18nDateTime(
+                                order.createdAt,
+                                language,
+                                t("common.notReturned"),
+                              ),
+                            })}
                           </p>
                         </div>
                         {order.status === "pending" ? (
@@ -928,17 +945,17 @@ export function CreditsPage() {
                               navigate(`/credits/checkout/${order.id}`)
                             }
                           >
-                            Resume checkout
+                            {t("credits.history.resume")}
                             <ArrowRight className="h-4 w-4" />
                           </button>
                         ) : order.status === "paid" ? (
                           <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#9cf0ff]">
                             <CheckCircle2 className="h-4 w-4" />
-                            Confirmed
+                            {t("credits.history.confirmed")}
                           </span>
                         ) : (
                           <span className="inline-flex min-h-11 items-center justify-center rounded-md px-3 py-2 text-sm font-bold text-[#ffdad6]">
-                            Payment not completed
+                            {t("credits.history.paymentIncomplete")}
                           </span>
                         )}
                       </div>
@@ -952,11 +969,14 @@ export function CreditsPage() {
       </main>
       <SubscriptionCancelDialog
         confirmationText={cancellationText}
-        currentPlanName={summary?.plan.name ?? "current plan"}
+        currentPlanName={summary?.plan.name ?? t("credits.cancel.currentPlanFallback")}
         error={cancellationError}
         isOpen={Boolean(pendingSubscriptionChange)}
         isSubmitting={isCancellingSubscription}
-        selectedPlanName={pendingSubscriptionChange?.product.name ?? "new plan"}
+        selectedPlanName={
+          pendingSubscriptionChange?.product.name ??
+          t("credits.cancel.newPlanFallback")
+        }
         onClose={closeCancellationDialog}
         onConfirm={() => void handleConfirmCancellation()}
         onConfirmationChange={setCancellationText}

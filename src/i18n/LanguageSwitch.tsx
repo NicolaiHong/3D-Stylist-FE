@@ -11,7 +11,7 @@ export function LanguageSwitch({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`inline-flex rounded-md border border-white/10 bg-white/[0.04] p-1 ${className}`}
+      className={`inline-flex h-[34px] items-center rounded-full border border-white/[0.12] bg-[#0e0e0e]/80 p-0.5 ${className}`}
       role="group"
       aria-label={t("language.groupLabel")}
     >
@@ -26,10 +26,10 @@ export function LanguageSwitch({ className = "" }: { className?: string }) {
           <button
             aria-label={ariaLabel}
             aria-pressed={isActive}
-            className={`min-h-9 rounded px-2.5 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+            className={`h-[30px] min-w-9 rounded-full px-2.5 text-xs font-semibold leading-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
               isActive
-                ? "bg-[#00e5ff] text-[#001f24]"
-                : "text-[#bac9cc] hover:bg-white/[0.08] hover:text-white"
+                ? "bg-[#00e5ff]/12 text-[#c3f5ff] ring-1 ring-[#00e5ff]/20"
+                : "text-[#9daeb2] hover:bg-white/[0.06] hover:text-white"
             }`}
             key={option}
             type="button"

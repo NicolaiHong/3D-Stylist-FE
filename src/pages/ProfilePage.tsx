@@ -32,37 +32,21 @@ import type { BillingSummary } from "../features/billing/billing.types";
 import { profileApi } from "../features/profile/profile.api";
 import { getApiErrorMessage } from "../services/apiClient";
 import { getKnownDisplayLabel } from "../i18n/displayMaps";
+import { formatI18nDate } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
+import type { Language } from "../i18n/types";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SELFIE_SIZE_BYTES = 5 * 1024 * 1024;
 
-function formatDate(value?: string) {
-  if (!value) {
-    return "Unknown";
-  }
+type Translate = ReturnType<typeof useI18n>["t"];
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatFileSize(value: number) {
-  return `${(value / 1024 / 1024).toFixed(2)} MB`;
-}
-
-function formatLabel(value: string | null | undefined, fallback = "Unknown") {
-  if (!value) {
-    return fallback;
-  }
-
-  return value
-    .split(/[_\s-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+function formatFileSize(value: number, language: Language) {
+  const locale = language === "vi" ? "vi-VN" : "en-US";
+  return `${new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  }).format(value / 1024 / 1024)} MB`;
 }
 
 function getInitials(value: string) {
@@ -78,13 +62,13 @@ function getInitials(value: string) {
   return parts.map((part) => part[0]?.toUpperCase()).join("");
 }
 
-function validateSelfieFile(file: File): string | null {
+function validateSelfieFile(file: File, t: Translate): string | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return "Unsupported file type. Please use JPG, PNG, or WebP.";
+    return t("profile.validation.unsupportedType");
   }
 
   if (file.size > MAX_SELFIE_SIZE_BYTES) {
-    return "File is too large. Please upload an image under 5MB.";
+    return t("profile.validation.fileTooLarge");
   }
 
   return null;
@@ -116,11 +100,11 @@ function MessageBanner({
 }
 
 export function ProfilePage() {
-  const { language } = useI18n();
+  const { language, t } = useI18n();
   const user = useAuthStore((state) => state.user);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const displayName = user?.displayName || user?.fullName || "";
-  const fallbackName = displayName || user?.email || "Stylist";
+  const fallbackName = displayName || user?.email || t("profile.fallbackName");
   const [nameValue, setNameValue] = useState(displayName);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -178,22 +162,24 @@ export function ProfilePage() {
   const hasSavedAvatar = Boolean(user?.avatarUrl);
   const hasProfileChanges = nameValue.trim() !== displayName;
   const isAdmin = user?.role === AUTH_ROLES.ADMIN;
-  const planName = billingSummary?.plan.name ?? "Free";
+  const planName = billingSummary?.plan.name ?? t("credits.summary.free");
   const planStatus =
     billingSummary?.subscription?.status ?? billingSummary?.plan.status ?? null;
   const creditsBalance = billingSummary?.credits.balance ?? 0;
   const billingStatusLabel = isBillingLoading
-    ? "Loading"
+    ? t("common.loading")
     : billingError
-      ? "Unavailable"
-      : formatLabel(planStatus, "Free");
+      ? t("common.unavailable")
+      : planStatus
+        ? getKnownDisplayLabel(planStatus, language)
+        : t("credits.summary.free");
 
   function selectFile(file: File | undefined) {
     if (!file) {
       return;
     }
 
-    const validationError = validateSelfieFile(file);
+    const validationError = validateSelfieFile(file, t);
     setSuccessMessage(null);
 
     if (validationError) {
@@ -233,7 +219,7 @@ export function ProfilePage() {
     setSuccessMessage(null);
 
     if (!trimmedName) {
-      setProfileError("Display name is required.");
+      setProfileError(t("profile.validation.displayNameRequired"));
       return;
     }
 
@@ -242,7 +228,7 @@ export function ProfilePage() {
     try {
       await profileApi.updateDisplayName(trimmedName);
       await refreshUser();
-      setSuccessMessage("Profile updated.");
+      setSuccessMessage(t("profile.success.profileUpdated"));
     } catch (error) {
       setProfileError(getApiErrorMessage(error));
     } finally {
@@ -252,7 +238,7 @@ export function ProfilePage() {
 
   async function handleUploadSubmit() {
     if (!selectedFile) {
-      setUploadError("Choose an image before uploading.");
+      setUploadError(t("profile.validation.chooseImage"));
       return;
     }
 
@@ -264,10 +250,10 @@ export function ProfilePage() {
       await profileApi.uploadSelfie(selectedFile);
       await refreshUser();
       setSelectedFile(null);
-      setSuccessMessage("Selfie uploaded.");
+      setSuccessMessage(t("profile.success.selfieUploaded"));
     } catch (error) {
       setUploadError(
-        getApiErrorMessage(error) || "Upload failed. Please try again.",
+        getApiErrorMessage(error) || t("profile.error.uploadFailed"),
       );
     } finally {
       setIsUploading(false);
@@ -282,7 +268,7 @@ export function ProfilePage() {
             <div className="text-center">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#00e5ff]" />
               <p className="mt-4 text-sm font-bold text-white">
-                Loading profile
+                {t("profile.loading")}
               </p>
             </div>
           </div>
@@ -301,7 +287,7 @@ export function ProfilePage() {
                 <div className="relative aspect-square rounded-lg border border-[#00e5ff]/55 bg-[#0e0e0e] p-1 shadow-[0_0_28px_rgba(0,229,255,0.18)]">
                   {activePreviewUrl ? (
                     <img
-                      alt={`${fallbackName} avatar preview`}
+                      alt={t("profile.avatarAlt", { name: fallbackName })}
                       className="h-full w-full rounded-md object-cover"
                       src={activePreviewUrl}
                     />
@@ -311,7 +297,7 @@ export function ProfilePage() {
                         {getInitials(fallbackName)}
                       </span>
                       <span className="mt-2 max-w-[110px] text-xs font-semibold leading-5 text-[#bac9cc]">
-                        No selfie uploaded
+                        {t("profile.noSelfieUploaded")}
                       </span>
                     </div>
                   )}
@@ -325,10 +311,10 @@ export function ProfilePage() {
                 </div>
                 <p className="mt-3 text-center text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   {hasSelectedFile
-                    ? "Preview selected"
+                    ? t("profile.previewSelected")
                     : hasSavedAvatar
-                      ? "Selfie active"
-                      : "Awaiting upload"}
+                      ? t("profile.selfieActive")
+                      : t("profile.awaitingUpload")}
                 </p>
               </div>
 
@@ -344,55 +330,57 @@ export function ProfilePage() {
                       <Sparkles className="h-3.5 w-3.5" />
                     )}
                     {isAdmin
-                      ? "Admin"
+                      ? t("display.role.admin")
                       : isBillingLoading
-                        ? "Plan loading"
+                        ? t("profile.planLoading")
                         : billingError
-                          ? "Billing unavailable"
+                          ? t("profile.billingUnavailable")
                           : planName}
                   </span>
                 </div>
 
                 <p className="mt-3 break-all text-sm font-semibold text-[#bac9cc]">
-                  {user.email || "No email returned"}
+                  {user.email || t("profile.noEmailReturned")}
                 </p>
                 <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-[#bac9cc] lg:mx-0">
-                  Manage the identity details used across your 3D Stylist
-                  workspace. Upload a clear front-facing selfie now so future
-                  outfit personalization has a stronger profile reference.
+                  {t("profile.hero.body")}
                 </p>
 
                 <dl className="mt-6 grid gap-3 text-left sm:grid-cols-3">
                   <div className="border-l border-[#3b494c] px-4">
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Current plan
+                      {t("profile.currentPlan")}
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
                       {isBillingLoading
-                        ? "Loading"
+                        ? t("common.loading")
                         : billingError
-                          ? "Unavailable"
+                          ? t("common.unavailable")
                           : planName}
                     </dd>
                   </div>
                   <div className="border-l border-[#3b494c] px-4">
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Credits
+                      {t("profile.credits")}
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
                       {isBillingLoading
-                        ? "Loading"
+                        ? t("common.loading")
                         : billingError
-                          ? "Unavailable"
+                          ? t("common.unavailable")
                           : creditsBalance}
                     </dd>
                   </div>
                   <div className="border-l border-[#3b494c] px-4">
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Member since
+                      {t("profile.memberSince")}
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
-                      {formatDate(user.createdAt)}
+                      {formatI18nDate(
+                        user.createdAt,
+                        language,
+                        t("common.unknown"),
+                      )}
                     </dd>
                   </div>
                 </dl>
@@ -413,8 +401,7 @@ export function ProfilePage() {
                 <div className="flex gap-3">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>
-                    Billing summary is unavailable right now. Profile editing
-                    and selfie upload still work.
+                    {t("profile.billingUnavailableBanner")}
                   </span>
                 </div>
                 <button
@@ -423,7 +410,7 @@ export function ProfilePage() {
                   onClick={() => void loadBillingSummary()}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Retry billing
+                  {t("profile.retryBilling")}
                 </button>
               </div>
             </section>
@@ -437,15 +424,15 @@ export function ProfilePage() {
               <div className="flex flex-col gap-3 border-b border-[#3b494c]/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-                    Identity management
+                    {t("profile.identity.eyebrow")}
                   </p>
                   <h2 className="mt-2 font-display text-2xl font-semibold text-white">
-                    Account settings
+                    {t("profile.identity.title")}
                   </h2>
                 </div>
                 {isAdmin ? (
                   <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                    Admin account
+                    {t("profile.identity.adminAccount")}
                   </span>
                 ) : null}
               </div>
@@ -456,13 +443,13 @@ export function ProfilePage() {
                     className="text-xs font-bold uppercase tracking-[0.14em] text-[#bac9cc]"
                     htmlFor="displayName"
                   >
-                    Display name
+                    {t("profile.identity.displayName")}
                   </label>
                   <input
                     className="h-12 w-full rounded-md border border-[#3b494c] bg-[#0e0e0e] px-3 text-base text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-4 focus:ring-[#00e5ff]/15 disabled:cursor-not-allowed disabled:opacity-60"
                     id="displayName"
                     maxLength={255}
-                    placeholder="Your display name"
+                    placeholder={t("profile.identity.displayNamePlaceholder")}
                     value={nameValue}
                     onChange={(event) => setNameValue(event.target.value)}
                   />
@@ -473,13 +460,13 @@ export function ProfilePage() {
                     className="text-xs font-bold uppercase tracking-[0.14em] text-[#bac9cc]"
                     htmlFor="email"
                   >
-                    Email address
+                    {t("profile.identity.email")}
                   </label>
                   <input
                     className="h-12 w-full cursor-not-allowed rounded-md border border-[#3b494c] bg-[#0e0e0e] px-3 text-base text-[#bac9cc] outline-none"
                     id="email"
                     readOnly
-                    value={user.email ?? "Not provided"}
+                    value={user.email ?? t("profile.identity.notProvided")}
                   />
                 </div>
               </div>
@@ -497,12 +484,10 @@ export function ProfilePage() {
                   </span>
                   <div>
                     <h3 className="text-sm font-bold text-white">
-                      Account visibility
+                      {t("profile.identity.visibilityTitle")}
                     </h3>
                     <p className="mt-1 text-sm leading-6 text-[#bac9cc]">
-                      Display name is editable. Email, membership date, and
-                      billing plan details come from protected backend
-                      responses.
+                      {t("profile.identity.visibilityBody")}
                     </p>
                   </div>
                 </div>
@@ -519,12 +504,12 @@ export function ProfilePage() {
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  Save changes
+                  {t("common.saveChanges")}
                 </button>
                 <p className="text-sm text-[#849396]">
                   {hasProfileChanges
-                    ? "Unsaved display name change"
-                    : "Profile details are current"}
+                    ? t("profile.identity.unsaved")
+                    : t("profile.identity.current")}
                 </p>
               </div>
             </form>
@@ -536,14 +521,13 @@ export function ProfilePage() {
                 </span>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-                    Selfie upload
+                    {t("profile.selfie.eyebrow")}
                   </p>
                   <h2 className="mt-2 font-display text-2xl font-semibold text-white">
-                    Personalization image
+                    {t("profile.selfie.title")}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                    Use a clear front-facing image. The preview updates before
-                    upload so you can verify the crop and lighting first.
+                    {t("profile.selfie.body")}
                   </p>
                 </div>
               </div>
@@ -568,11 +552,10 @@ export function ProfilePage() {
                   <ImagePlus className="h-6 w-6" />
                 </span>
                 <span className="mt-4 text-base font-bold text-white">
-                  Upload your selfie
+                  {t("profile.selfie.upload")}
                 </span>
                 <span className="mt-2 max-w-xs text-sm leading-6 text-[#bac9cc]">
-                  Drag an image here or choose a file. JPG, PNG, or WebP under
-                  5MB.
+                  {t("profile.selfie.dropHelp")}
                 </span>
               </label>
 
@@ -587,7 +570,7 @@ export function ProfilePage() {
                         {selectedFile.name}
                       </p>
                       <p className="mt-1 text-sm text-[#c3f5ff]">
-                        {formatFileSize(selectedFile.size)}
+                        {formatFileSize(selectedFile.size, language)}
                       </p>
                     </div>
                   </div>
@@ -598,7 +581,7 @@ export function ProfilePage() {
                       onClick={() => setSelectedFile(null)}
                     >
                       <X className="h-4 w-4" />
-                      Clear preview
+                      {t("profile.selfie.clearPreview")}
                     </button>
                     <button
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
@@ -611,7 +594,7 @@ export function ProfilePage() {
                       ) : (
                         <UploadCloud className="h-4 w-4" />
                       )}
-                      Upload selfie
+                      {t("profile.selfie.uploadButton")}
                     </button>
                   </div>
                 </div>
@@ -621,8 +604,8 @@ export function ProfilePage() {
                     <Camera className="mt-0.5 h-4 w-4 shrink-0 text-[#9cf0ff]" />
                     <p className="text-sm leading-6 text-[#bac9cc]">
                       {hasSavedAvatar
-                        ? "Choose a new image when you want to replace the current selfie."
-                        : "Upload your selfie to personalize future outfit generation."}
+                        ? t("profile.selfie.replaceHelp")
+                        : t("profile.selfie.personalizeHelp")}
                     </p>
                   </div>
                 </div>
@@ -640,10 +623,10 @@ export function ProfilePage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-                  Account record
+                  {t("profile.record.eyebrow")}
                 </p>
                 <h2 className="mt-2 font-display text-2xl font-semibold text-white">
-                  Profile details
+                  {t("profile.record.title")}
                 </h2>
               </div>
               <button
@@ -655,7 +638,7 @@ export function ProfilePage() {
                 }}
               >
                 <RefreshCw className="h-4 w-4" />
-                Refresh
+                {t("common.refresh")}
               </button>
             </div>
 
@@ -663,42 +646,42 @@ export function ProfilePage() {
               <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Mail className="h-3.5 w-3.5" />
-                  Email
+                  {t("profile.record.email")}
                 </dt>
                 <dd className="mt-3 break-all text-sm font-bold text-white">
-                  {user.email || "Not provided"}
+                  {user.email || t("profile.identity.notProvided")}
                 </dd>
               </div>
               <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <CreditCard className="h-3.5 w-3.5" />
-                  Current plan
+                  {t("profile.currentPlan")}
                 </dt>
                 <dd className="mt-3 text-sm font-bold text-white">
                   {isBillingLoading
-                    ? "Loading"
+                    ? t("common.loading")
                     : billingError
-                      ? "Unavailable"
+                      ? t("common.unavailable")
                       : planName}
                 </dd>
               </div>
               <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Credits
+                  {t("profile.credits")}
                 </dt>
                 <dd className="mt-3 text-sm font-bold text-white">
                   {isBillingLoading
-                    ? "Loading"
+                    ? t("common.loading")
                     : billingError
-                      ? "Unavailable"
+                      ? t("common.unavailable")
                       : creditsBalance}
                 </dd>
               </div>
               <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <BadgeCheck className="h-3.5 w-3.5" />
-                  Plan status
+                  {t("profile.record.planStatus")}
                 </dt>
                 <dd className="mt-3 text-sm font-bold text-white">
                   {billingStatusLabel}
@@ -707,19 +690,25 @@ export function ProfilePage() {
               <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Calendar className="h-3.5 w-3.5" />
-                  Joined
+                  {t("profile.record.joined")}
                 </dt>
                 <dd className="mt-3 text-sm font-bold text-white">
-                  {formatDate(user.createdAt)}
+                  {formatI18nDate(
+                    user.createdAt,
+                    language,
+                    t("common.unknown"),
+                  )}
                 </dd>
               </div>
               <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Camera className="h-3.5 w-3.5" />
-                  Selfie
+                  {t("profile.record.selfie")}
                 </dt>
                 <dd className="mt-3 text-sm font-bold text-white">
-                  {hasSavedAvatar ? "Uploaded" : "Not uploaded"}
+                  {hasSavedAvatar
+                    ? t("display.boolean.verified")
+                    : t("display.boolean.notVerified")}
                 </dd>
               </div>
             </dl>
@@ -727,12 +716,12 @@ export function ProfilePage() {
             {isAdmin ? (
               <section className="mt-4 rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                  Admin-only account fields
+                  {t("profile.record.adminFields")}
                 </p>
                 <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div>
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Role
+                      {t("profile.record.role")}
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
                       {getKnownDisplayLabel(user.role, language)}
@@ -740,7 +729,7 @@ export function ProfilePage() {
                   </div>
                   <div>
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Account status
+                      {t("profile.record.accountStatus")}
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
                       {getKnownDisplayLabel(user.status, language)}
