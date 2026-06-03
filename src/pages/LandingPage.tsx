@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../features/auth/auth.store";
 import { AUTH_ROLES } from "../features/auth/auth.types";
+import { LanguageSwitch } from "../i18n/LanguageSwitch";
+import { useI18n } from "../i18n/useI18n";
 
 const FashionPreview3D = lazy(
   () => import("../components/landing/FashionPreview3D"),
@@ -56,6 +58,8 @@ class PreviewErrorBoundary extends Component<
 }
 
 function PreviewLoadingFallback() {
+  const { t } = useI18n();
+
   return (
     <div
       className="landing-preview-fallback"
@@ -63,63 +67,61 @@ function PreviewLoadingFallback() {
       aria-live="polite"
     >
       <Sparkles className="h-6 w-6 text-[#00e5ff]" />
-      <span>Preparing 3D fashion preview</span>
+      <span>{t("landing.preview.loading")}</span>
     </div>
   );
 }
 
 function PreviewErrorFallback() {
+  const { t } = useI18n();
+
   return (
     <div className="landing-preview-fallback" role="alert">
       <CircuitBoard className="h-6 w-6 text-[#ffeac0]" />
-      <span>3D preview is temporarily unavailable.</span>
+      <span>{t("landing.preview.error")}</span>
     </div>
   );
 }
 
 const valueCards = [
   {
-    title: "AI outfit generation",
-    description:
-      "Turn prompts, figure context, and style preferences into premium outfit directions for the studio workflow.",
+    titleKey: "landing.value.ai.title",
+    descriptionKey: "landing.value.ai.description",
     icon: Wand2,
   },
   {
-    title: "3D preview direction",
-    description:
-      "Keep the interactive fashion viewer at the center of review, silhouette checks, and export planning.",
+    titleKey: "landing.value.preview.title",
+    descriptionKey: "landing.value.preview.description",
     icon: Layers3,
   },
   {
-    title: "Credits and plans",
-    description:
-      "Connect generation access to the existing credits and subscription workflow without frontend-only grants.",
+    titleKey: "landing.value.credits.title",
+    descriptionKey: "landing.value.credits.description",
     icon: CreditCard,
   },
   {
-    title: "VietQR MVP checkout",
-    description:
-      "Support the manual bank-transfer path with clear order codes and admin verification before access is granted.",
+    titleKey: "landing.value.checkout.title",
+    descriptionKey: "landing.value.checkout.description",
     icon: Banknote,
   },
 ];
 
 const workflowSteps = [
   {
-    title: "Prompt",
-    description: "Describe the outfit, occasion, body context, and visual vibe.",
+    titleKey: "landing.workflow.prompt.title",
+    descriptionKey: "landing.workflow.prompt.description",
   },
   {
-    title: "Generate",
-    description: "Create AI styling direction through the authenticated studio flow.",
+    titleKey: "landing.workflow.generate.title",
+    descriptionKey: "landing.workflow.generate.description",
   },
   {
-    title: "Preview",
-    description: "Inspect proportion and silhouette in the interactive 3D viewer.",
+    titleKey: "landing.workflow.preview.title",
+    descriptionKey: "landing.workflow.preview.description",
   },
   {
-    title: "Download",
-    description: "Save supported outputs from the workspace when assets are ready.",
+    titleKey: "landing.workflow.download.title",
+    descriptionKey: "landing.workflow.download.description",
   },
 ];
 
@@ -127,56 +129,58 @@ const subscriptionPlans = [
   {
     name: "Starter",
     price: "99.000 đ",
-    cadence: "/ month",
-    description: "For individual creators exploring the 3D styling workflow.",
-    badge: "Studio entry",
+    descriptionKey: "landing.plan.starter.description",
+    badgeKey: "landing.plan.starter.badge",
     features: [
-      "10 included HD generations",
-      "Download model and basic export",
-      "Standard queue and basic export",
+      "landing.plan.feature.10",
+      "landing.plan.feature.export",
+      "landing.plan.feature.standardQueue",
     ],
   },
   {
     name: "Creator",
     price: "199.000 đ",
-    cadence: "/ month",
-    description: "For fashion teams that need more renders and stronger texture quality.",
-    badge: "Most balanced",
+    descriptionKey: "landing.plan.creator.description",
+    badgeKey: "landing.plan.creator.badge",
     isFeatured: true,
     features: [
-      "30 included HD generations",
-      "Download model and basic export",
-      "Faster queue and better texture",
+      "landing.plan.feature.30",
+      "landing.plan.feature.export",
+      "landing.plan.feature.fasterQueue",
     ],
   },
   {
     name: "Pro",
     price: "399.000 đ",
-    cadence: "/ month",
-    description: "For high-volume concepting with priority production polish.",
-    badge: "Priority studio",
+    descriptionKey: "landing.plan.pro.description",
+    badgeKey: "landing.plan.pro.badge",
     features: [
-      "80 included HD generations",
-      "Download model and basic export",
-      "Priority render and high quality texture",
+      "landing.plan.feature.80",
+      "landing.plan.feature.export",
+      "landing.plan.feature.priorityQueue",
     ],
   },
 ];
 
 const creditPacks = [
-  { name: "10 credits", price: "49.000 đ" },
-  { name: "25 credits", price: "99.000 đ" },
-  { name: "100 credits", price: "299.000 đ" },
+  { nameKey: "landing.creditPack.10", price: "49.000 đ" },
+  { nameKey: "landing.creditPack.25", price: "99.000 đ" },
+  { nameKey: "landing.creditPack.100", price: "299.000 đ" },
 ];
 
 export function LandingPage() {
+  const { t } = useI18n();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const workspacePath = user?.role === AUTH_ROLES.ADMIN ? "/admin" : "/dashboard";
   const primaryHref = isAuthenticated ? workspacePath : "/register";
-  const primaryLabel = isAuthenticated ? "Open studio" : "Start generating";
+  const primaryLabel = isAuthenticated
+    ? t("landing.openStudio")
+    : t("landing.startGenerating");
   const pricingHref = isAuthenticated ? "/credits" : "/register";
-  const pricingCtaLabel = isAuthenticated ? "Open credits" : "Create account";
+  const pricingCtaLabel = isAuthenticated
+    ? t("landing.openCredits")
+    : t("landing.createAccount");
 
   return (
     <main className="landing-surface min-h-screen overflow-hidden bg-[#0a0a0a] text-[#e5e2e1]">
@@ -185,7 +189,7 @@ export function LandingPage() {
           <Link
             className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00e5ff]"
             to="/"
-            aria-label="3D Stylist home"
+            aria-label={t("landing.homeAria")}
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#12dff3]/55 bg-[#12dff3]/15 text-[#c3f5ff]">
               <Sparkles className="h-5 w-5" />
@@ -197,30 +201,31 @@ export function LandingPage() {
 
           <nav
             className="hidden items-center gap-6 text-sm font-semibold text-[#bac9cc] lg:flex"
-            aria-label="Landing sections"
+            aria-label={t("landing.sectionsAria")}
           >
             <a className="transition hover:text-white" href="#features">
-              Features
+              {t("landing.nav.features")}
             </a>
             <a className="transition hover:text-white" href="#workflow">
-              Workflow
+              {t("landing.nav.workflow")}
             </a>
             <a className="transition hover:text-white" href="#pricing">
-              Credits
+              {t("landing.nav.credits")}
             </a>
             <a className="transition hover:text-white" href="#preview">
-              Preview
+              {t("landing.nav.preview")}
             </a>
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguageSwitch />
             {isAuthenticated ? (
               <Link
                 className="hidden min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff] sm:inline-flex"
                 to={workspacePath}
               >
                 <LayoutDashboard className="h-4 w-4" />
-                Dashboard
+                {t("landing.nav.dashboard")}
               </Link>
             ) : (
               <Link
@@ -228,14 +233,14 @@ export function LandingPage() {
                 to="/login"
               >
                 <LogIn className="hidden h-4 w-4 sm:block" />
-                Sign in
+                {t("landing.signIn")}
               </Link>
             )}
             <Link
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#12dff3] bg-[#12dff3] px-4 py-2 text-sm font-bold text-[#001f24] shadow-[0_16px_42px_rgba(0,229,255,0.26)] transition hover:bg-[#c3f5ff] hover:shadow-[0_18px_50px_rgba(0,229,255,0.34)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff]"
               to={primaryHref}
             >
-              {isAuthenticated ? "Open studio" : "Get started"}
+              {isAuthenticated ? t("landing.openStudio") : t("landing.getStarted")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -248,16 +253,16 @@ export function LandingPage() {
       >
         <div className="max-w-3xl">
           <p className="inline-flex rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
-            AI 3D fashion studio
+            {t("landing.hero.eyebrow")}
           </p>
           <h1 className="mt-7 max-w-3xl font-display text-5xl font-bold leading-[1.02] text-white sm:text-6xl lg:text-7xl">
-            Turn prompts into production-ready{" "}
-            <span className="text-[#00e5ff]">AI fashion previews.</span>
+            {t("landing.hero.titleLead")}{" "}
+            <span className="text-[#00e5ff]">
+              {t("landing.hero.titleAccent")}
+            </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[#bac9cc] sm:text-xl">
-            Generate outfit direction from style intent, then inspect silhouette
-            and proportion in an interactive 3D review surface before moving
-            into the credits-backed studio workflow.
+            {t("landing.hero.body")}
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -273,7 +278,7 @@ export function LandingPage() {
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-[#121212] px-5 py-3 text-sm font-bold text-white transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
                 to="/credits"
               >
-                Explore credits
+                {t("landing.exploreCredits")}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             ) : (
@@ -281,7 +286,7 @@ export function LandingPage() {
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-[#121212] px-5 py-3 text-sm font-bold text-white transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
                 href="#pricing"
               >
-                View plans
+                {t("landing.viewPlans")}
                 <ChevronRight className="h-4 w-4" />
               </a>
             )}
@@ -289,9 +294,9 @@ export function LandingPage() {
 
           <dl className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
             {[
-              ["Prompt", "Figure context"],
-              ["Credits", "Checkout guardrails"],
-              ["3D", "Preview review"],
+              [t("landing.metric.prompt"), t("landing.metric.promptDetail")],
+              [t("landing.metric.credits"), t("landing.metric.creditsDetail")],
+              [t("landing.metric.preview"), t("landing.metric.previewDetail")],
             ].map(([label, detail]) => (
               <div
                 className="rounded-lg border border-white/[0.08] bg-[#121212]/90 p-4"
@@ -313,7 +318,7 @@ export function LandingPage() {
             <div className="landing-preview-toolbar">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
-                Interactive 3D preview
+                {t("landing.preview.toolbar")}
               </span>
               <span>GLB</span>
             </div>
@@ -325,8 +330,10 @@ export function LandingPage() {
               </PreviewErrorBoundary>
             </div>
             <div className="landing-preview-caption">
-              <span>Prompt-ready styling surface</span>
-              <span className="text-[#9cf0ff]">Orbit preview</span>
+              <span>{t("landing.preview.captionLeft")}</span>
+              <span className="text-[#9cf0ff]">
+                {t("landing.preview.captionRight")}
+              </span>
             </div>
           </div>
         </div>
@@ -338,11 +345,10 @@ export function LandingPage() {
       >
         <div className="max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
-            Studio infrastructure
+            {t("landing.features.eyebrow")}
           </p>
           <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-            Premium fashion generation, wired to the MVP flows that already
-            matter.
+            {t("landing.features.title")}
           </h2>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -352,16 +358,16 @@ export function LandingPage() {
             return (
               <article
                 className="rounded-lg border border-white/[0.08] bg-[#121212]/90 p-5 transition hover:border-[#00e5ff]/30 hover:bg-[#151515]"
-                key={item.title}
+                key={item.titleKey}
               >
                 <div className="flex h-11 w-11 items-center justify-center rounded-md border border-[#12dff3]/40 bg-[#12dff3]/14 text-[#c3f5ff]">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="mt-5 font-display text-xl font-semibold text-white">
-                  {item.title}
+                  {t(item.titleKey)}
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                  {item.description}
+                  {t(item.descriptionKey)}
                 </p>
               </article>
             );
@@ -377,17 +383,14 @@ export function LandingPage() {
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
-                How it works
+                {t("landing.workflow.eyebrow")}
               </p>
               <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Prompt to generation to 3D review, without pretending checkout
-                is magic.
+                {t("landing.workflow.title")}
               </h2>
             </div>
             <p className="max-w-2xl text-base leading-7 text-[#bac9cc] lg:justify-self-end">
-              The landing page stays visual and aspirational, while the product
-              path still respects authentication, credits, and payment
-              verification.
+              {t("landing.workflow.body")}
             </p>
           </div>
 
@@ -395,16 +398,16 @@ export function LandingPage() {
             {workflowSteps.map((step, index) => (
               <li
                 className="landing-step-card rounded-lg border border-white/[0.08] bg-[#121212]/90 p-5"
-                key={step.title}
+                key={step.titleKey}
               >
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 text-sm font-bold text-[#c3f5ff]">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-5 font-display text-xl font-semibold text-white">
-                  {step.title}
+                  {t(step.titleKey)}
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                  {step.description}
+                  {t(step.descriptionKey)}
                 </p>
               </li>
             ))}
@@ -418,16 +421,13 @@ export function LandingPage() {
       >
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
-            Plans and credit packs
+            {t("landing.pricing.eyebrow")}
           </p>
           <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-            Choose a studio plan, then complete payment inside the existing
-            credits flow.
+            {t("landing.pricing.title")}
           </h2>
           <p className="mt-4 text-base leading-7 text-[#bac9cc]">
-            Landing pricing is a preview only. Credits and subscriptions are
-            granted only after the current checkout and VietQR/manual
-            verification flow completes.
+            {t("landing.pricing.body")}
           </p>
         </div>
 
@@ -444,7 +444,7 @@ export function LandingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-                    {plan.badge}
+                    {t(plan.badgeKey)}
                   </p>
                   <h3 className="mt-3 font-display text-2xl font-semibold text-white">
                     {plan.name}
@@ -452,13 +452,13 @@ export function LandingPage() {
                 </div>
                 {plan.isFeatured ? (
                   <span className="rounded-md border border-[#12dff3]/50 bg-[#12dff3]/15 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#c3f5ff]">
-                    Popular
+                    {t("landing.plan.popular")}
                   </span>
                 ) : null}
               </div>
 
               <p className="mt-4 text-sm leading-6 text-[#bac9cc]">
-                {plan.description}
+                {t(plan.descriptionKey)}
               </p>
 
               <div className="mt-6 flex items-end gap-2">
@@ -466,7 +466,7 @@ export function LandingPage() {
                   {plan.price}
                 </span>
                 <span className="pb-1 text-sm font-semibold text-[#849396]">
-                  {plan.cadence}
+                  {t("landing.plan.cadence")}
                 </span>
               </div>
 
@@ -477,7 +477,7 @@ export function LandingPage() {
                     key={feature}
                   >
                     <Check className="mt-1 h-4 w-4 shrink-0 text-[#12dff3]" />
-                    <span>{feature}</span>
+                    <span>{t(feature)}</span>
                   </li>
                 ))}
               </ul>
@@ -501,16 +501,16 @@ export function LandingPage() {
           {creditPacks.map((pack) => (
             <Link
               className="group rounded-lg border border-[#2a3f42] bg-[#0f1617]/92 p-4 transition hover:border-[#12dff3]/65 hover:bg-[#132326] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12dff3]"
-              key={pack.name}
+              key={pack.nameKey}
               to={pricingHref}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-                    Credit pack
+                    {t("landing.creditPack")}
                   </p>
                   <h3 className="mt-2 font-display text-xl font-semibold text-white">
-                    {pack.name}
+                    {t(pack.nameKey)}
                   </h3>
                 </div>
                 <CreditCard className="h-5 w-5 text-[#12dff3] transition group-hover:text-[#c3f5ff]" />
@@ -527,7 +527,9 @@ export function LandingPage() {
             className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#12dff3] px-5 py-3 text-sm font-bold text-[#001f24] shadow-[0_18px_56px_rgba(0,229,255,0.28)] transition hover:bg-[#c3f5ff] hover:shadow-[0_22px_64px_rgba(0,229,255,0.38)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff] sm:w-auto"
             to={pricingHref}
           >
-            {isAuthenticated ? "Open credits" : "Start generating"}
+            {isAuthenticated
+              ? t("landing.openCredits")
+              : t("landing.startGenerating")}
             <ArrowRight className="h-4 w-4" />
           </Link>
           {!isAuthenticated ? (
@@ -535,7 +537,7 @@ export function LandingPage() {
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#12dff3]/55 hover:bg-[#12dff3]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12dff3] sm:w-auto"
               to="/login"
             >
-              Sign in
+              {t("landing.signIn")}
               <ChevronRight className="h-4 w-4" />
             </Link>
           ) : null}
@@ -547,11 +549,10 @@ export function LandingPage() {
           <Download className="mx-auto h-8 w-8 text-[#9cf0ff]" />
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#849396]">
-              Ready for the studio
+              {t("landing.final.eyebrow")}
             </p>
             <h2 className="mx-auto mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-              Start with a premium 3D preview surface, then move into the full
-              styling workspace.
+              {t("landing.final.title")}
             </h2>
           </div>
           <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
@@ -566,7 +567,7 @@ export function LandingPage() {
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
               href="#features"
             >
-              View features
+              {t("landing.viewFeatures")}
               <ChevronRight className="h-4 w-4" />
             </a>
           </div>
@@ -585,28 +586,27 @@ export function LandingPage() {
             3D Stylist
           </Link>
           <p className="mt-3 max-w-md leading-6">
-            AI fashion generation MVP with authentication, credits, and a
-            cinematic 3D preview experience.
+            {t("landing.footer.description")}
           </p>
         </div>
         <nav
-          aria-label="Footer"
+          aria-label={t("landing.footerAria")}
           className="flex flex-wrap gap-x-5 gap-y-3 font-semibold"
         >
           <a className="transition hover:text-white" href="#features">
-            Features
+            {t("landing.nav.features")}
           </a>
           <a className="transition hover:text-white" href="#workflow">
-            Workflow
+            {t("landing.nav.workflow")}
           </a>
           <Link className="transition hover:text-white" to={pricingHref}>
-            Credits
+            {t("landing.nav.credits")}
           </Link>
           <Link
             className="transition hover:text-white"
             to={isAuthenticated ? workspacePath : "/login"}
           >
-            {isAuthenticated ? "Dashboard" : "Sign in"}
+            {isAuthenticated ? t("landing.nav.dashboard") : t("landing.signIn")}
           </Link>
         </nav>
       </footer>

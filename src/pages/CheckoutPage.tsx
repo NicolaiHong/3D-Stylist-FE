@@ -25,6 +25,9 @@ import {
 } from "../features/billing/billing.types";
 import { getApiErrorMessage } from "../services/apiClient";
 import { BILLING_CART_STORAGE_KEY } from "./CreditsPage";
+import { getDisplayLabel } from "../i18n/displayMaps";
+import { useI18n } from "../i18n/useI18n";
+import type { Language } from "../i18n/types";
 
 type CopiedField = "account" | "transfer";
 
@@ -65,31 +68,35 @@ function getTransferContent(
   );
 }
 
-function getVerificationLabel(order: BillingOrder | null) {
+function getVerificationLabel(order: BillingOrder | null, language: Language) {
   if (!order) {
     return "Preparing checkout";
   }
 
   if (order.status === "paid") {
-    return "Paid";
+    return getDisplayLabel("orderStatus", "paid", language);
   }
 
   if (
     order.paymentVerification === "pending_admin_verification" ||
     order.paymentVerification === "user_reported_transferred"
   ) {
-    return "Pending admin verification";
+    return getDisplayLabel(
+      "verificationStatus",
+      "pending_admin_verification",
+      language,
+    );
   }
 
   if (order.status === "expired") {
-    return "Expired";
+    return getDisplayLabel("orderStatus", "expired", language);
   }
 
   if (order.status === "failed" || order.status === "cancelled") {
-    return "Payment not completed";
+    return getDisplayLabel("orderStatus", order.status, language);
   }
 
-  return "Waiting for transfer";
+  return getDisplayLabel("verificationStatus", "awaiting_transfer", language);
 }
 
 function getStatusDescription(order: BillingOrder | null) {
@@ -410,7 +417,8 @@ function CheckoutStatusPanel({
   onConfirmTransfer: () => void;
   onRefresh: () => void;
 }) {
-  const label = getVerificationLabel(order);
+  const { language, t } = useI18n();
+  const label = getVerificationLabel(order, language);
   const isPaid = order.status === "paid";
   const isTerminal =
     order.status === "expired" ||
@@ -463,7 +471,7 @@ function CheckoutStatusPanel({
           {isReportingTransfer ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : null}
-          {canReportTransfer ? "I have transferred" : label}
+          {canReportTransfer ? t("checkout.iTransferred") : label}
         </button>
         <button
           className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-3 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -471,7 +479,7 @@ function CheckoutStatusPanel({
           onClick={onRefresh}
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh status
+          {t("checkout.refreshStatus")}
         </button>
         <Link
           className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"

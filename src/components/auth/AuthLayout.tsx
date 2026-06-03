@@ -1,4 +1,6 @@
 import { ReactNode } from "react";
+import { LanguageSwitch } from "../../i18n/LanguageSwitch";
+import { useI18n } from "../../i18n/useI18n";
 
 interface AuthLayoutProps {
   title: string;
@@ -7,21 +9,25 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
+  const { t } = useI18n();
+
   return (
     <main className="atelier-grid relative min-h-screen overflow-hidden px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+      <div className="absolute right-4 top-4 z-20 sm:right-6 lg:right-8">
+        <LanguageSwitch />
+      </div>
       <div className="relative z-10 mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center gap-8 lg:grid-cols-[1.04fr_0.86fr]">
         <section className="preview-stage hidden min-h-[640px] py-8 pr-4 md:block">
           <div className="flex h-full flex-col justify-between">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#2cebcf]">
-                3D Stylist
+                {t("auth.hero.eyebrow")}
               </p>
               <h1 className="mt-5 max-w-lg text-4xl font-bold leading-tight text-white lg:text-5xl">
-                AI fashion-tech for sharper outfit concepts.
+                {t("auth.hero.title")}
               </h1>
               <p className="mt-5 max-w-md text-base leading-7 text-slate-400">
-                A focused studio layer for personal styling, fit signals, and
-                production-ready wardrobe direction.
+                {t("auth.hero.subtitle")}
               </p>
             </div>
 
@@ -42,15 +48,21 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
                 <span className="block text-lg font-bold text-white">12k</span>
-                <span className="text-slate-400">figure previews</span>
+                <span className="text-slate-400">
+                  {t("auth.hero.metricPreviews")}
+                </span>
               </div>
               <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
                 <span className="block text-lg font-bold text-white">42</span>
-                <span className="text-slate-400">style presets</span>
+                <span className="text-slate-400">
+                  {t("auth.hero.metricPresets")}
+                </span>
               </div>
               <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
                 <span className="block text-lg font-bold text-white">3D</span>
-                <span className="text-slate-400">ready assets</span>
+                <span className="text-slate-400">
+                  {t("auth.hero.metricAssets")}
+                </span>
               </div>
             </div>
           </div>
@@ -60,10 +72,10 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           <div className="w-full max-w-md">
             <div className="mb-8 flex items-center justify-between md:hidden">
               <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#2cebcf]">
-                3D Stylist
+                {t("auth.hero.eyebrow")}
               </p>
               <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
-                AI atelier
+                {t("auth.hero.mobileBadge")}
               </span>
             </div>
             <div className="mb-7">

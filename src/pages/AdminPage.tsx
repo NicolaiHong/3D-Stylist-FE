@@ -43,6 +43,8 @@ import {
 } from "../features/admin/admin.types";
 import { useAuthStore } from "../features/auth/auth.store";
 import { getApiErrorMessage } from "../services/apiClient";
+import { getKnownDisplayLabel } from "../i18n/displayMaps";
+import { useI18n } from "../i18n/useI18n";
 
 type OrderStatusFilter = AdminOrderStatus | "all";
 type PaymentStatusFilter = AdminPaymentStatus | "all";
@@ -278,13 +280,15 @@ function PanelHeader({
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { language } = useI18n();
+
   return (
     <span
       className={`inline-flex rounded-md border px-2.5 py-1 text-xs font-bold uppercase ${getStatusTone(
         status,
       )}`}
     >
-      {titleCase(status)}
+      {getKnownDisplayLabel(status, language)}
     </span>
   );
 }

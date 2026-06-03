@@ -1,6 +1,9 @@
 import { Loader2 } from "lucide-react";
+import { useI18n } from "../../i18n/useI18n";
 
 export function LoadingScreen() {
+  const { t } = useI18n();
+
   return (
     <div className="atelier-grid relative flex min-h-screen items-center justify-center overflow-hidden px-4 text-slate-100">
       <div
@@ -10,10 +13,10 @@ export function LoadingScreen() {
       >
         <Loader2 className="h-8 w-8 animate-spin text-[#2cebcf]" />
         <p className="mt-4 text-sm font-semibold text-slate-100">
-          Preparing your styling studio
+          {t("loading.title")}
         </p>
         <p className="mt-2 text-sm leading-6 text-slate-400">
-          Checking your secure session.
+          {t("loading.subtitle")}
         </p>
       </div>
     </div>

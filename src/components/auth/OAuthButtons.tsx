@@ -6,9 +6,11 @@ import {
   getAuthIntentPath,
   rememberOAuthIntent,
 } from "../../features/auth/auth.redirects";
+import { useI18n } from "../../i18n/useI18n";
 import { Button } from "../common/Button";
 
 export function OAuthButtons() {
+  const { t } = useI18n();
   const location = useLocation();
   const intendedPath = useMemo(
     () => getAuthIntentPath(location.state),
@@ -26,7 +28,7 @@ export function OAuthButtons() {
         type="button"
         variant="authSecondary"
         className="w-full"
-        aria-label="Continue with Google"
+        aria-label={t("auth.oauth.continueWithGoogle")}
         icon={
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[13px] font-black text-[#1f2937]">
             G
@@ -34,17 +36,17 @@ export function OAuthButtons() {
         }
         onClick={() => startOAuth("google")}
       >
-        Google
+        {t("auth.oauth.google")}
       </Button>
       <Button
         type="button"
         variant="authSecondary"
         className="w-full"
-        aria-label="Continue with Facebook"
+        aria-label={t("auth.oauth.continueWithFacebook")}
         icon={<Facebook className="h-4 w-4 text-[#1877F2]" />}
         onClick={() => startOAuth("facebook")}
       >
-        Facebook
+        {t("auth.oauth.facebook")}
       </Button>
     </div>
   );

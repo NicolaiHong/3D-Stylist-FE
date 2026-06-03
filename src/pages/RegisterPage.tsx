@@ -11,6 +11,7 @@ import {
   getAuthIntentPath,
   resolvePostAuthRedirect,
 } from "../features/auth/auth.redirects";
+import { useI18n } from "../i18n/useI18n";
 
 interface RegisterFormErrors {
   fullName?: string;
@@ -22,6 +23,7 @@ interface RegisterFormErrors {
 const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\W_]).{8,128}$/;
 
 export function RegisterPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const register = useAuthStore((state) => state.register);
@@ -50,22 +52,21 @@ export function RegisterPage() {
     const nextErrors: RegisterFormErrors = {};
 
     if (!values.fullName.trim()) {
-      nextErrors.fullName = "Full name is required";
+      nextErrors.fullName = t("auth.validation.fullNameRequired");
     }
 
     if (!values.email.trim()) {
-      nextErrors.email = "Email is required";
+      nextErrors.email = t("auth.validation.emailRequired");
     } else if (!/^\S+@\S+\.\S+$/.test(values.email)) {
-      nextErrors.email = "Enter a valid email";
+      nextErrors.email = t("auth.validation.emailInvalid");
     }
 
     if (!strongPasswordPattern.test(values.password)) {
-      nextErrors.password =
-        "Use 8+ characters with uppercase, lowercase, and a number or symbol";
+      nextErrors.password = t("auth.validation.passwordStrong");
     }
 
     if (values.confirmPassword !== values.password) {
-      nextErrors.confirmPassword = "Passwords do not match";
+      nextErrors.confirmPassword = t("auth.validation.passwordMismatch");
     }
 
     setErrors(nextErrors);
@@ -92,12 +93,12 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="Start generating personalized outfit concepts."
+      title={t("auth.register.title")}
+      subtitle={t("auth.register.subtitle")}
     >
       <form className="space-y-5" onSubmit={(event) => void handleSubmit(event)}>
         <Input
-          label="Full name"
+          label={t("auth.fullName")}
           name="fullName"
           value={values.fullName}
           error={errors.fullName}
@@ -112,12 +113,12 @@ export function RegisterPage() {
           }
         />
         <Input
-          label="Email"
+          label={t("auth.email")}
           name="email"
           type="email"
           value={values.email}
           error={errors.email}
-          placeholder="you@example.com"
+          placeholder={t("auth.placeholder.email")}
           autoComplete="email"
           icon={<Mail className="h-4 w-4" />}
           onChange={(event) =>
@@ -125,11 +126,11 @@ export function RegisterPage() {
           }
         />
         <PasswordInput
-          label="Password"
+          label={t("auth.password")}
           name="password"
           value={values.password}
           error={errors.password}
-          placeholder="Create a password"
+          placeholder={t("auth.placeholder.createPassword")}
           autoComplete="new-password"
           onChange={(event) =>
             setValues((current) => ({
@@ -139,11 +140,11 @@ export function RegisterPage() {
           }
         />
         <PasswordInput
-          label="Confirm password"
+          label={t("auth.confirmPassword")}
           name="confirmPassword"
           value={values.confirmPassword}
           error={errors.confirmPassword}
-          placeholder="Repeat password"
+          placeholder={t("auth.placeholder.repeatPassword")}
           autoComplete="new-password"
           onChange={(event) =>
             setValues((current) => ({
@@ -170,25 +171,25 @@ export function RegisterPage() {
           icon={<ArrowRight className="h-4 w-4" />}
           isLoading={isLoading}
         >
-          Create account
+          {t("auth.register.submit")}
         </Button>
       </form>
 
       <div className="my-6 flex items-center gap-3 text-sm text-slate-500">
         <span className="h-px flex-1 bg-white/10" />
-        <span>or</span>
+        <span>{t("auth.separator")}</span>
         <span className="h-px flex-1 bg-white/10" />
       </div>
 
       <OAuthButtons />
 
       <p className="mt-7 text-center text-sm text-slate-400">
-        Already have an account?{" "}
+        {t("auth.register.existingUser")}{" "}
         <Link
           className="font-semibold text-[#7df9df] transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7df9df]"
           to="/login"
         >
-          Sign in
+          {t("auth.login.submit")}
         </Link>
       </p>
     </AuthLayout>

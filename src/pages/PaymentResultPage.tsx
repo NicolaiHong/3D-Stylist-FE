@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
+import { useI18n } from "../i18n/useI18n";
 
 type PaymentResultStatus = "success" | "failed" | "cancelled" | "unknown";
 
@@ -74,11 +75,13 @@ function normalizeStatus(value: string | undefined): PaymentResultStatus {
 }
 
 export function PaymentResultPage() {
+  const { t } = useI18n();
   const { status: rawStatus } = useParams();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
   const status = normalizeStatus(rawStatus);
   const copy = resultCopy[status];
+  const statusLabel = t(`paymentResult.status.${status}`);
   const Icon = copy.icon;
   const canViewOrderCheckout =
     Boolean(orderId) &&
@@ -109,7 +112,7 @@ export function PaymentResultPage() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold uppercase tracking-[0.14em]">
-                  Status: {status}
+                  {t("paymentResult.statusLabel")}: {statusLabel}
                 </p>
                 <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                   <div className="rounded-md border border-white/10 bg-[#0e0e0e]/70 p-3">

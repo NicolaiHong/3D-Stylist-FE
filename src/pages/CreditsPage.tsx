@@ -23,6 +23,8 @@ import {
   type BillingSummary,
 } from "../features/billing/billing.types";
 import { getApiErrorMessage } from "../services/apiClient";
+import { getDisplayLabel } from "../i18n/displayMaps";
+import { useI18n } from "../i18n/useI18n";
 
 export const BILLING_CART_STORAGE_KEY = "3d-stylist.checkout.productCode";
 
@@ -333,6 +335,7 @@ function ProductActions({
 }
 
 export function CreditsPage() {
+  const { language } = useI18n();
   const navigate = useNavigate();
   const [catalog, setCatalog] = useState<BillingCatalog | null>(null);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -905,7 +908,11 @@ export function CreditsPage() {
                                 order.status,
                               )}`}
                             >
-                              {order.status}
+                              {getDisplayLabel(
+                                "orderStatus",
+                                order.status,
+                                language,
+                              )}
                             </span>
                           </div>
                           <p className="mt-2 text-sm text-[#bac9cc]">

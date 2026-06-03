@@ -28,6 +28,9 @@ import type {
   FigureStatus,
 } from "../features/figures/figures.types";
 import { getApiErrorMessage } from "../services/apiClient";
+import { getDisplayLabel } from "../i18n/displayMaps";
+import { formatI18nDateTime } from "../i18n/formatters";
+import { useI18n } from "../i18n/useI18n";
 
 const STUDIO_POLL_INTERVAL_MS = 3000;
 type StudioViewMode = "2d" | "3d";
@@ -36,32 +39,25 @@ function isPollingStatus(status: FigureStatus) {
   return status === "queued" || status === "processing";
 }
 
-function formatStatus(status: FigureStatus) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
 function getPreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
 }
 
-function getPromptSnippet(prompt: string | null | undefined, limit = 62) {
-  const value = prompt?.trim() || "Untitled generation";
+function getPromptSnippet(
+  prompt: string | null | undefined,
+  limit = 62,
+  fallback = "",
+) {
+  const value = prompt?.trim() || fallback;
 
   return value.length > limit ? `${value.slice(0, limit)}...` : value;
 }
 
-function getBasePrompt(prompt: string | null | undefined) {
+function getBasePrompt(prompt: string | null | undefined, fallback: string) {
   const value = prompt?.trim();
 
   if (!value) {
-    return "Untitled generation";
+    return fallback;
   }
 
   return value.split(/\n\n(?=Style direction:|Model source:)/i)[0].trim();
@@ -86,6 +82,8 @@ function getStatusTone(status: FigureStatus) {
 }
 
 function FigureStatusBadge({ status }: { status: FigureStatus }) {
+  const { language } = useI18n();
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] ${getStatusTone(
@@ -93,26 +91,28 @@ function FigureStatusBadge({ status }: { status: FigureStatus }) {
       )}`}
     >
       {isPollingStatus(status) ? <Clock3 className="h-3.5 w-3.5" /> : null}
-      {formatStatus(status)}
+      {getDisplayLabel("figureStatus", status, language)}
     </span>
   );
 }
 
 function StudioEmptyState() {
+  const { t } = useI18n();
+
   return (
     <section className="flex min-h-[420px] flex-col items-center justify-center rounded-lg border border-dashed border-[#3b494c] bg-[#121212] p-8 text-center">
       <Sparkles className="h-9 w-9 text-[#3b494c]" />
       <h2 className="mt-4 font-display text-2xl font-semibold text-white">
-        No generated assets yet.
+        {t("studio.empty.title")}
       </h2>
       <p className="mt-2 max-w-lg text-sm leading-6 text-[#bac9cc]">
-        Generate an outfit from Dashboard to preview it here.
+        {t("studio.empty.body")}
       </p>
       <Link
         className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
         to="/dashboard"
       >
-        Go to Dashboard
+        {t("studio.empty.goDashboard")}
         <ArrowRight className="h-4 w-4" />
       </Link>
     </section>
@@ -130,12 +130,18 @@ function StudioPreview({
   canOpenModel: boolean;
   canDownloadModel: boolean;
 }) {
+  const { t } = useI18n();
   const previewUrl = getPreviewUrl(figure);
+  const promptSnippet = getPromptSnippet(
+    figure.prompt,
+    62,
+    t("dashboard.figure.untitled"),
+  );
 
   if (viewMode === "2d") {
     return previewUrl ? (
       <img
-        alt={getPromptSnippet(figure.prompt)}
+        alt={promptSnippet}
         className="h-full w-full object-contain"
         src={previewUrl}
       />
@@ -143,10 +149,10 @@ function StudioPreview({
       <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
         <ImageIcon className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
-          2D preview pending
+          {t("studio.preview2dPending")}
         </h3>
         <p className="mt-2 max-w-md text-sm leading-6 text-[#bac9cc]">
-          The backend has not returned a preview image for this generation yet.
+          {t("studio.preview2dPendingBody")}
         </p>
       </div>
     );
@@ -157,11 +163,10 @@ function StudioPreview({
       <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
-          3D model pending or not available.
+          {t("studio.modelPending")}
         </h3>
         <p className="mt-2 max-w-md text-sm leading-6 text-[#bac9cc]">
-          This figure does not currently expose a GLB result. Refresh after the
-          backend status changes or continue with the 2D preview.
+          {t("studio.modelPendingBody")}
         </p>
       </div>
     );
@@ -173,10 +178,10 @@ function StudioPreview({
         <Box className="h-10 w-10" />
       </span>
       <h3 className="mt-5 font-display text-2xl font-semibold text-white">
-        GLB output ready
+        {t("studio.glbReady")}
       </h3>
       <p className="mt-2 max-w-lg text-sm leading-6 text-[#bac9cc]">
-        Temporary model link. Access depends on backend-owned generation result.
+        {t("studio.glbReadyBody")}
       </p>
       {canOpenModel || canDownloadModel ? (
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -187,7 +192,7 @@ function StudioPreview({
               rel="noreferrer"
               target="_blank"
             >
-              Open GLB
+              {t("studio.openGlb")}
               <ExternalLink className="h-4 w-4" />
             </a>
           ) : null}
@@ -197,14 +202,14 @@ function StudioPreview({
               download
               href={figure.modelUrl}
             >
-              Download GLB
+              {t("studio.downloadGlb")}
               <Download className="h-4 w-4" />
             </a>
           ) : null}
         </div>
       ) : (
         <p className="mt-4 max-w-lg text-xs font-semibold leading-5 text-[#ffdf96]">
-          Direct GLB access is restricted by your backend billing state.
+          {t("studio.glbRestricted")}
         </p>
       )}
     </div>
@@ -212,6 +217,7 @@ function StudioPreview({
 }
 
 export function StudioPage() {
+  const { language, t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedFigureId = searchParams.get("figureId");
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -371,20 +377,19 @@ export function StudioPage() {
           <header className="flex flex-col gap-5 border-b border-[#3b494c]/70 pb-6 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-                Creator studio
+                {t("studio.header.eyebrow")}
               </p>
               <h1 className="mt-3 font-display text-3xl font-semibold text-white sm:text-4xl">
-                Studio Preview
+                {t("studio.header.title")}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Review generated fashion concepts in 2D or interactive 3D
-                before export.
+                {t("studio.header.body")}
               </p>
             </div>
 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <div
-                aria-label="Studio view mode"
+                aria-label={t("studio.viewModeAria")}
                 className="grid grid-cols-2 rounded-md border border-[#3b494c] bg-[#1c1b1b] p-1"
                 role="group"
               >
@@ -398,7 +403,7 @@ export function StudioPage() {
                   type="button"
                   onClick={() => setViewMode("2d")}
                 >
-                  2D Preview
+                  {t("studio.view.2d")}
                 </button>
                 <button
                   aria-pressed={viewMode === "3d"}
@@ -410,12 +415,12 @@ export function StudioPage() {
                   type="button"
                   onClick={() => setViewMode("3d")}
                 >
-                  3D Model
+                  {t("studio.view.3d")}
                 </button>
               </div>
 
               <label className="sr-only" htmlFor="studio-generation-selector">
-                Select generation
+                {t("studio.selectGeneration")}
               </label>
               <select
                 className="min-h-11 min-w-0 rounded-md border border-[#3b494c] bg-[#1c1b1b] px-3 py-2 text-sm font-semibold text-[#e5e2e1] focus:border-[#00e5ff] focus:outline-none focus:ring-1 focus:ring-[#00e5ff] lg:w-64"
@@ -425,11 +430,15 @@ export function StudioPage() {
                 onChange={(event) => handleSelectFigure(event.target.value)}
               >
                 {figures.length === 0 ? (
-                  <option value="">No generations yet</option>
+                  <option value="">{t("studio.noGenerationsOption")}</option>
                 ) : (
                   figures.map((figure) => (
                     <option key={figure.id} value={figure.id}>
-                      {getPromptSnippet(figure.prompt)}
+                      {getPromptSnippet(
+                        figure.prompt,
+                        62,
+                        t("dashboard.figure.untitled"),
+                      )}
                     </option>
                   ))
                 )}
@@ -440,7 +449,7 @@ export function StudioPage() {
               ) : null}
 
               <button
-                aria-label="Refresh Studio assets"
+                aria-label={t("studio.refreshAssets")}
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#3b494c] px-3 py-2 text-sm font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isRefreshing}
                 type="button"
@@ -449,7 +458,7 @@ export function StudioPage() {
                 <RefreshCw
                   className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
                 />
-                Refresh
+                {t("common.refresh")}
               </button>
             </div>
           </header>
@@ -470,7 +479,7 @@ export function StudioPage() {
                   onClick={() => void loadFigures()}
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
-                  Retry
+                  {t("common.retry")}
                 </button>
               </div>
             </section>
@@ -512,19 +521,22 @@ export function StudioPage() {
                     <div className="absolute inset-x-4 bottom-4 z-10 grid gap-3 rounded-md border border-[#3b494c]/70 bg-[#0a0a0a]/90 p-4 backdrop-blur sm:grid-cols-2">
                       <div>
                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#849396]">
-                          Current prompt
+                          {t("studio.currentPrompt")}
                         </p>
                         <p className="mt-1 truncate text-sm font-semibold italic text-[#e5e2e1]">
-                          {getBasePrompt(selectedFigure.prompt)}
+                          {getBasePrompt(
+                            selectedFigure.prompt,
+                            t("dashboard.figure.untitled"),
+                          )}
                         </p>
                       </div>
                       <div className="border-[#3b494c]/70 sm:border-l sm:pl-4">
                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#849396]">
-                          Style direction
+                          {t("studio.styleDirection")}
                         </p>
                         <p className="mt-1 truncate text-sm font-semibold text-[#e5e2e1]">
                           {getStyleDirection(selectedFigure.prompt) ??
-                            "Not specified"}
+                            t("studio.notSpecified")}
                         </p>
                       </div>
                     </div>
@@ -532,7 +544,7 @@ export function StudioPage() {
 
                   <section>
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
-                      Recent assets
+                      {t("studio.recentAssets")}
                     </h2>
                     <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
                       {figures.map((figure) => {
@@ -566,17 +578,31 @@ export function StudioPage() {
                             </span>
                             <span className="block space-y-2 p-3">
                               <span className="block truncate text-xs font-bold text-white">
-                                {getPromptSnippet(figure.prompt, 36)}
+                                {getPromptSnippet(
+                                  figure.prompt,
+                                  36,
+                                  t("dashboard.figure.untitled"),
+                                )}
                               </span>
                               <span className="flex flex-wrap gap-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                                 {previewUrl ? <span>2D</span> : null}
                                 {figure.modelUrl ? (
                                   <span className="text-[#00e5ff]">3D</span>
                                 ) : null}
-                                <span>{formatStatus(figure.status)}</span>
+                                <span>
+                                  {getDisplayLabel(
+                                    "figureStatus",
+                                    figure.status,
+                                    language,
+                                  )}
+                                </span>
                               </span>
                               <span className="block text-[0.65rem] text-[#849396]">
-                                {formatDateTime(figure.createdAt)}
+                                {formatI18nDateTime(
+                                  figure.createdAt,
+                                  language,
+                                  t("common.unknown"),
+                                )}
                               </span>
                             </span>
                           </button>
@@ -589,30 +615,33 @@ export function StudioPage() {
                 <aside className="space-y-6 rounded-lg border border-[#3b494c] bg-[#121212] p-5">
                   <section>
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-                      Gen metadata
+                      {t("studio.metadata")}
                     </h2>
                     <dl className="mt-4 space-y-3 text-sm">
                       <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                          Prompt
+                          {t("dashboard.figure.prompt")}
                         </dt>
                         <dd className="mt-1 break-words leading-6 text-[#e5e2e1]">
-                          {getBasePrompt(selectedFigure.prompt)}
+                          {getBasePrompt(
+                            selectedFigure.prompt,
+                            t("dashboard.figure.untitled"),
+                          )}
                         </dd>
                       </div>
                       <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                          Style direction
+                          {t("studio.styleDirection")}
                         </dt>
                         <dd className="mt-1 break-words leading-6 text-[#e5e2e1]">
                           {getStyleDirection(selectedFigure.prompt) ??
-                            "Not specified"}
+                            t("studio.notSpecified")}
                         </dd>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                         <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
                           <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                            Status
+                            {t("studio.status")}
                           </dt>
                           <dd className="mt-2">
                             <FigureStatusBadge
@@ -622,19 +651,23 @@ export function StudioPage() {
                         </div>
                         <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
                           <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                            Provider
+                            {t("studio.provider")}
                           </dt>
                           <dd className="mt-1 font-mono text-[#e5e2e1]">
-                            {selectedFigure.provider ?? "Not reported"}
+                            {selectedFigure.provider ?? t("studio.notReported")}
                           </dd>
                         </div>
                       </div>
                       <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                          Created
+                          {t("dashboard.figure.created")}
                         </dt>
                         <dd className="mt-1 text-[#e5e2e1]">
-                          {formatDateTime(selectedFigure.createdAt)}
+                          {formatI18nDateTime(
+                            selectedFigure.createdAt,
+                            language,
+                            t("common.unknown"),
+                          )}
                         </dd>
                       </div>
                     </dl>
@@ -642,19 +675,27 @@ export function StudioPage() {
 
                   <section>
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-                      Asset manifest
+                      {t("studio.assetManifest")}
                     </h2>
                     <div className="mt-3 divide-y divide-[#3b494c]/50 text-sm">
                       <div className="flex items-center justify-between gap-3 py-3">
-                        <span className="text-[#bac9cc]">Master image (2D)</span>
+                        <span className="text-[#bac9cc]">
+                          {t("studio.masterImage")}
+                        </span>
                         <span className="text-xs font-bold uppercase tracking-wide text-[#c9fff6]">
-                          {getPreviewUrl(selectedFigure) ? "Ready" : "Pending"}
+                          {getPreviewUrl(selectedFigure)
+                            ? t("common.ready")
+                            : t("common.pending")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3 py-3">
-                        <span className="text-[#bac9cc]">Geometry (.GLB)</span>
+                        <span className="text-[#bac9cc]">
+                          {t("studio.geometry")}
+                        </span>
                         <span className="text-xs font-bold uppercase tracking-wide text-[#c9fff6]">
-                          {selectedFigure.modelUrl ? "Ready" : "Pending"}
+                          {selectedFigure.modelUrl
+                            ? t("common.ready")
+                            : t("common.pending")}
                         </span>
                       </div>
                     </div>
@@ -676,20 +717,20 @@ export function StudioPage() {
                       <div>
                         <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
                           {summary?.capabilities.canExportModel
-                            ? "Export available"
-                            : "Export restricted"}
+                            ? t("studio.exportAvailable")
+                            : t("studio.exportRestricted")}
                         </h2>
                         <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
                           {summary?.capabilities.canExportModel
-                            ? "Backend billing state confirms model export access for this account."
-                            : "Download and export are available on paid plans. Previewing remains available."}
+                            ? t("studio.exportAvailableBody")
+                            : t("studio.exportRestrictedBody")}
                         </p>
                         {!summary?.capabilities.canExportModel ? (
                           <Link
                             className="mt-3 inline-flex min-h-10 items-center justify-center rounded-md border border-[#f3bf26]/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                             to="/credits"
                           >
-                            View plans
+                            {t("landing.viewPlans")}
                           </Link>
                         ) : null}
                       </div>

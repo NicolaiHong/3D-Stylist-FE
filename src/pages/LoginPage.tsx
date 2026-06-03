@@ -11,6 +11,7 @@ import {
   getAuthIntentPath,
   resolvePostAuthRedirect,
 } from "../features/auth/auth.redirects";
+import { useI18n } from "../i18n/useI18n";
 
 interface LoginFormErrors {
   email?: string;
@@ -18,6 +19,7 @@ interface LoginFormErrors {
 }
 
 export function LoginPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const login = useAuthStore((state) => state.login);
@@ -42,13 +44,13 @@ export function LoginPage() {
     const nextErrors: LoginFormErrors = {};
 
     if (!values.email.trim()) {
-      nextErrors.email = "Email is required";
+      nextErrors.email = t("auth.validation.emailRequired");
     } else if (!/^\S+@\S+\.\S+$/.test(values.email)) {
-      nextErrors.email = "Enter a valid email";
+      nextErrors.email = t("auth.validation.emailInvalid");
     }
 
     if (!values.password) {
-      nextErrors.password = "Password is required";
+      nextErrors.password = t("auth.validation.passwordRequired");
     }
 
     setErrors(nextErrors);
@@ -71,17 +73,17 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Welcome back"
-      subtitle="Sign in to continue creating AI outfit concepts."
+      title={t("auth.login.title")}
+      subtitle={t("auth.login.subtitle")}
     >
       <form className="space-y-5" onSubmit={(event) => void handleSubmit(event)}>
         <Input
-          label="Email"
+          label={t("auth.email")}
           name="email"
           type="email"
           value={values.email}
           error={errors.email}
-          placeholder="you@example.com"
+          placeholder={t("auth.placeholder.email")}
           autoComplete="email"
           icon={<Mail className="h-4 w-4" />}
           onChange={(event) =>
@@ -89,11 +91,11 @@ export function LoginPage() {
           }
         />
         <PasswordInput
-          label="Password"
+          label={t("auth.password")}
           name="password"
           value={values.password}
           error={errors.password}
-          placeholder="Your password"
+          placeholder={t("auth.placeholder.password")}
           autoComplete="current-password"
           onChange={(event) =>
             setValues((current) => ({
@@ -120,25 +122,25 @@ export function LoginPage() {
           icon={<ArrowRight className="h-4 w-4" />}
           isLoading={isLoading}
         >
-          Sign in
+          {t("auth.login.submit")}
         </Button>
       </form>
 
       <div className="my-6 flex items-center gap-3 text-sm text-slate-500">
         <span className="h-px flex-1 bg-white/10" />
-        <span>or</span>
+        <span>{t("auth.separator")}</span>
         <span className="h-px flex-1 bg-white/10" />
       </div>
 
       <OAuthButtons />
 
       <p className="mt-7 text-center text-sm text-slate-400">
-        New to 3D Stylist?{" "}
+        {t("auth.login.newUser")}{" "}
         <Link
           className="font-semibold text-[#7df9df] transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7df9df]"
           to="/register"
         >
-          Create an account
+          {t("auth.login.createAccount")}
         </Link>
       </p>
     </AuthLayout>

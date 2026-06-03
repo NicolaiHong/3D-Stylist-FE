@@ -31,6 +31,8 @@ import { billingApi } from "../features/billing/billing.api";
 import type { BillingSummary } from "../features/billing/billing.types";
 import { profileApi } from "../features/profile/profile.api";
 import { getApiErrorMessage } from "../services/apiClient";
+import { getKnownDisplayLabel } from "../i18n/displayMaps";
+import { useI18n } from "../i18n/useI18n";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SELFIE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -114,6 +116,7 @@ function MessageBanner({
 }
 
 export function ProfilePage() {
+  const { language } = useI18n();
   const user = useAuthStore((state) => state.user);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const displayName = user?.displayName || user?.fullName || "";
@@ -732,7 +735,7 @@ export function ProfilePage() {
                       Role
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
-                      {formatLabel(user.role, "Admin")}
+                      {getKnownDisplayLabel(user.role, language)}
                     </dd>
                   </div>
                   <div>
@@ -740,7 +743,7 @@ export function ProfilePage() {
                       Account status
                     </dt>
                     <dd className="mt-2 text-sm font-bold text-white">
-                      {formatLabel(user.status, "Active")}
+                      {getKnownDisplayLabel(user.status, language)}
                     </dd>
                   </div>
                 </dl>

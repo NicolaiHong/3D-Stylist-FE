@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../features/auth/auth.store";
 import { AUTH_ROLES } from "../../features/auth/auth.types";
+import { LanguageSwitch } from "../../i18n/LanguageSwitch";
+import { useI18n } from "../../i18n/useI18n";
 
 interface DashboardShellProps {
   children: ReactNode;
@@ -20,7 +22,7 @@ interface DashboardShellProps {
 }
 
 interface NavigationItem {
-  label: string;
+  labelKey: string;
   to?: string;
   icon: LucideIcon;
   disabled?: boolean;
@@ -28,16 +30,22 @@ interface NavigationItem {
 }
 
 const navigationItems: NavigationItem[] = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Outfits", icon: Shirt, disabled: true },
-  { label: "Studio", to: "/studio", icon: Sparkles },
-  { label: "Credits", to: "/credits", icon: Database },
-  { label: "Profile", to: "/profile", icon: UserRound },
-  { label: "Admin", to: "/admin", icon: ShieldCheck, adminOnly: true },
+  { labelKey: "shell.nav.dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "shell.nav.outfits", icon: Shirt, disabled: true },
+  { labelKey: "shell.nav.studio", to: "/studio", icon: Sparkles },
+  { labelKey: "shell.nav.credits", to: "/credits", icon: Database },
+  { labelKey: "shell.nav.profile", to: "/profile", icon: UserRound },
+  {
+    labelKey: "shell.nav.admin",
+    to: "/admin",
+    icon: ShieldCheck,
+    adminOnly: true,
+  },
 ];
 
 function SidebarNavItem({ item }: { item: NavigationItem }) {
   const Icon = item.icon;
+  const { t } = useI18n();
 
   if (!item.to || item.disabled) {
     return (
@@ -46,9 +54,9 @@ function SidebarNavItem({ item }: { item: NavigationItem }) {
         className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-[#849396]/70"
       >
         <Icon className="h-4 w-4" />
-        <span>{item.label}</span>
+        <span>{t(item.labelKey)}</span>
         <span className="ml-auto rounded-sm border border-white/10 px-1.5 py-0.5 text-[0.65rem] uppercase tracking-wide text-[#bac9cc]/50">
-          Soon
+          {t("shell.nav.soon")}
         </span>
       </span>
     );
@@ -66,13 +74,14 @@ function SidebarNavItem({ item }: { item: NavigationItem }) {
       to={item.to}
     >
       <Icon className="h-4 w-4" />
-      <span>{item.label}</span>
+      <span>{t(item.labelKey)}</span>
     </NavLink>
   );
 }
 
 function MobileNavItem({ item }: { item: NavigationItem }) {
   const Icon = item.icon;
+  const { t } = useI18n();
 
   if (!item.to || item.disabled) {
     return (
@@ -81,7 +90,7 @@ function MobileNavItem({ item }: { item: NavigationItem }) {
         className="flex min-h-11 min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#849396]/70 sm:basis-auto"
       >
         <Icon className="h-4 w-4 shrink-0" />
-        <span className="truncate">{item.label}</span>
+        <span className="truncate">{t(item.labelKey)}</span>
       </span>
     );
   }
@@ -98,12 +107,13 @@ function MobileNavItem({ item }: { item: NavigationItem }) {
       to={item.to}
     >
       <Icon className="h-4 w-4 shrink-0" />
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{t(item.labelKey)}</span>
     </NavLink>
   );
 }
 
 export function DashboardShell({ children, planLabel }: DashboardShellProps) {
+  const { t } = useI18n();
   const logout = useAuthStore((state) => state.logout);
   const isLoading = useAuthStore((state) => state.isLoading);
   const user = useAuthStore((state) => state.user);
@@ -128,19 +138,20 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
                 3D Stylist
               </span>
               <span className="mt-1 block text-xs font-bold uppercase tracking-[0.16em] text-[#bac9cc]">
-                {planLabel || "Studio OS"}
+                {planLabel || t("shell.planFallback")}
               </span>
             </span>
           </span>
         </Link>
 
-        <nav className="flex-1 space-y-2" aria-label="Dashboard">
+        <nav className="flex-1 space-y-2" aria-label={t("shell.nav.dashboardAria")}>
           {visibleNavigation.map((item) => (
-            <SidebarNavItem item={item} key={item.label} />
+            <SidebarNavItem item={item} key={item.labelKey} />
           ))}
         </nav>
 
         <div className="border-t border-[#3b494c]/60 pt-4">
+          <LanguageSwitch className="mb-3 w-full justify-center" />
           <button
             className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isLoading}
@@ -148,7 +159,7 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
             onClick={() => void logout()}
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            {t("common.logout")}
           </button>
         </div>
       </aside>
@@ -172,26 +183,29 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
                   3D Stylist
                 </span>
                 <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#bac9cc]">
-                  {planLabel || "Studio OS"}
+                  {planLabel || t("shell.planFallback")}
                 </span>
               </span>
             </Link>
-            <button
-              aria-label="Logout"
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-white/10 text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isLoading}
-              type="button"
-              onClick={() => void logout()}
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <LanguageSwitch />
+              <button
+                aria-label={t("common.logout")}
+                className="flex h-11 w-11 items-center justify-center rounded-md border border-white/10 text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isLoading}
+                type="button"
+                onClick={() => void logout()}
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           <nav
-            aria-label="Dashboard mobile"
+            aria-label={t("shell.nav.dashboardMobileAria")}
             className="mt-3 flex flex-wrap gap-2"
           >
             {visibleNavigation.map((item) => (
-              <MobileNavItem item={item} key={item.label} />
+              <MobileNavItem item={item} key={item.labelKey} />
             ))}
           </nav>
         </header>
