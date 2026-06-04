@@ -8,6 +8,7 @@ import type {
   BillingSummary,
   CancelCurrentSubscriptionResult,
   PayBillingOrderResult,
+  PayosPaymentLinkResult,
 } from "./billing.types";
 
 interface ApiResponse<T> {
@@ -97,6 +98,17 @@ export async function payBillingOrder(
   return unwrapData(data);
 }
 
+export async function createPayosPaymentLink(
+  orderId: string,
+): Promise<PayosPaymentLinkResult> {
+  const { data } = await apiClient.post<ApiResponse<PayosPaymentLinkResult>>(
+    `/billing/orders/${orderId}/payos-payment-link`,
+    {},
+  );
+
+  return unwrapData(data);
+}
+
 export async function confirmBillingTransfer(
   orderId: string,
 ): Promise<BillingOrder> {
@@ -126,6 +138,7 @@ export const billingApi = {
   getBillingOrders,
   getBillingOrder,
   payBillingOrder,
+  createPayosPaymentLink,
   confirmBillingTransfer,
   cancelCurrentSubscription,
 };

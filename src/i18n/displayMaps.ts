@@ -30,6 +30,13 @@ const displayKeyByScope: Record<string, Record<string, string>> = {
     expired: "display.payment.expired",
     pending_verification: "display.payment.pending_verification",
   },
+  paymentProvider: {
+    vietqr: "display.provider.vietqr",
+    vietqr_bank_transfer: "display.provider.vietqr",
+    momo: "display.provider.momo",
+    vnpay: "display.provider.vnpay",
+    payos: "display.provider.payos",
+  },
   verificationStatus: {
     awaiting_transfer: "display.verification.awaiting_transfer",
     user_reported_transferred: "display.verification.user_reported_transferred",

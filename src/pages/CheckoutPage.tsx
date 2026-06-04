@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   Clipboard,
   Clock3,
+  CreditCard,
+  ExternalLink,
   HelpCircle,
   Loader2,
   LockKeyhole,
@@ -492,6 +494,57 @@ function CheckoutStatusPanel({
   );
 }
 
+function PayosCheckoutPanel({
+  canStartPayos,
+  isCreatingPayosLink,
+  isUnavailable,
+  onPayosCheckout,
+}: {
+  canStartPayos: boolean;
+  isCreatingPayosLink: boolean;
+  isUnavailable: boolean;
+  onPayosCheckout: () => void;
+}) {
+  const { t } = useI18n();
+  const isDisabled = !canStartPayos || isCreatingPayosLink || isUnavailable;
+
+  return (
+    <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-3">
+          <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
+          <div>
+            <h2 className="text-sm font-bold text-white">
+              {t("checkout.payos.title")}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#c3f5ff]">
+              {t("checkout.payos.body")}
+            </p>
+            <p className="mt-2 text-xs font-semibold leading-5 text-[#ffeac0]">
+              {t("checkout.payos.warning")}
+            </p>
+          </div>
+        </div>
+        <button
+          className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isDisabled}
+          type="button"
+          onClick={onPayosCheckout}
+        >
+          {isCreatingPayosLink ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ExternalLink className="h-4 w-4" />
+          )}
+          {isUnavailable
+            ? t("checkout.payos.unavailable")
+            : t("checkout.payos.button")}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function CheckoutPage() {
   const { language, t } = useI18n();
   const { orderId } = useParams();
@@ -501,6 +554,8 @@ export function CheckoutPage() {
   const [payment, setPayment] = useState<VietQrPaymentInstruction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isReportingTransfer, setIsReportingTransfer] = useState(false);
+  const [isCreatingPayosLink, setIsCreatingPayosLink] = useState(false);
+  const [payosUnavailable, setPayosUnavailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<CopiedField | null>(null);
@@ -515,6 +570,7 @@ export function CheckoutPage() {
     setIsLoading(true);
     setError(null);
     setActionError(null);
+    setPayosUnavailable(false);
 
     try {
       const summaryPromise = billingApi.getBillingMe();
@@ -600,10 +656,36 @@ export function CheckoutPage() {
     }
   }
 
+  async function handlePayosCheckout() {
+    if (!order) {
+      return;
+    }
+
+    setIsCreatingPayosLink(true);
+    setActionError(null);
+
+    try {
+      const result = await billingApi.createPayosPaymentLink(order.id);
+      setOrder(result.order);
+      setPayment(result.order.payment);
+      window.location.assign(result.payment.checkoutUrl);
+    } catch (payosError) {
+      setPayosUnavailable(true);
+      setActionError(
+        `${getApiErrorMessage(payosError)} ${t("checkout.payos.fallback")}`,
+      );
+    } finally {
+      setIsCreatingPayosLink(false);
+    }
+  }
+
   const canReportTransfer =
     order?.status === "pending" &&
     order.paymentVerification !== "pending_admin_verification" &&
     order.paymentVerification !== "user_reported_transferred";
+  const canStartPayos =
+    Boolean(canReportTransfer) &&
+    Boolean(summary?.paymentOptions?.payosEnabled);
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
@@ -686,6 +768,15 @@ export function CheckoutPage() {
           ) : (
             <>
               <CheckoutOrderSummary order={order} payment={payment} />
+
+              {summary?.paymentOptions?.payosEnabled ? (
+                <PayosCheckoutPanel
+                  canStartPayos={canStartPayos}
+                  isCreatingPayosLink={isCreatingPayosLink}
+                  isUnavailable={payosUnavailable}
+                  onPayosCheckout={() => void handlePayosCheckout()}
+                />
+              ) : null}
 
               <section className="overflow-hidden rounded-lg border border-[#262626] bg-[#121212]">
                 <div className="grid lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1.05fr)]">

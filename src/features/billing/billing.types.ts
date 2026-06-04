@@ -1,6 +1,7 @@
 export const BILLING_PROVIDERS = {
   MOMO: "momo",
   VNPAY: "vnpay",
+  PAYOS: "payos",
 } as const;
 
 export const BILLING_PRODUCT_CODES = {
@@ -138,6 +139,9 @@ export interface BillingSummary {
   };
   pendingOrders: BillingOrder[];
   latestPayment: BillingTransaction | null;
+  paymentOptions?: {
+    payosEnabled: boolean;
+  };
 }
 
 export interface CancelCurrentSubscriptionResult {
@@ -157,6 +161,17 @@ export interface PayBillingOrderResult {
     provider: BillingProvider;
     mode: "sandbox";
     redirectUrl: string;
+  };
+}
+
+export interface PayosPaymentLinkResult {
+  order: BillingOrder;
+  transaction: BillingTransaction;
+  payment: {
+    provider: typeof BILLING_PROVIDERS.PAYOS;
+    mode: "hosted";
+    checkoutUrl: string;
+    paymentLinkId: string;
   };
 }
 

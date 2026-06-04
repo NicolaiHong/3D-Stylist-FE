@@ -595,6 +595,14 @@ export const messages: Record<Language, Record<string, string>> = {
       "After sending the transfer, report it here and wait for admin verification.",
     "checkout.report.warning":
       "This only reports your transfer. Credits or plan access start after admin verification. This app does not auto-detect bank transfers.",
+    "checkout.payos.title": "Optional instant checkout",
+    "checkout.payos.body":
+      "payOS is an optional instant checkout method. Manual VietQR remains available.",
+    "checkout.payos.warning":
+      "Do not pay both methods for the same order.",
+    "checkout.payos.button": "Pay with payOS",
+    "checkout.payos.unavailable": "payOS unavailable",
+    "checkout.payos.fallback": "Manual VietQR remains available.",
     "checkout.badge": "Manual VietQR checkout",
     "checkout.header.eyebrow": "VietQR bank transfer",
     "checkout.header.title": "Complete your payment",
@@ -620,22 +628,27 @@ export const messages: Record<Language, Record<string, string>> = {
     "paymentResult.status.success": "Success",
     "paymentResult.status.failed": "Failed",
     "paymentResult.status.cancelled": "Cancelled",
+    "paymentResult.status.pending": "Pending",
     "paymentResult.status.unknown": "Unknown",
-    "paymentResult.source.gateway": "Sandbox gateway return",
+    "paymentResult.source.gateway": "Gateway return",
+    "paymentResult.source.payos": "payOS return",
     "paymentResult.orderId": "Order id",
     "paymentResult.source": "Source",
-    "paymentResult.success.title": "Sandbox gateway result recorded",
+    "paymentResult.success.title": "Payment confirmed",
     "paymentResult.success.description":
-      "The sandbox gateway return was recorded. Open credits to refresh your current backend-owned billing state.",
+      "The backend has marked this order paid. Open credits to refresh your current billing state.",
+    "paymentResult.pending.title": "Payment is still pending",
+    "paymentResult.pending.description":
+      "The return URL was received, but the backend has not marked this order paid yet. If you used payOS, the signed webhook may still be processing.",
     "paymentResult.failed.title": "Payment was not completed",
     "paymentResult.failed.description":
-      "The sandbox gateway returned a failed payment result. You can return to credits or view this checkout if the order is still valid.",
+      "The payment result was not successful. You can return to credits or view this checkout if the order is still valid.",
     "paymentResult.cancelled.title": "Payment was cancelled",
     "paymentResult.cancelled.description":
-      "The sandbox gateway returned a cancelled result. You can return to credits or view this checkout when you are ready.",
+      "The checkout was cancelled. No credits or subscription access are granted from cancellation.",
     "paymentResult.unknown.title": "Payment result received",
     "paymentResult.unknown.description":
-      "The sandbox gateway return used a status this app does not recognize. Check your credits page before starting another checkout.",
+      "The return URL used a status this app does not recognize. Check your credits page before starting another checkout.",
     "paymentResult.backendOwned.title": "Billing remains backend-owned",
     "paymentResult.backendOwned.body":
       "This page only displays the return URL result. It does not grant credits or subscriptions. VietQR manual bank transfers still require admin verification before access changes.",
@@ -743,6 +756,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.health.api": "API",
     "admin.health.database": "Database",
     "admin.health.vietqr": "VietQR",
+    "admin.health.payos": "payOS",
     "admin.health.manualMarkPaid": "Manual mark-paid",
     "admin.health.lastChecked": "Last checked: {date}",
     "admin.subscriptions.title": "Subscriptions And Credits",
@@ -835,6 +849,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "display.payment.cancelled": "Cancelled",
     "display.payment.expired": "Expired",
     "display.payment.pending_verification": "Pending verification",
+    "display.provider.vietqr": "Manual VietQR",
+    "display.provider.momo": "MoMo sandbox",
+    "display.provider.vnpay": "VNPay sandbox",
+    "display.provider.payos": "payOS",
     "display.verification.awaiting_transfer": "Awaiting transfer",
     "display.verification.user_reported_transferred": "Transfer reported",
     "display.verification.pending_admin_verification":
@@ -1458,6 +1476,14 @@ export const messages: Record<Language, Record<string, string>> = {
       "Sau khi chuyển khoản, báo tại đây và chờ quản trị xác minh.",
     "checkout.report.warning":
       "Thao tác này chỉ báo rằng bạn đã chuyển khoản. Tín dụng hoặc gói chỉ bắt đầu sau khi quản trị xác minh. Ứng dụng không tự phát hiện chuyển khoản ngân hàng.",
+    "checkout.payos.title": "Thanh toán nhanh tùy chọn",
+    "checkout.payos.body":
+      "payOS là phương thức thanh toán nhanh tùy chọn. VietQR thủ công vẫn luôn khả dụng.",
+    "checkout.payos.warning":
+      "Không thanh toán cả hai phương thức cho cùng một đơn.",
+    "checkout.payos.button": "Thanh toán bằng payOS",
+    "checkout.payos.unavailable": "payOS không khả dụng",
+    "checkout.payos.fallback": "VietQR thủ công vẫn khả dụng.",
     "checkout.badge": "Thanh toán VietQR thủ công",
     "checkout.header.eyebrow": "Chuyển khoản VietQR",
     "checkout.header.title": "Hoàn tất thanh toán",
@@ -1483,22 +1509,27 @@ export const messages: Record<Language, Record<string, string>> = {
     "paymentResult.status.success": "Thành công",
     "paymentResult.status.failed": "Thất bại",
     "paymentResult.status.cancelled": "Đã hủy",
+    "paymentResult.status.pending": "Đang chờ",
     "paymentResult.status.unknown": "Không rõ",
-    "paymentResult.source.gateway": "Kết quả trả về từ cổng sandbox",
+    "paymentResult.source.gateway": "Kết quả trả về từ cổng thanh toán",
+    "paymentResult.source.payos": "Kết quả trả về từ payOS",
     "paymentResult.orderId": "ID đơn",
     "paymentResult.source": "Nguồn",
-    "paymentResult.success.title": "Đã ghi nhận kết quả cổng sandbox",
+    "paymentResult.success.title": "Thanh toán đã được xác nhận",
     "paymentResult.success.description":
-      "Kết quả trả về từ cổng sandbox đã được ghi nhận. Mở trang tín dụng để làm mới trạng thái thanh toán do backend quản lý.",
+      "Backend đã đánh dấu đơn này là đã thanh toán. Mở trang tín dụng để làm mới trạng thái thanh toán.",
+    "paymentResult.pending.title": "Thanh toán vẫn đang chờ",
+    "paymentResult.pending.description":
+      "URL trả về đã được nhận, nhưng backend chưa đánh dấu đơn là đã thanh toán. Nếu bạn dùng payOS, webhook đã ký có thể vẫn đang xử lý.",
     "paymentResult.failed.title": "Thanh toán chưa hoàn tất",
     "paymentResult.failed.description":
-      "Cổng sandbox trả về kết quả thanh toán thất bại. Bạn có thể quay lại tín dụng hoặc xem trang thanh toán này nếu đơn vẫn còn hợp lệ.",
+      "Kết quả thanh toán không thành công. Bạn có thể quay lại tín dụng hoặc xem trang thanh toán này nếu đơn vẫn còn hợp lệ.",
     "paymentResult.cancelled.title": "Thanh toán đã bị hủy",
     "paymentResult.cancelled.description":
-      "Cổng sandbox trả về kết quả đã hủy. Bạn có thể quay lại tín dụng hoặc xem trang thanh toán này khi sẵn sàng.",
+      "Thanh toán đã bị hủy. Việc hủy không cấp tín dụng hoặc quyền gói thuê bao.",
     "paymentResult.unknown.title": "Đã nhận kết quả thanh toán",
     "paymentResult.unknown.description":
-      "Kết quả trả về từ cổng sandbox dùng trạng thái ứng dụng chưa nhận diện. Kiểm tra trang tín dụng trước khi bắt đầu thanh toán khác.",
+      "URL trả về dùng trạng thái ứng dụng chưa nhận diện. Kiểm tra trang tín dụng trước khi bắt đầu thanh toán khác.",
     "paymentResult.backendOwned.title": "Thanh toán vẫn do backend quản lý",
     "paymentResult.backendOwned.body":
       "Trang này chỉ hiển thị kết quả từ URL trả về. Trang không cấp tín dụng hoặc gói thuê bao. Chuyển khoản VietQR thủ công vẫn cần quản trị xác minh trước khi quyền truy cập thay đổi.",
@@ -1606,6 +1637,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.health.api": "API",
     "admin.health.database": "Cơ sở dữ liệu",
     "admin.health.vietqr": "VietQR",
+    "admin.health.payos": "payOS",
     "admin.health.manualMarkPaid": "Đánh dấu đã thanh toán thủ công",
     "admin.health.lastChecked": "Kiểm tra lần cuối: {date}",
     "admin.subscriptions.title": "Thuê bao và tín dụng",
@@ -1698,6 +1730,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "display.payment.cancelled": "Đã hủy",
     "display.payment.expired": "Hết hạn",
     "display.payment.pending_verification": "Chờ xác minh",
+    "display.provider.vietqr": "VietQR thủ công",
+    "display.provider.momo": "MoMo sandbox",
+    "display.provider.vnpay": "VNPay sandbox",
+    "display.provider.payos": "payOS",
     "display.verification.awaiting_transfer": "Chờ chuyển khoản",
     "display.verification.user_reported_transferred": "Đã báo chuyển khoản",
     "display.verification.pending_admin_verification": "Chờ quản trị xác minh",

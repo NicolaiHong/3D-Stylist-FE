@@ -25,7 +25,12 @@ export type AdminPaymentStatus =
   | "cancelled"
   | "expired";
 
-export type AdminBillingProvider = "vietqr" | "vietqr_bank_transfer" | "momo" | "vnpay";
+export type AdminBillingProvider =
+  | "vietqr"
+  | "vietqr_bank_transfer"
+  | "momo"
+  | "vnpay"
+  | "payos";
 
 export type AdminProductKind = "subscription_plan" | "credit_pack";
 
@@ -43,6 +48,8 @@ export interface AdminHealth {
     vietQrConfigured?: boolean;
     momoSandboxConfigured: boolean;
     vnpaySandboxConfigured: boolean;
+    payosEnabled?: boolean;
+    payosConfigured?: boolean;
     manualMarkPaidEnabled: boolean;
   };
 }
@@ -172,6 +179,7 @@ export interface AdminStats {
     totalTransactions: number;
     momo: number;
     vnpay: number;
+    payos: number;
     succeeded: number;
     failed: number;
     cancelled: number;
