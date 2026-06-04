@@ -1,6 +1,7 @@
 import { KeyboardEvent, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { LockKeyhole, X } from "lucide-react";
+import { useI18n } from "../../i18n/useI18n";
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface PaywallModalProps {
 }
 
 export function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
+  const { t } = useI18n();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             <LockKeyhole className="h-5 w-5" />
           </span>
           <button
-            aria-label="Close paywall"
+            aria-label={t("paywall.close")}
             className="flex h-10 w-10 items-center justify-center rounded-md text-[#bac9cc] transition hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
             type="button"
             onClick={onClose}
@@ -93,17 +95,16 @@ export function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         </div>
 
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-          PAYWALL_REQUIRED
+          {t("paywall.code")}
         </p>
         <h2
           className="mt-3 font-display text-2xl font-semibold text-white"
           id="paywall-title"
         >
-          Export is a paid feature.
+          {t("paywall.title")}
         </h2>
         <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-          Download and export are available on paid plans. Starter unlocks model
-          downloads and basic export.
+          {t("paywall.body")}
         </p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -112,14 +113,14 @@ export function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
             to="/credits"
             onClick={onClose}
           >
-            View plans
+            {t("paywall.viewPlans")}
           </Link>
           <button
             className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/60 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
             type="button"
             onClick={onClose}
           >
-            Continue previewing
+            {t("paywall.continuePreviewing")}
           </button>
         </div>
       </div>

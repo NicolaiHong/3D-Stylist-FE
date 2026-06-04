@@ -9,82 +9,84 @@ import {
 import { AuthLayout } from "../components/auth/AuthLayout";
 import { Button } from "../components/common/Button";
 import { authApi } from "../features/auth/auth.api";
+import { useI18n } from "../i18n/useI18n";
 
 const facebookEmailSuggestions = [
   {
     icon: RefreshCw,
-    text: "Reconnect Facebook and approve the email permission if you used Facebook.",
+    key: "auth.oauthError.facebookEmailSuggestion1",
   },
   {
     icon: UserRound,
-    text: "Try another provider account that can share a verified email.",
+    key: "auth.oauthError.facebookEmailSuggestion2",
   },
   {
     icon: CheckCircle2,
-    text: "Continue with Google or use email/password login.",
+    key: "auth.oauthError.facebookEmailSuggestion3",
   },
 ];
 
 const sessionRestoreSuggestions = [
   {
     icon: RefreshCw,
-    text: "Return to login and start a fresh sign-in attempt.",
+    key: "auth.oauthError.sessionSuggestion1",
   },
   {
     icon: UserRound,
-    text: "Check whether your browser blocks cross-site cookies, then retry.",
+    key: "auth.oauthError.sessionSuggestion2",
   },
   {
     icon: CheckCircle2,
-    text: "Use email/password login if browser privacy settings prevent session restore.",
+    key: "auth.oauthError.sessionSuggestion3",
   },
 ];
 
 const genericProviderSuggestions = [
   {
     icon: RefreshCw,
-    text: "Return to login and try the provider again.",
+    key: "auth.oauthError.genericSuggestion1",
   },
   {
     icon: UserRound,
-    text: "Continue with Google if another provider could not complete sign in.",
+    key: "auth.oauthError.genericSuggestion2",
   },
   {
     icon: CheckCircle2,
-    text: "Use email/password login to continue.",
+    key: "auth.oauthError.genericSuggestion3",
   },
 ];
 
 export function OAuthErrorPage() {
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const code = searchParams.get("code");
   const message =
-    searchParams.get("message") || "The provider could not complete sign in.";
+    searchParams.get("message") || t("auth.oauthError.fallbackMessage");
   const isEmailRequired =
     code === "OAUTH_EMAIL_REQUIRED" ||
     message.toLowerCase().includes("did not return an email");
   const isSessionRestoreFailure = code === "OAUTH_SESSION_RESTORE_FAILED";
 
   const title = isEmailRequired
-    ? "Email permission is required"
+    ? t("auth.oauthError.emailTitle")
     : isSessionRestoreFailure
-      ? "Sign-in session could not be restored"
-      : "Sign-in could not be completed";
+      ? t("auth.oauthError.sessionTitle")
+      : t("auth.oauthError.genericTitle");
   const description = isEmailRequired
-    ? "Your provider did not share an email address for this account."
+    ? t("auth.oauthError.emailDescription")
     : isSessionRestoreFailure
-      ? "Your provider sign-in completed, but this browser could not restore your 3D Stylist session."
-      : "The provider could not complete sign in. Please try another sign-in method.";
+      ? t("auth.oauthError.sessionDescription")
+      : t("auth.oauthError.genericDescription");
   const alertTitle = isEmailRequired
-    ? "An email address is required."
+    ? t("auth.oauthError.emailAlertTitle")
     : isSessionRestoreFailure
-      ? "Session handoff was interrupted."
-      : "The sign-in attempt was not completed.";
+      ? t("auth.oauthError.sessionAlertTitle")
+      : t("auth.oauthError.genericAlertTitle");
   const alertDescription = isEmailRequired
-    ? "3D Stylist needs an email address to connect your account safely."
+    ? t("auth.oauthError.emailAlertDescription")
     : isSessionRestoreFailure
-      ? "Your browser may have blocked or cleared the secure sign-in cookie. Return to login and try again."
-      : "Return to login and retry the provider, or choose another sign-in method.";
+      ? t("auth.oauthError.sessionAlertDescription")
+      : t("auth.oauthError.genericAlertDescription");
   const suggestions = isEmailRequired
     ? facebookEmailSuggestions
     : isSessionRestoreFailure
@@ -96,10 +98,7 @@ export function OAuthErrorPage() {
   };
 
   return (
-    <AuthLayout
-      title={title}
-      subtitle={description}
-    >
+    <AuthLayout title={title} subtitle={description}>
       <div
         className="rounded-lg border border-[#f0b44c]/20 bg-[#f0b44c]/[0.07] p-4 text-[#ffe3a6] shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
         role="alert"
@@ -121,13 +120,13 @@ export function OAuthErrorPage() {
 
       <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.035] p-4">
         <p className="text-sm font-semibold text-slate-100">
-          What you can do next
+          {t("auth.oauthError.nextSteps")}
         </p>
         <ul className="mt-3 space-y-3">
-          {suggestions.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex gap-3 text-sm leading-6 text-slate-300">
+          {suggestions.map(({ icon: Icon, key }) => (
+            <li key={key} className="flex gap-3 text-sm leading-6 text-slate-300">
               <Icon className="mt-1 h-4 w-4 shrink-0 text-[#f0b44c]" />
-              <span>{text}</span>
+              <span>{t(key)}</span>
             </li>
           ))}
         </ul>
@@ -145,7 +144,7 @@ export function OAuthErrorPage() {
           type="button"
           onClick={continueWithGoogle}
         >
-          Continue with Google
+          {t("auth.oauthError.continueWithGoogle")}
         </Button>
         <Button
           className="w-full"
@@ -156,17 +155,17 @@ export function OAuthErrorPage() {
             window.location.href = "/login";
           }}
         >
-          Back to Login
+          {t("auth.oauthError.backToLogin")}
         </Button>
       </div>
 
       <p className="mt-5 text-center text-sm text-slate-400">
-        Prefer a password account?{" "}
+        {t("auth.oauthError.passwordPrompt")}{" "}
         <Link
           className="font-semibold text-[#7df9df] transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7df9df]"
           to="/login"
         >
-          Use email/password login
+          {t("auth.oauthError.usePasswordLogin")}
         </Link>
       </p>
     </AuthLayout>

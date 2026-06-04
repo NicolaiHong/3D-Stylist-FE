@@ -42,48 +42,47 @@ import type {
   FigureStatus,
 } from "../features/figures/figures.types";
 import { getApiErrorCode, getApiErrorMessage } from "../services/apiClient";
+import { getDisplayLabel } from "../i18n/displayMaps";
+import { formatI18nDate } from "../i18n/formatters";
+import { useI18n } from "../i18n/useI18n";
 
 const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_GENERATION_PROMPT_LENGTH = 600;
-const INSUFFICIENT_CREDITS_MESSAGE =
-  "You’ve used all your generation credits. Buy more credits or upgrade your plan to continue.";
-const PROMPT_TOO_LONG_MESSAGE =
-  "Prompt plus setup details must be 600 characters or fewer for real 3D generation.";
 const STYLE_INTENTS = [
   {
     id: "minimal-luxury",
-    label: "Minimal luxury",
+    labelKey: "dashboard.style.minimalLuxury",
     promptText:
       "minimal luxury, refined tailoring, premium materials, restrained details",
   },
   {
     id: "cyber-streetwear",
-    label: "Cyber streetwear",
+    labelKey: "dashboard.style.cyberStreetwear",
     promptText:
       "cyber streetwear, futuristic urban layering, restrained neon accents",
   },
   {
     id: "techwear",
-    label: "Techwear",
+    labelKey: "dashboard.style.techwear",
     promptText:
       "techwear, functional layers, technical fabrics, structured utility details",
   },
   {
     id: "formal-runway",
-    label: "Formal runway",
+    labelKey: "dashboard.style.formalRunway",
     promptText:
       "formal runway, editorial tailoring, polished silhouette, elevated finish",
   },
   {
     id: "sporty-activewear",
-    label: "Sporty activewear",
+    labelKey: "dashboard.style.sportyActivewear",
     promptText:
       "sporty activewear, performance fabrics, streamlined athletic silhouette",
   },
   {
     id: "vintage-editorial",
-    label: "Vintage editorial",
+    labelKey: "dashboard.style.vintageEditorial",
     promptText:
       "vintage editorial, archival fashion mood, styled magazine silhouette",
   },
@@ -95,51 +94,43 @@ type ModelSource = "default" | "personal";
 type ModelGender = "male" | "female" | "unisex";
 type GenerationOutputType = "2d" | "3d";
 
-const MODEL_GENDERS: Array<{ id: ModelGender; label: string }> = [
-  { id: "male", label: "Male" },
-  { id: "female", label: "Female" },
-  { id: "unisex", label: "Unisex" },
+const MODEL_GENDERS: Array<{ id: ModelGender; labelKey: string }> = [
+  { id: "male", labelKey: "dashboard.setup.gender.male" },
+  { id: "female", labelKey: "dashboard.setup.gender.female" },
+  { id: "unisex", labelKey: "dashboard.setup.gender.unisex" },
 ];
 
 const GENERATION_OUTPUT_TYPES: Array<{
   id: GenerationOutputType;
-  label: string;
-  helper: string;
+  labelKey: string;
+  helperKey: string;
 }> = [
   {
     id: "2d",
-    label: "2D Preview",
-    helper: "Generate a visual fashion concept preview.",
+    labelKey: "dashboard.setup.output.2d",
+    helperKey: "dashboard.setup.output.2dHelper",
   },
   {
     id: "3d",
-    label: "3D GLB Model",
-    helper: "Generate or preview an interactive 3D model when available.",
+    labelKey: "dashboard.setup.output.3d",
+    helperKey: "dashboard.setup.output.3dHelper",
   },
 ];
-
-function formatDate(value: string | null | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 function getProductName(order: BillingOrder | null | undefined) {
   return order?.items[0]?.productName ?? "billing order";
 }
 
-function getPlanTone(summary: BillingSummary | null) {
+type Translate = ReturnType<typeof useI18n>["t"];
+
+function getPlanTone(summary: BillingSummary | null, t: Translate) {
   if (!summary) {
-    return "Checking";
+    return t("dashboard.plan.checking");
   }
 
-  return summary.plan.status === "active" ? "Active plan" : "Free plan";
+  return summary.plan.status === "active"
+    ? t("dashboard.plan.active")
+    : t("dashboard.plan.free");
 }
 
 function isPollingStatus(status: FigureStatus) {
@@ -148,14 +139,6 @@ function isPollingStatus(status: FigureStatus) {
 
 function isTerminalStatus(status: FigureStatus) {
   return status === "success" || status === "failed" || status === "canceled";
-}
-
-function formatStatus(status: FigureStatus) {
-  if (status === "queued") {
-    return "Queued";
-  }
-
-  return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 function getFigureStatusTone(status: FigureStatus) {
@@ -174,28 +157,28 @@ function getFigureStatusTone(status: FigureStatus) {
   return "border-white/10 bg-white/[0.05] text-[#bac9cc]";
 }
 
-function getFigureStatusExplanation(status: FigureStatus) {
+function getFigureStatusExplanation(status: FigureStatus, t: Translate) {
   if (status === "queued") {
-    return "Request accepted. Waiting for generation to start.";
+    return t("dashboard.figure.status.queued");
   }
 
   if (status === "processing") {
-    return "Generation is in progress. Status refreshes automatically.";
+    return t("dashboard.figure.status.processing");
   }
 
   if (status === "success") {
-    return "Generation complete. Open the available preview or model.";
+    return t("dashboard.figure.status.success");
   }
 
   if (status === "failed") {
-    return "Generation did not complete. Your balance is refreshed from backend state; check credits before submitting another request.";
+    return t("dashboard.figure.status.failed");
   }
 
   if (status === "canceled") {
-    return "Generation was canceled.";
+    return t("dashboard.figure.status.canceled");
   }
 
-  return "Generation draft is waiting to be submitted.";
+  return t("dashboard.figure.status.draft");
 }
 
 function getFigureStatusExplanationTone(status: FigureStatus) {
@@ -214,15 +197,15 @@ function getFigurePreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
 }
 
-function getFigureAssetAvailability(figure: FigureDto) {
+function getFigureAssetAvailability(figure: FigureDto, t: Translate) {
   const availability: string[] = [];
 
   if (getFigurePreviewUrl(figure)) {
-    availability.push("Image ready");
+    availability.push(t("dashboard.figure.imageReady"));
   }
 
   if (figure.modelUrl) {
-    availability.push("Model ready");
+    availability.push(t("dashboard.figure.modelReady"));
   }
 
   if (
@@ -230,7 +213,7 @@ function getFigureAssetAvailability(figure: FigureDto) {
     figure.status !== "failed" &&
     figure.status !== "canceled"
   ) {
-    availability.push("Preview pending");
+    availability.push(t("dashboard.figure.previewPending"));
   }
 
   return availability;
@@ -266,9 +249,9 @@ function getDownloadFileName(figure: FigureDto, kind: FigureAssetKind) {
   return `3d-stylist-generation-${figure.id}.png`;
 }
 
-function getFigurePlaceholderCopy(figure: FigureDto) {
+function getFigurePlaceholderCopy(figure: FigureDto, t: Translate) {
   if (figure.status === "queued" || figure.status === "processing") {
-    return "Generating...";
+    return t("dashboard.figure.generating");
   }
 
   if (
@@ -276,18 +259,18 @@ function getFigurePlaceholderCopy(figure: FigureDto) {
     !getFigurePreviewUrl(figure) &&
     !figure.modelUrl
   ) {
-    return "Generation complete. Preview will appear when provider result is available.";
+    return t("dashboard.figure.completeNoAssets");
   }
 
   if (figure.status === "failed") {
-    return figure.failureReason || "Generation failed. Please try again later.";
+    return figure.failureReason || t("dashboard.figure.failedFallback");
   }
 
   if (figure.status === "canceled") {
-    return "Generation canceled.";
+    return t("dashboard.figure.canceled");
   }
 
-  return "Preview pending";
+  return t("dashboard.figure.previewPending");
 }
 
 async function downloadUrlWithFallback(url: string, fileName: string) {
@@ -314,14 +297,18 @@ async function downloadUrlWithFallback(url: string, fileName: string) {
   }
 }
 
-function getPromptSnippet(prompt: string | null | undefined) {
+function getPromptSnippet(
+  prompt: string | null | undefined,
+  fallback: string,
+  limit = 92,
+) {
   const value = prompt?.trim();
 
   if (!value) {
-    return "Untitled generation";
+    return fallback;
   }
 
-  return value.length > 92 ? `${value.slice(0, 92)}...` : value;
+  return value.length > limit ? `${value.slice(0, limit)}...` : value;
 }
 
 function mergeFigureIntoList(figures: FigureDto[], figure: FigureDto) {
@@ -347,26 +334,33 @@ function DashboardSkeleton() {
 }
 
 function FigureStatusBadge({ status }: { status: FigureStatus }) {
+  const { language } = useI18n();
+
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] ${getFigureStatusTone(
+      className={`dashboard-utility-label inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-bold ${getFigureStatusTone(
         status,
       )}`}
     >
       {isPollingStatus(status) ? <Clock3 className="h-3.5 w-3.5" /> : null}
-      {formatStatus(status)}
+      {getDisplayLabel("figureStatus", status, language)}
     </span>
   );
 }
 
 function FigurePreview({ figure }: { figure: FigureDto }) {
+  const { t } = useI18n();
   const previewUrl = getFigurePreviewUrl(figure);
-  const placeholderCopy = getFigurePlaceholderCopy(figure);
+  const promptSnippet = getPromptSnippet(
+    figure.prompt,
+    t("dashboard.figure.untitled"),
+  );
+  const placeholderCopy = getFigurePlaceholderCopy(figure, t);
 
   if (previewUrl) {
     return (
       <img
-        alt={getPromptSnippet(figure.prompt)}
+        alt={promptSnippet}
         className="h-full w-full object-cover"
         src={previewUrl}
       />
@@ -394,9 +388,16 @@ function FigureCard({
   onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
   onView: (figure: FigureDto) => void;
 }) {
-  const createdDate = formatDate(figure.createdAt);
+  const { language, t } = useI18n();
+  const fallbackPrompt = t("dashboard.figure.untitled");
+  const promptSnippet = getPromptSnippet(figure.prompt, fallbackPrompt);
+  const createdDate = formatI18nDate(
+    figure.createdAt,
+    language,
+    t("common.unknown"),
+  );
   const previewUrl = getFigurePreviewUrl(figure);
-  const assetAvailability = getFigureAssetAvailability(figure);
+  const assetAvailability = getFigureAssetAvailability(figure, t);
   const canViewImage = figure.status === "success" && Boolean(previewUrl);
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
@@ -413,23 +414,21 @@ function FigureCard({
           <FigureStatusBadge status={figure.status} />
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-            Prompt
+          <p className="dashboard-utility-label font-bold text-[#849396]">
+            {t("dashboard.figure.prompt")}
           </p>
           <p className="mt-1 min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
-            {getPromptSnippet(figure.prompt)}
+            {promptSnippet}
           </p>
         </div>
-        {createdDate ? (
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-              Created
-            </p>
-            <p className="mt-1 text-xs font-semibold text-[#bac9cc]">
-              {createdDate}
-            </p>
-          </div>
-        ) : null}
+        <div>
+          <p className="dashboard-utility-label font-bold text-[#849396]">
+            {t("dashboard.figure.created")}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-[#bac9cc]">
+            {createdDate}
+          </p>
+        </div>
         {assetAvailability.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {assetAvailability.map((label) => (
@@ -450,20 +449,22 @@ function FigureCard({
         <div className="flex flex-wrap gap-2">
           {canViewImage ? (
             <button
-              aria-label={`View image for ${getPromptSnippet(figure.prompt)}`}
+              aria-label={t("dashboard.figure.viewImageAria", {
+                prompt: promptSnippet,
+              })}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
               type="button"
               onClick={() => onView(figure)}
             >
               <Eye className="h-3.5 w-3.5" />
-              View image
+              {t("dashboard.figure.viewImage")}
             </button>
           ) : null}
           {previewUrl ? (
             <button
-              aria-label={`Download image for ${getPromptSnippet(
-                figure.prompt,
-              )}`}
+              aria-label={t("dashboard.figure.downloadImageAria", {
+                prompt: promptSnippet,
+              })}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isImageDownloading}
               type="button"
@@ -474,7 +475,7 @@ function FigureCard({
               ) : (
                 <Download className="h-3.5 w-3.5" />
               )}
-              Download image
+              {t("dashboard.figure.downloadImage")}
             </button>
           ) : null}
           {figure.modelUrl ? (
@@ -484,15 +485,15 @@ function FigureCard({
               rel="noreferrer"
               target="_blank"
             >
-              Open model
+              {t("dashboard.figure.openModel")}
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           ) : null}
           {figure.modelUrl ? (
             <button
-              aria-label={`Download model for ${getPromptSnippet(
-                figure.prompt,
-              )}`}
+              aria-label={t("dashboard.figure.downloadModelAria", {
+                prompt: promptSnippet,
+              })}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isModelDownloading}
               type="button"
@@ -503,7 +504,7 @@ function FigureCard({
               ) : (
                 <Download className="h-3.5 w-3.5" />
               )}
-              Download model
+              {t("dashboard.figure.downloadModel")}
             </button>
           ) : null}
         </div>
@@ -523,8 +524,15 @@ function FigurePreviewDialog({
   onClose: () => void;
   onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
 }) {
+  const { language, t } = useI18n();
   const previewUrl = getFigurePreviewUrl(figure);
-  const createdDate = formatDate(figure.createdAt);
+  const fallbackPrompt = t("dashboard.figure.untitled");
+  const promptSnippet = getPromptSnippet(figure.prompt, fallbackPrompt);
+  const createdDate = formatI18nDate(
+    figure.createdAt,
+    language,
+    t("common.unknown"),
+  );
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
@@ -552,18 +560,18 @@ function FigurePreviewDialog({
       <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-lg border border-[#3b494c] bg-[#141313] shadow-2xl shadow-black/50">
         <div className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-4 sm:p-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-              Generated result
+            <p className="dashboard-utility-label font-bold text-[#00e5ff]">
+              {t("dashboard.dialog.generatedResult")}
             </p>
             <h2
               className="mt-2 font-display text-2xl font-semibold text-white"
               id="figure-preview-dialog-title"
             >
-              Image preview
+              {t("dashboard.dialog.imagePreview")}
             </h2>
           </div>
           <button
-            aria-label="Close image preview"
+            aria-label={t("dashboard.dialog.closeImagePreview")}
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
             type="button"
             onClick={onClose}
@@ -575,7 +583,7 @@ function FigurePreviewDialog({
           <div className="min-h-[320px] bg-[#090909] lg:min-h-[560px]">
             {previewUrl ? (
               <img
-                alt={getPromptSnippet(figure.prompt)}
+                alt={promptSnippet}
                 className="h-full w-full object-contain"
                 src={previewUrl}
               />
@@ -593,11 +601,11 @@ function FigurePreviewDialog({
               ) : null}
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-                Prompt
+              <p className="dashboard-utility-label font-bold text-[#849396]">
+                {t("dashboard.figure.prompt")}
               </p>
               <p className="mt-2 text-sm leading-6 text-[#e5e2e1]">
-                {figure.prompt?.trim() || "Untitled generation"}
+                {figure.prompt?.trim() || fallbackPrompt}
               </p>
             </div>
             <div className="flex flex-col gap-3">
@@ -613,7 +621,7 @@ function FigurePreviewDialog({
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  Download image
+                  {t("dashboard.figure.downloadImage")}
                 </button>
               ) : null}
               {figure.modelUrl ? (
@@ -623,7 +631,7 @@ function FigurePreviewDialog({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Open model
+                  {t("dashboard.figure.openModel")}
                   <ExternalLink className="h-4 w-4" />
                 </a>
               ) : null}
@@ -639,7 +647,7 @@ function FigurePreviewDialog({
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  Download model
+                  {t("dashboard.figure.downloadModel")}
                 </button>
               ) : null}
             </div>
@@ -663,6 +671,11 @@ function ActiveFigurePanel({
   onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
   onView: (figure: FigureDto) => void;
 }) {
+  const { t } = useI18n();
+  const promptSnippet = getPromptSnippet(
+    figure.prompt,
+    t("dashboard.figure.untitled"),
+  );
   const previewUrl = getFigurePreviewUrl(figure);
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
@@ -678,24 +691,24 @@ function ActiveFigurePanel({
         <div className="flex flex-wrap items-center gap-2">
           <FigureStatusBadge status={figure.status} />
           {isPolling ? (
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#bac9cc]">
+            <span className="dashboard-utility-label inline-flex items-center gap-2 font-bold text-[#bac9cc]">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Syncing
+              {t("dashboard.active.syncing")}
             </span>
           ) : null}
         </div>
         <h3 className="mt-3 font-display text-xl font-semibold text-white">
-          Current generation
+          {t("dashboard.active.currentGeneration")}
         </h3>
         <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-          {getPromptSnippet(figure.prompt)}
+          {promptSnippet}
         </p>
         <p
           className={`mt-3 text-sm font-semibold ${getFigureStatusExplanationTone(
             figure.status,
           )}`}
         >
-          {getFigureStatusExplanation(figure.status)}
+          {getFigureStatusExplanation(figure.status, t)}
         </p>
         {figure.status === "failed" && figure.failureReason ? (
           <p className="mt-3 rounded-md border border-[#ffb4ab]/20 bg-[#93000a]/20 p-3 text-sm leading-6 text-[#ffdad6]">
@@ -705,20 +718,22 @@ function ActiveFigurePanel({
         <div className="mt-4 flex flex-wrap gap-3">
           {previewUrl ? (
             <button
-              aria-label={`View image for ${getPromptSnippet(figure.prompt)}`}
+              aria-label={t("dashboard.figure.viewImageAria", {
+                prompt: promptSnippet,
+              })}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
               type="button"
               onClick={() => onView(figure)}
             >
               <Eye className="h-3.5 w-3.5" />
-              View image
+              {t("dashboard.figure.viewImage")}
             </button>
           ) : null}
           {previewUrl ? (
             <button
-              aria-label={`Download image for ${getPromptSnippet(
-                figure.prompt,
-              )}`}
+              aria-label={t("dashboard.figure.downloadImageAria", {
+                prompt: promptSnippet,
+              })}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               disabled={isImageDownloading}
               type="button"
@@ -729,7 +744,7 @@ function ActiveFigurePanel({
               ) : (
                 <Download className="h-3.5 w-3.5" />
               )}
-              Download image
+              {t("dashboard.figure.downloadImage")}
             </button>
           ) : null}
           {figure.modelUrl ? (
@@ -739,15 +754,15 @@ function ActiveFigurePanel({
               rel="noreferrer"
               target="_blank"
             >
-              Open model
+              {t("dashboard.figure.openModel")}
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           ) : null}
           {figure.modelUrl ? (
             <button
-              aria-label={`Download model for ${getPromptSnippet(
-                figure.prompt,
-              )}`}
+              aria-label={t("dashboard.figure.downloadModelAria", {
+                prompt: promptSnippet,
+              })}
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isModelDownloading}
               type="button"
@@ -758,7 +773,7 @@ function ActiveFigurePanel({
               ) : (
                 <Download className="h-3.5 w-3.5" />
               )}
-              Download model
+              {t("dashboard.figure.downloadModel")}
             </button>
           ) : null}
         </div>
@@ -768,30 +783,33 @@ function ActiveFigurePanel({
 }
 
 function FigureEmptyState() {
+  const { t } = useI18n();
+
   return (
     <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-8 text-center md:col-span-3">
       <Sparkles className="mx-auto h-8 w-8 text-[#3b494c]" />
       <p className="mt-3 text-sm font-bold text-white">
-        No generated garments yet.
+        {t("dashboard.empty.title")}
       </p>
       <p className="mt-1 text-sm text-[#bac9cc]">
-        Submit a prompt above and your first result will appear here.
+        {t("dashboard.empty.body")}
       </p>
     </div>
   );
 }
 
 function GenerationResultNotice({ figure }: { figure: FigureDto }) {
+  const { t } = useI18n();
   const isFailed = figure.status === "failed" || figure.status === "canceled";
   const message =
     figure.status === "success"
-      ? "Generation complete. Preview it in Studio."
+      ? t("dashboard.notice.success")
       : isFailed
-        ? "Generation failed. Try a shorter prompt or generate again."
-        : "Generation submitted. Result will appear in Studio when ready.";
+        ? t("dashboard.notice.failed")
+        : t("dashboard.notice.submitted");
   const actionLabel = isPollingStatus(figure.status)
-    ? "Open Studio status"
-    : "Open Studio";
+    ? t("dashboard.notice.openStudioStatus")
+    : t("dashboard.notice.openStudio");
 
   return (
     <Link
@@ -811,7 +829,7 @@ function GenerationResultNotice({ figure }: { figure: FigureDto }) {
         <span>
           <span className="block text-sm font-bold text-white">{message}</span>
           <span className="mt-1 block text-xs leading-5 text-[#bac9cc]">
-            The backend remains the source of truth for status and ready assets.
+            {t("dashboard.notice.backendSource")}
           </span>
         </span>
       </span>
@@ -854,10 +872,13 @@ function GenerationSetupDialog({
   onModelGenderChange: (gender: ModelGender) => void;
   onOutputTypeChange: (outputType: GenerationOutputType) => void;
 }) {
+  const { t } = useI18n();
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const outputTypeLabel =
-    GENERATION_OUTPUT_TYPES.find((option) => option.id === outputType)?.label ??
-    "2D Preview";
+    t(
+      GENERATION_OUTPUT_TYPES.find((option) => option.id === outputType)
+        ?.labelKey ?? "dashboard.setup.output.2d",
+    );
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -882,22 +903,21 @@ function GenerationSetupDialog({
       <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-lg border border-[#00e5ff]/30 bg-[#141313] shadow-2xl shadow-[#00e5ff]/10">
         <header className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-5 sm:p-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-              Studio request
+            <p className="dashboard-label font-bold text-[#00e5ff]">
+              {t("dashboard.setup.eyebrow")}
             </p>
             <h2
-              className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl"
+              className="mt-2 font-display text-[1.6rem] font-semibold leading-[1.16] text-white sm:text-3xl"
               id="generation-setup-dialog-title"
             >
-              Generation setup
+              {t("dashboard.setup.title")}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#bac9cc]">
-              Confirm the request details before the backend consumes one
-              generation credit.
+            <p className="dashboard-helper-copy mt-2 max-w-2xl text-[#bac9cc]">
+              {t("dashboard.setup.body")}
             </p>
           </div>
           <button
-            aria-label="Close generation setup"
+            aria-label={t("dashboard.setup.close")}
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isGenerating}
             ref={closeButtonRef}
@@ -911,7 +931,9 @@ function GenerationSetupDialog({
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="space-y-6">
             <section>
-              <h3 className="text-sm font-bold text-white">A. Model source</h3>
+              <h3 className="text-sm font-bold text-white">
+                {t("dashboard.setup.modelSource")}
+              </h3>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <button
                   aria-pressed={modelSource === "default"}
@@ -920,11 +942,10 @@ function GenerationSetupDialog({
                 >
                   <span className="flex items-center gap-2 text-sm font-bold text-[#c3f5ff]">
                     <Box className="h-4 w-4" />
-                    Default model
+                    {t("dashboard.setup.defaultModel")}
                   </span>
                   <span className="mt-2 block text-xs leading-5 text-[#bac9cc]">
-                    Use a neutral studio mannequin for the generated fashion
-                    concept.
+                    {t("dashboard.setup.defaultModelBody")}
                   </span>
                 </button>
                 <button
@@ -935,14 +956,13 @@ function GenerationSetupDialog({
                 >
                   <span className="flex items-center gap-2 text-sm font-bold text-[#bac9cc]">
                     <UserRound className="h-4 w-4" />
-                    My uploaded image
+                    {t("dashboard.setup.uploadedImage")}
                   </span>
                   <span className="mt-2 block text-xs leading-5 text-[#849396]">
-                    Use your uploaded profile/selfie image as reference.
+                    {t("dashboard.setup.uploadedImageBody")}
                   </span>
                   <span className="mt-2 block text-xs font-semibold leading-5 text-[#ffeac0]">
-                    Personal image generation is coming soon. Use the default
-                    model for now.
+                    {t("dashboard.setup.uploadedImageSoon")}
                   </span>
                 </button>
               </div>
@@ -951,7 +971,7 @@ function GenerationSetupDialog({
             {modelSource === "default" ? (
               <section>
                 <h3 className="text-sm font-bold text-white">
-                  B. Default model gender
+                  {t("dashboard.setup.defaultGender")}
                 </h3>
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   {MODEL_GENDERS.map((gender) => {
@@ -969,7 +989,7 @@ function GenerationSetupDialog({
                         type="button"
                         onClick={() => onModelGenderChange(gender.id)}
                       >
-                        {gender.label}
+                        {t(gender.labelKey)}
                       </button>
                     );
                   })}
@@ -978,7 +998,9 @@ function GenerationSetupDialog({
             ) : null}
 
             <section>
-              <h3 className="text-sm font-bold text-white">C. Output type</h3>
+              <h3 className="text-sm font-bold text-white">
+                {t("dashboard.setup.outputType")}
+              </h3>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {GENERATION_OUTPUT_TYPES.map((option) => {
                   const isSelected = option.id === outputType;
@@ -1001,10 +1023,10 @@ function GenerationSetupDialog({
                         ) : (
                           <ImageIcon className="h-4 w-4" />
                         )}
-                        {option.label}
+                        {t(option.labelKey)}
                       </span>
                       <span className="mt-2 block text-xs leading-5 text-[#849396]">
-                        {option.helper}
+                        {t(option.helperKey)}
                       </span>
                     </button>
                   );
@@ -1014,61 +1036,85 @@ function GenerationSetupDialog({
           </div>
 
           <aside className="h-fit rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4">
-            <h3 className="text-sm font-bold text-white">D. Submit summary</h3>
+            <h3 className="text-sm font-bold text-white">
+              {t("dashboard.setup.summary")}
+            </h3>
             <dl className="mt-4 space-y-3 text-xs">
               <div className="flex justify-between gap-3">
-                <dt className="text-[#849396]">Generation cost</dt>
-                <dd className="font-bold text-white">1 credit</dd>
+                <dt className="text-[#849396]">
+                  {t("dashboard.generate.cost")}
+                </dt>
+                <dd className="font-bold text-white">
+                  {t("dashboard.generate.oneCredit")}
+                </dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-[#849396]">Current balance</dt>
+                <dt className="text-[#849396]">
+                  {t("dashboard.setup.currentBalance")}
+                </dt>
                 <dd className="font-bold text-[#9cf0ff]">{creditBalance}</dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-[#849396]">Balance after submit</dt>
+                <dt className="text-[#849396]">
+                  {t("dashboard.generate.balanceAfter")}
+                </dt>
                 <dd className="font-bold text-[#c9fff6]">
                   {estimatedBalanceAfterSubmit}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-[#849396]">Prompt length</dt>
+                <dt className="text-[#849396]">
+                  {t("dashboard.setup.promptLength")}
+                </dt>
                 <dd className="font-bold text-white">{promptCharacterCount}</dd>
               </div>
               <div className="border-t border-[#3b494c]/70 pt-3">
-                <dt className="text-[#849396]">Style direction</dt>
+                <dt className="text-[#849396]">
+                  {t("studio.styleDirection")}
+                </dt>
                 <dd className="mt-1 font-semibold leading-5 text-[#e5e2e1]">
-                  {selectedStyleIntent?.label ?? "None selected"}
+                  {selectedStyleIntent
+                    ? t(selectedStyleIntent.labelKey)
+                    : t("dashboard.setup.noneSelected")}
                 </dd>
               </div>
               <div>
-                <dt className="text-[#849396]">Model source</dt>
+                <dt className="text-[#849396]">
+                  {t("dashboard.setup.modelSource")}
+                </dt>
                 <dd className="mt-1 font-semibold text-[#e5e2e1]">
-                  Default model
+                  {t("dashboard.setup.defaultModel")}
                 </dd>
               </div>
               <div>
-                <dt className="text-[#849396]">Default model gender</dt>
+                <dt className="text-[#849396]">
+                  {t("dashboard.setup.defaultGender")}
+                </dt>
                 <dd className="mt-1 font-semibold capitalize text-[#e5e2e1]">
-                  {modelGender}
+                  {t(`dashboard.setup.gender.${modelGender}`)}
                 </dd>
               </div>
               <div>
-                <dt className="text-[#849396]">Output type</dt>
+                <dt className="text-[#849396]">
+                  {t("dashboard.setup.outputType")}
+                </dt>
                 <dd className="mt-1 font-semibold text-[#e5e2e1]">
                   {outputTypeLabel}
                 </dd>
               </div>
             </dl>
             <p className="mt-4 border-t border-[#3b494c]/70 pt-3 text-xs leading-5 text-[#849396]">
-              Composed request: {composedPromptCharacterCount}/
-              {MAX_GENERATION_PROMPT_LENGTH} chars
+              {t("dashboard.setup.composedRequest", {
+                count: composedPromptCharacterCount,
+                max: MAX_GENERATION_PROMPT_LENGTH,
+              })}
             </p>
             {isPromptTooLong ? (
               <p
                 className="mt-3 text-xs font-semibold leading-5 text-[#ffb4ab]"
                 role="alert"
               >
-                {PROMPT_TOO_LONG_MESSAGE}
+                {t("dashboard.generate.error.promptTooLong")}
               </p>
             ) : null}
           </aside>
@@ -1081,7 +1127,7 @@ function GenerationSetupDialog({
             type="button"
             onClick={onClose}
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
@@ -1094,7 +1140,9 @@ function GenerationSetupDialog({
             ) : (
               <Sparkles className="h-4 w-4" />
             )}
-            {isGenerating ? "Submitting" : "Generate now"}
+            {isGenerating
+              ? t("dashboard.setup.submitting")
+              : t("dashboard.setup.generateNow")}
           </button>
         </footer>
       </div>
@@ -1103,8 +1151,10 @@ function GenerationSetupDialog({
 }
 
 export function DashboardPage() {
+  const { language, t } = useI18n();
   const user = useAuthStore((state) => state.user);
-  const displayName = user?.displayName || user?.fullName || "Creator";
+  const displayName =
+    user?.displayName || user?.fullName || t("auth.hero.mobileBadge");
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [figures, setFigures] = useState<FigureDto[]>([]);
   const [activeFigure, setActiveFigure] = useState<FigureDto | null>(null);
@@ -1226,7 +1276,7 @@ export function DashboardPage() {
         if (!isCancelled && isMountedRef.current) {
           setIsPolling(false);
           setGenerationError(
-            "Generation is taking longer than expected. Refresh recent generations in a moment.",
+            t("dashboard.generate.error.slow"),
           );
         }
         return;
@@ -1259,8 +1309,8 @@ export function DashboardPage() {
           setIsPolling(false);
           setGenerationError(
             getApiErrorCode(pollError) === "FIGURE_NOT_FOUND"
-              ? "Generation status is no longer available."
-              : "We could not refresh generation status. Try again in a moment.",
+              ? t("dashboard.generate.error.notFound")
+              : t("dashboard.generate.error.refreshFailed"),
           );
         }
         return;
@@ -1283,7 +1333,7 @@ export function DashboardPage() {
         window.clearTimeout(pollTimeoutId);
       }
     };
-  }, [activeFigure, loadBillingSummary, loadFigures]);
+  }, [activeFigure, loadBillingSummary, loadFigures, t]);
 
   const pendingOrder = summary?.pendingOrders[0] ?? null;
   const isPendingOrderWaitingForAdminVerification =
@@ -1291,7 +1341,11 @@ export function DashboardPage() {
     pendingOrder?.paymentVerification === "pending_admin_verification";
   const pendingOrderTransferContent =
     pendingOrder?.bankTransferContent ?? pendingOrder?.orderCode;
-  const renewalDate = formatDate(summary?.plan.currentPeriodEnd);
+  const renewalDate = formatI18nDate(
+    summary?.plan.currentPeriodEnd,
+    language,
+    "",
+  );
   const latestPayment = summary?.latestPayment;
   const creditBalance = summary?.credits.balance ?? 0;
   const hasLoadedZeroCredits = Boolean(summary) && creditBalance <= 0;
@@ -1316,18 +1370,25 @@ export function DashboardPage() {
     !isGenerating &&
     !hasLoadedZeroCredits &&
     !isComposedPromptTooLong;
+  const insufficientCreditsMessage = t(
+    "dashboard.generate.error.insufficientCredits",
+  );
+  const promptTooLongMessage = t("dashboard.generate.error.promptTooLong");
 
   const recentFiguresTitle = useMemo(() => {
     if (isFiguresLoading) {
-      return "Loading generation history.";
+      return t("dashboard.recent.loading");
     }
 
     if (figures.length === 0) {
-      return "No generated garments yet.";
+      return t("dashboard.recent.empty");
     }
 
-    return `${figures.length} recent generation${figures.length === 1 ? "" : "s"}.`;
-  }, [figures.length, isFiguresLoading]);
+    return t("dashboard.recent.count", {
+      count: figures.length,
+      plural: figures.length === 1 ? "" : "s",
+    });
+  }, [figures.length, isFiguresLoading, t]);
 
   const handleViewFigure = useCallback((figure: FigureDto) => {
     setSelectedFigure(figure);
@@ -1376,12 +1437,12 @@ export function DashboardPage() {
     }
 
     if (hasLoadedZeroCredits) {
-      setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+      setGenerationError(insufficientCreditsMessage);
       return;
     }
 
     if (isComposedPromptTooLong) {
-      setGenerationError(PROMPT_TOO_LONG_MESSAGE);
+      setGenerationError(promptTooLongMessage);
       return;
     }
 
@@ -1396,12 +1457,12 @@ export function DashboardPage() {
 
     if (hasLoadedZeroCredits) {
       handleCloseGenerationSetup();
-      setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+      setGenerationError(insufficientCreditsMessage);
       return;
     }
 
     if (isComposedPromptTooLong) {
-      setGenerationError(PROMPT_TOO_LONG_MESSAGE);
+      setGenerationError(promptTooLongMessage);
       return;
     }
 
@@ -1431,15 +1492,15 @@ export function DashboardPage() {
       const errorCode = getApiErrorCode(generateError);
 
       if (errorCode === "INSUFFICIENT_GENERATION_CREDITS") {
-        setGenerationError(INSUFFICIENT_CREDITS_MESSAGE);
+        setGenerationError(insufficientCreditsMessage);
         void loadBillingSummary(false);
       } else if (errorCode === "GENERATION_PROVIDER_UNAVAILABLE") {
         setGenerationError(
-          "The generation service is temporarily unavailable. Try again later.",
+          t("dashboard.generate.error.serviceUnavailable"),
         );
       } else if (errorCode === "GENERATION_FAILED") {
         setGenerationError(
-          "Generation failed before a result was created. Try a shorter prompt or try again later.",
+          t("dashboard.generate.error.failedBeforeResult"),
         );
       } else {
         setGenerationError(getApiErrorMessage(generateError));
@@ -1457,22 +1518,21 @@ export function DashboardPage() {
         <div className="mx-auto w-full max-w-[1200px] space-y-6">
           <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-                Dashboard
+              <p className="dashboard-label font-bold text-[#00e5ff]">
+                {t("dashboard.header.eyebrow")}
               </p>
-              <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Good day, {displayName}.
+              <h1 className="dashboard-page-title mt-3 font-display font-semibold text-white">
+                {t("dashboard.header.greeting", { name: displayName })}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                Generate a 3D fashion figure from a prompt, track its render
-                state, and keep credits accurate as results complete.
+              <p className="dashboard-copy mt-3 max-w-2xl text-[#bac9cc]">
+                {t("dashboard.header.body")}
               </p>
             </div>
             <Link
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               to="/credits"
             >
-              Credits and plans
+              {t("dashboard.header.creditsPlans")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </header>
@@ -1480,35 +1540,37 @@ export function DashboardPage() {
           {pendingOrder ? (
             <section className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-[#ffeac0]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-3">
+                <div className="flex min-w-0 gap-3">
                   <CalendarClock className="mt-0.5 h-5 w-5 shrink-0" />
-                  <div>
-                    <h2 className="text-sm font-bold text-white">
-                      {isPendingOrderWaitingForAdminVerification
-                        ? "Waiting for admin verification"
-                        : "Transfer required"}{" "}
-                      for {getProductName(pendingOrder)}.
+                  <div className="min-w-0">
+                    <h2 className="text-[0.95rem] font-bold leading-6 text-white">
+                      {t("dashboard.pending.forProduct", {
+                        state: isPendingOrderWaitingForAdminVerification
+                          ? t("dashboard.pending.waiting")
+                          : t("dashboard.pending.transferRequired"),
+                        product: getProductName(pendingOrder),
+                      })}
                     </h2>
-                    <p className="mt-1 text-sm leading-6 text-[#ffeac0]/78">
+                    <p className="mt-1 text-[0.95rem] leading-6 text-[#ffeac0]/78">
                       {isPendingOrderWaitingForAdminVerification
-                        ? "Your transfer report is recorded. Credits or plan access remain unchanged until admin verification marks the order paid."
-                        : "Open checkout and transfer manually with VietQR. No credits or plan access are granted until admin verification marks the order paid."}
+                        ? t("dashboard.pending.waitingBody")
+                        : t("dashboard.pending.transferBody")}
                     </p>
                     {pendingOrderTransferContent ? (
                       <p className="mt-2 break-all font-mono text-xs font-bold text-[#ffeac0]">
-                        Transfer content / order code:{" "}
+                        {t("dashboard.pending.transferContent")}{" "}
                         {pendingOrderTransferContent}
                       </p>
                     ) : null}
                   </div>
                 </div>
                 <Link
-                  className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                  className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-center text-sm font-bold leading-5 text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96] sm:w-auto"
                   to={`/credits/checkout/${pendingOrder.id}`}
                 >
                   {isPendingOrderWaitingForAdminVerification
-                    ? "View verification status"
-                    : "Continue checkout"}
+                    ? t("dashboard.pending.viewStatus")
+                    : t("dashboard.pending.continueCheckout")}
                 </Link>
               </div>
             </section>
@@ -1524,7 +1586,7 @@ export function DashboardPage() {
                   <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                   <div>
                     <h2 className="text-sm font-bold text-white">
-                      Billing summary unavailable
+                      {t("dashboard.billingError.title")}
                     </h2>
                     <p className="mt-1 text-sm text-[#ffdad6]/80">{error}</p>
                   </div>
@@ -1535,7 +1597,7 @@ export function DashboardPage() {
                   onClick={() => void loadBillingSummary()}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Retry
+                  {t("common.retry")}
                 </button>
               </div>
             </section>
@@ -1552,40 +1614,45 @@ export function DashboardPage() {
                   onSubmit={(event) => void handleGenerate(event)}
                 >
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div>
-                      <span className="inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#9cf0ff]">
+                    <div className="min-w-0">
+                      <span className="dashboard-label inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 font-bold text-[#9cf0ff]">
                         <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
-                        AI generation
+                        {t("dashboard.generate.eyebrow")}
                       </span>
-                      <h2 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-tight text-white">
-                        Draft a new 3D garment direction.
+                      <h2 className="dashboard-generation-title mt-4 max-w-lg font-display font-semibold text-white">
+                        {t("dashboard.generate.title")}
                       </h2>
-                      <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc]">
-                        Describe silhouette, material, mood, and styling intent
-                        for the result.
+                      <p className="dashboard-copy mt-3 max-w-[38rem] text-[#bac9cc]">
+                        {t("dashboard.generate.body")}
                       </p>
                     </div>
-                    <div className="grid gap-2 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-sm text-[#bac9cc] sm:min-w-[220px]">
+                    <div className="grid w-full gap-2.5 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-[0.9375rem] leading-6 text-[#bac9cc] sm:w-auto sm:min-w-[220px] xl:w-[248px] xl:shrink-0">
                       <div className="flex items-center justify-between gap-4">
-                        <span>Generation cost</span>
-                        <span className="font-bold text-white">1 credit</span>
+                        <span className="min-w-0">{t("dashboard.generate.cost")}</span>
+                        <span className="text-right font-bold text-white">
+                          {t("dashboard.generate.oneCredit")}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
-                        <span>Balance</span>
-                        <span className="font-bold text-[#9cf0ff]">
-                          {creditBalance} credits
+                        <span className="min-w-0">{t("dashboard.generate.balance")}</span>
+                        <span className="text-right font-bold text-[#9cf0ff]">
+                          {t("dashboard.generate.credits", {
+                            count: creditBalance,
+                          })}
                         </span>
                       </div>
                       {summary && creditBalance > 0 ? (
                         <div className="flex items-center justify-between gap-4">
-                          <span>Balance after submit</span>
-                          <span className="font-bold text-[#c9fff6]">
-                            {estimatedBalanceAfterSubmit} credits
+                          <span className="min-w-0">{t("dashboard.generate.balanceAfter")}</span>
+                          <span className="text-right font-bold text-[#c9fff6]">
+                            {t("dashboard.generate.credits", {
+                              count: estimatedBalanceAfterSubmit,
+                            })}
                           </span>
                         </div>
                       ) : null}
                       <p className="border-t border-[#3b494c]/70 pt-2 text-xs leading-5 text-[#849396]">
-                        Estimate only. Backend confirms the final balance.
+                        {t("dashboard.generate.estimate")}
                       </p>
                     </div>
                   </div>
@@ -1595,7 +1662,7 @@ export function DashboardPage() {
                       className="text-sm font-bold text-[#e5e2e1]"
                       htmlFor="generation-prompt"
                     >
-                      Generation prompt
+                      {t("dashboard.generate.promptLabel")}
                     </label>
                     <textarea
                       aria-describedby={`generation-prompt-help${
@@ -1604,11 +1671,11 @@ export function DashboardPage() {
                           : ""
                       }`}
                       aria-invalid={isComposedPromptTooLong}
-                      className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-[0.96875rem] leading-7 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={isGenerating}
                       id="generation-prompt"
                       maxLength={MAX_GENERATION_PROMPT_LENGTH}
-                      placeholder="Example: oversized cropped bomber jacket, matte nylon, cyan stitch highlights, runway streetwear pose"
+                      placeholder={t("dashboard.generate.promptPlaceholder")}
                       value={prompt}
                       onChange={(event) => {
                         setPrompt(event.target.value);
@@ -1616,17 +1683,18 @@ export function DashboardPage() {
                       }}
                     />
                     <div
-                      className="mt-2 flex flex-col gap-2 text-xs text-[#849396] sm:flex-row sm:items-center sm:justify-between"
+                      className="mt-2 flex flex-col gap-2 text-[#849396] sm:flex-row sm:items-start sm:justify-between"
                       id="generation-prompt-help"
                     >
-                      <span>
-                        Start with a garment type, then add material, fit, color,
-                        and mood.
+                      <span className="dashboard-helper-copy min-w-0">
+                        {t("dashboard.generate.promptHelp")}
                       </span>
-                      <span>
-                        {trimmedPrompt.length} prompt chars +{" "}
-                        {setupDetailsCharacterCount} setup detail chars /{" "}
-                        {MAX_GENERATION_PROMPT_LENGTH}
+                      <span className="dashboard-utility-label font-semibold tabular-nums sm:max-w-[260px] sm:text-right">
+                        {t("dashboard.generate.promptCount", {
+                          promptCount: trimmedPrompt.length,
+                          setupCount: setupDetailsCharacterCount,
+                          maxCount: MAX_GENERATION_PROMPT_LENGTH,
+                        })}
                       </span>
                     </div>
                     {isComposedPromptTooLong ? (
@@ -1635,18 +1703,17 @@ export function DashboardPage() {
                         id="generation-prompt-length-error"
                         role="alert"
                       >
-                        {PROMPT_TOO_LONG_MESSAGE}
+                        {promptTooLongMessage}
                       </p>
                     ) : null}
                   </div>
 
                   <div>
-                    <p className="text-sm font-bold text-[#e5e2e1]">
-                      Style intent
+                    <p className="text-[0.95rem] font-bold leading-6 text-[#e5e2e1]">
+                      {t("dashboard.generate.styleIntent")}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-[#849396]">
-                      Optional style direction. Applied to your prompt when you
-                      generate.
+                    <p className="dashboard-helper-copy mt-1 text-[#849396]">
+                      {t("dashboard.generate.styleHelp")}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {STYLE_INTENTS.map((styleIntent) => {
@@ -1656,7 +1723,7 @@ export function DashboardPage() {
                         return (
                           <button
                             aria-pressed={isSelected}
-                            className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
+                            className={`dashboard-chip inline-flex min-h-10 max-w-full items-center justify-center rounded-md border px-3 py-2 text-left font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
                               isSelected
                                 ? "border-[#00e5ff]/70 bg-[#00e5ff]/15 text-[#c3f5ff]"
                                 : "border-white/[0.12] bg-white/[0.03] text-[#bac9cc] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 hover:text-[#c3f5ff]"
@@ -1673,7 +1740,7 @@ export function DashboardPage() {
                               setGenerationError(null);
                             }}
                           >
-                            {styleIntent.label}
+                            {t(styleIntent.labelKey)}
                           </button>
                         );
                       })}
@@ -1683,12 +1750,12 @@ export function DashboardPage() {
                   {hasLoadedZeroCredits ? (
                     <div className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-sm leading-6 text-[#ffeac0]">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <p>{INSUFFICIENT_CREDITS_MESSAGE}</p>
+                        <p>{insufficientCreditsMessage}</p>
                         <Link
                           className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                           to="/credits"
                         >
-                          Buy credits
+                          {t("dashboard.generate.buyCredits")}
                         </Link>
                       </div>
                     </div>
@@ -1704,21 +1771,21 @@ export function DashboardPage() {
                           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                           <p>{generationError}</p>
                         </div>
-                        {generationError === INSUFFICIENT_CREDITS_MESSAGE ? (
+                        {generationError === insufficientCreditsMessage ? (
                           <Link
                             className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
                             to="/credits"
                           >
-                            Buy credits
+                            {t("dashboard.generate.buyCredits")}
                           </Link>
                         ) : null}
                       </div>
                     </div>
                   ) : null}
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-center text-sm font-bold leading-5 text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={!canGenerate}
                       ref={generateButtonRef}
                       type="submit"
@@ -1728,15 +1795,17 @@ export function DashboardPage() {
                       ) : (
                         <Sparkles className="h-4 w-4" />
                       )}
-                      {isGenerating ? "Generating" : "Generate"}
+                      {isGenerating
+                        ? t("dashboard.generate.generating")
+                        : t("dashboard.generate.generate")}
                     </button>
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-center text-sm font-bold leading-5 text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                       type="button"
                       onClick={() => setIsPaywallOpen(true)}
                     >
                       <Download className="h-4 w-4" />
-                      Check export gate
+                      {t("dashboard.generate.checkExportGate")}
                     </button>
                   </div>
 
@@ -1761,26 +1830,26 @@ export function DashboardPage() {
                 <div className="flex items-start justify-between gap-4">
                   <Database className="h-6 w-6 text-[#bac9cc]" />
                   <Link
-                    className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.16em] text-[#00e5ff] transition hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                    className="dashboard-utility-label inline-flex items-center gap-1 font-bold text-[#00e5ff] transition hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                     to="/credits"
                   >
-                    Top up
+                    {t("dashboard.card.topUp")}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#bac9cc]">
-                  Credit balance
+                <p className="dashboard-label mt-5 font-bold text-[#bac9cc]">
+                  {t("dashboard.card.creditBalance")}
                 </p>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="font-display text-5xl font-semibold leading-none text-white">
                     {creditBalance}
                   </span>
                   <span className="text-base font-semibold text-[#bac9cc]">
-                    credits
+                    {t("shell.nav.credits").toLowerCase()}
                   </span>
                 </div>
-                <p className="mt-4 border-t border-[#3b494c]/70 pt-4 text-sm leading-6 text-[#bac9cc]">
-                  1 credit = 1 HD generation.
+                <p className="dashboard-helper-copy mt-4 border-t border-[#3b494c]/70 pt-4 text-[#bac9cc]">
+                  {t("dashboard.card.creditRule")}
                 </p>
               </article>
 
@@ -1789,28 +1858,30 @@ export function DashboardPage() {
                   <span className="flex h-11 w-11 items-center justify-center rounded-md bg-[#00e5ff]/10 text-[#00e5ff]">
                     <CreditCard className="h-5 w-5" />
                   </span>
-                  <span className="rounded-md border border-white/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#bac9cc]">
-                    {getPlanTone(summary)}
+                  <span className="dashboard-utility-label rounded-md border border-white/10 px-2.5 py-1 font-bold text-[#bac9cc]">
+                    {getPlanTone(summary, t)}
                   </span>
                 </div>
-                <h2 className="mt-5 font-display text-3xl font-semibold text-white">
-                  {summary?.plan.name ?? "Free"}
+                <h2 className="mt-5 font-display text-[1.7rem] font-semibold leading-[1.16] text-white sm:text-3xl">
+                  {summary?.plan.name ?? t("dashboard.card.free")}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
                   {summary?.plan.status === "active"
-                    ? "Download and export access is unlocked for this account."
-                    : "Preview generation available. Download/export locked."}
+                    ? t("dashboard.card.activePlanBody")
+                    : t("dashboard.card.freePlanBody")}
                 </p>
                 {renewalDate ? (
                   <p className="mt-4 text-sm font-semibold text-[#e5e2e1]">
-                    Active through {renewalDate}
+                    {t("dashboard.card.activeThrough", { date: renewalDate })}
                   </p>
                 ) : null}
                 <Link
                   className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
                   to="/credits"
                 >
-                  {summary?.plan.status === "active" ? "Manage plan" : "Upgrade"}
+                  {summary?.plan.status === "active"
+                    ? t("dashboard.card.managePlan")
+                    : t("dashboard.card.upgrade")}
                 </Link>
               </article>
 
@@ -1822,13 +1893,13 @@ export function DashboardPage() {
                     <LockKeyhole className="h-5 w-5" />
                   )}
                 </div>
-                <h2 className="mt-5 font-display text-2xl font-semibold text-white">
-                  Export access
+                <h2 className="mt-5 font-display text-[1.45rem] font-semibold leading-[1.18] text-white sm:text-2xl">
+                  {t("dashboard.card.exportAccess")}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
                   {summary?.capabilities.canExportModel
-                    ? "Paid plan capability confirmed by backend billing state."
-                    : "PAYWALL_REQUIRED opens when export/download is blocked."}
+                    ? t("dashboard.card.exportConfirmed")
+                    : t("dashboard.card.exportBlocked")}
                 </p>
                 <button
                   className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -1840,7 +1911,7 @@ export function DashboardPage() {
                   }}
                 >
                   <Download className="h-4 w-4" />
-                  Download/export access
+                  {t("dashboard.card.downloadExportAccess")}
                 </button>
               </article>
 
@@ -1848,20 +1919,20 @@ export function DashboardPage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-md bg-white/[0.08] text-[#bac9cc]">
                   <UserRound className="h-5 w-5" />
                 </div>
-                <h2 className="mt-5 font-display text-2xl font-semibold text-white">
-                  Account
+                <h2 className="mt-5 font-display text-[1.45rem] font-semibold leading-[1.18] text-white sm:text-2xl">
+                  {t("dashboard.card.account")}
                 </h2>
                 <p className="mt-2 truncate text-sm font-semibold text-[#e5e2e1]">
-                  {user?.email || "No email"}
+                  {user?.email || t("dashboard.card.noEmail")}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                  Profile and onboarding remain separate from paid plan state.
+                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
+                  {t("dashboard.card.accountBody")}
                 </p>
                 <Link
                   className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                   to="/profile"
                 >
-                  View profile
+                  {t("dashboard.card.viewProfile")}
                 </Link>
               </article>
             </section>
@@ -1870,8 +1941,8 @@ export function DashboardPage() {
           <section className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="font-display text-2xl font-semibold text-white">
-                  Recent generations
+                <h2 className="font-display text-[1.6rem] font-semibold leading-[1.16] text-white sm:text-2xl">
+                  {t("dashboard.recent.title")}
                 </h2>
                 <p className="mt-1 text-sm text-[#bac9cc]">
                   {recentFiguresTitle}
@@ -1880,7 +1951,13 @@ export function DashboardPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 {latestPayment ? (
                   <p className="text-sm font-semibold text-[#bac9cc]">
-                    Latest payment: {latestPayment.status}
+                    {t("dashboard.recent.latestPayment", {
+                      status: getDisplayLabel(
+                        "paymentStatus",
+                        latestPayment.status,
+                        language,
+                      ),
+                    })}
                   </p>
                 ) : null}
                 <button
@@ -1889,7 +1966,7 @@ export function DashboardPage() {
                   onClick={() => void loadFigures(false)}
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
-                  Refresh
+                  {t("common.refresh")}
                 </button>
               </div>
             </div>
@@ -1910,7 +1987,7 @@ export function DashboardPage() {
                     onClick={() => void loadFigures()}
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
-                    Retry
+                    {t("common.retry")}
                   </button>
                 </div>
               </section>

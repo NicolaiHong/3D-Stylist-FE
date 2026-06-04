@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { Input } from "./Input";
+import { useI18n } from "../../i18n/useI18n";
 
 interface PasswordInputProps {
   label: string;
@@ -22,7 +23,11 @@ export function PasswordInput({
   autoComplete,
   onChange,
 }: PasswordInputProps) {
+  const { t } = useI18n();
   const [isVisible, setIsVisible] = useState(false);
+  const visibilityLabel = isVisible
+    ? t("auth.password.hide")
+    : t("auth.password.show");
 
   return (
     <div className="relative">
@@ -42,8 +47,8 @@ export function PasswordInput({
         type="button"
         className="absolute right-3 top-10 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-white/10 hover:text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7df9df]"
         onClick={() => setIsVisible((value) => !value)}
-        aria-label={isVisible ? "Hide password" : "Show password"}
-        title={isVisible ? "Hide password" : "Show password"}
+        aria-label={visibilityLabel}
+        title={visibilityLabel}
       >
         {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>

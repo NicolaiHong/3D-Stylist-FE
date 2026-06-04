@@ -16,14 +16,18 @@ export default {
       },
       fontFamily: {
         display: [
+          "Be Vietnam Pro",
           "Outfit",
           "Inter",
+          "Plus Jakarta Sans",
           "ui-sans-serif",
           "system-ui",
           "sans-serif",
         ],
         sans: [
+          "Be Vietnam Pro",
           "Inter",
+          "Plus Jakarta Sans",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",

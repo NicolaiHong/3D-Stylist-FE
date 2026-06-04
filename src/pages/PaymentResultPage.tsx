@@ -10,13 +10,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
+import { useI18n } from "../i18n/useI18n";
 
 type PaymentResultStatus = "success" | "failed" | "cancelled" | "unknown";
 
 interface PaymentResultCopy {
-  title: string;
-  eyebrow: string;
-  description: string;
+  keyPrefix: string;
   icon: LucideIcon;
   panelClassName: string;
   iconClassName: string;
@@ -24,37 +23,25 @@ interface PaymentResultCopy {
 
 const resultCopy: Record<PaymentResultStatus, PaymentResultCopy> = {
   success: {
-    title: "Sandbox gateway result recorded",
-    eyebrow: "Sandbox gateway return",
-    description:
-      "The sandbox gateway return was recorded. Open credits to refresh your current backend-owned billing state.",
+    keyPrefix: "paymentResult.success",
     icon: CheckCircle2,
     panelClassName: "border-[#00e5ff]/30 bg-[#00e5ff]/10 text-[#c3f5ff]",
     iconClassName: "border-[#00e5ff]/35 bg-[#00e5ff]/12 text-[#00e5ff]",
   },
   failed: {
-    title: "Payment was not completed",
-    eyebrow: "Sandbox gateway return",
-    description:
-      "The sandbox gateway returned a failed payment result. You can return to credits or view this checkout if the order is still valid.",
+    keyPrefix: "paymentResult.failed",
     icon: XCircle,
     panelClassName: "border-[#ffb4ab]/30 bg-[#93000a]/25 text-[#ffdad6]",
     iconClassName: "border-[#ffb4ab]/35 bg-[#93000a]/25 text-[#ffb4ab]",
   },
   cancelled: {
-    title: "Payment was cancelled",
-    eyebrow: "Sandbox gateway return",
-    description:
-      "The sandbox gateway returned a cancelled result. You can return to credits or view this checkout when you are ready.",
+    keyPrefix: "paymentResult.cancelled",
     icon: Clock3,
     panelClassName: "border-[#f3bf26]/30 bg-[#f3bf26]/10 text-[#ffeac0]",
     iconClassName: "border-[#f3bf26]/35 bg-[#f3bf26]/12 text-[#f3bf26]",
   },
   unknown: {
-    title: "Payment result received",
-    eyebrow: "Sandbox gateway return",
-    description:
-      "The sandbox gateway return used a status this app does not recognize. Check your credits page before starting another checkout.",
+    keyPrefix: "paymentResult.unknown",
     icon: AlertTriangle,
     panelClassName: "border-[#3b494c] bg-[#1c1b1b] text-[#bac9cc]",
     iconClassName: "border-[#3b494c] bg-[#0e0e0e] text-[#bac9cc]",
@@ -74,11 +61,13 @@ function normalizeStatus(value: string | undefined): PaymentResultStatus {
 }
 
 export function PaymentResultPage() {
+  const { t } = useI18n();
   const { status: rawStatus } = useParams();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
   const status = normalizeStatus(rawStatus);
   const copy = resultCopy[status];
+  const statusLabel = t(`paymentResult.status.${status}`);
   const Icon = copy.icon;
   const canViewOrderCheckout =
     Boolean(orderId) &&
@@ -90,13 +79,13 @@ export function PaymentResultPage() {
         <div className="mx-auto w-full max-w-[980px] space-y-5">
           <header className="rounded-lg border border-[#262626] bg-[#121212] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-              {copy.eyebrow}
+              {t("paymentResult.source.gateway")}
             </p>
             <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-              {copy.title}
+              {t(`${copy.keyPrefix}.title`)}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-              {copy.description}
+              {t(`${copy.keyPrefix}.description`)}
             </p>
           </header>
 
@@ -109,23 +98,23 @@ export function PaymentResultPage() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold uppercase tracking-[0.14em]">
-                  Status: {status}
+                  {t("paymentResult.statusLabel")}: {statusLabel}
                 </p>
                 <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                   <div className="rounded-md border border-white/10 bg-[#0e0e0e]/70 p-3">
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Order id
+                      {t("paymentResult.orderId")}
                     </dt>
                     <dd className="mt-2 break-words font-mono text-[#e5e2e1]">
-                      {orderId ?? "Not returned"}
+                      {orderId ?? t("common.notReturned")}
                     </dd>
                   </div>
                   <div className="rounded-md border border-white/10 bg-[#0e0e0e]/70 p-3">
                     <dt className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
-                      Source
+                      {t("paymentResult.source")}
                     </dt>
                     <dd className="mt-2 font-semibold text-[#e5e2e1]">
-                      Sandbox gateway return
+                      {t("paymentResult.source.gateway")}
                     </dd>
                   </div>
                 </dl>
@@ -138,12 +127,10 @@ export function PaymentResultPage() {
               <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
               <div>
                 <h2 className="text-sm font-bold text-white">
-                  Billing remains backend-owned
+                  {t("paymentResult.backendOwned.title")}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                  This page only displays the return URL result. It does not
-                  grant credits or subscriptions. VietQR manual bank transfers
-                  still require admin verification before access changes.
+                  {t("paymentResult.backendOwned.body")}
                 </p>
               </div>
             </div>
@@ -154,7 +141,7 @@ export function PaymentResultPage() {
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
               to="/credits"
             >
-              Back to credits
+              {t("paymentResult.backToCredits")}
               <ArrowRight className="h-4 w-4" />
             </Link>
             {canViewOrderCheckout && orderId ? (
@@ -163,7 +150,7 @@ export function PaymentResultPage() {
                 to={`/credits/checkout/${orderId}`}
               >
                 <RotateCcw className="h-4 w-4" />
-                View order checkout
+                {t("paymentResult.viewOrderCheckout")}
               </Link>
             ) : null}
             {status === "success" ? (
@@ -171,7 +158,7 @@ export function PaymentResultPage() {
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                 to="/dashboard"
               >
-                Open dashboard
+                {t("paymentResult.openDashboard")}
               </Link>
             ) : null}
           </div>

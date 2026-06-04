@@ -12,18 +12,20 @@ import {
   consumeOAuthIntent,
   resolvePostAuthRedirect,
 } from "../features/auth/auth.redirects";
+import { useI18n } from "../i18n/useI18n";
 
 const MIN_SUCCESS_DURATION_MS = 2000;
 const OAUTH_SESSION_RESTORE_ERROR_URL =
   "/auth/error?code=OAUTH_SESSION_RESTORE_FAILED&message=Sign-in%20session%20could%20not%20be%20restored";
 
 const statusLabels = [
-  "Verifying session",
-  "Loading profile",
-  "Opening workspace",
+  "auth.oauthSuccess.status.verifying",
+  "auth.oauthSuccess.status.profile",
+  "auth.oauthSuccess.status.workspace",
 ];
 
 export function OAuthSuccessPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const completeOAuth = useAuthStore((state) => state.completeOAuth);
   const [failed, setFailed] = useState(false);
@@ -95,12 +97,12 @@ export function OAuthSuccessPage() {
     <AuthLayout
       title={
         failed
-          ? "Sign-in failed"
+          ? t("auth.oauthSuccess.failedTitle")
           : authSucceeded
-            ? "Authentication successful"
-            : "Verifying authentication"
+            ? t("auth.oauthSuccess.successTitle")
+            : t("auth.oauthSuccess.verifyingTitle")
       }
-      subtitle="Preparing your 3D Stylist workspace..."
+      subtitle={t("auth.oauthSuccess.subtitle")}
     >
       <section
         className="rounded-lg border border-[#00e5ff]/20 bg-[#00e5ff]/10 p-5 text-[#c3f5ff] shadow-[0_0_42px_rgba(0,229,255,0.08)]"
@@ -118,7 +120,9 @@ export function OAuthSuccessPage() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-white">
-                {authSucceeded ? "Session ready" : "Secure connection"}
+                {authSucceeded
+                  ? t("auth.oauthSuccess.sessionReady")
+                  : t("auth.oauthSuccess.secureConnection")}
               </p>
               {failed ? null : authSucceeded && visibleProgress >= 100 ? (
                 <CheckCircle2 className="h-5 w-5 shrink-0 text-[#00e5ff]" />
@@ -128,15 +132,15 @@ export function OAuthSuccessPage() {
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-300">
               {authSucceeded
-                ? "Profile loaded. Opening your workspace now."
-                : "We are confirming your session before redirecting."}
+                ? t("auth.oauthSuccess.profileLoaded")
+                : t("auth.oauthSuccess.confirming")}
             </p>
           </div>
         </div>
 
         <div className="mt-6">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.14em] text-[#9cf0ff]">
-            <span>Workspace preparation</span>
+            <span>{t("auth.oauthSuccess.progress")}</span>
             <span>{visibleProgress}%</span>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#0e0e0e] ring-1 ring-white/10">
@@ -148,7 +152,7 @@ export function OAuthSuccessPage() {
         </div>
 
         <div className="mt-6 grid gap-3">
-          {statusLabels.map((label, index) => {
+          {statusLabels.map((labelKey, index) => {
             const isActive = index <= activeStatusIndex;
             const isComplete =
               index < activeStatusIndex ||
@@ -161,7 +165,7 @@ export function OAuthSuccessPage() {
                     ? "border-[#00e5ff]/25 bg-[#00e5ff]/10 text-white"
                     : "border-white/10 bg-[#0e0e0e] text-slate-500"
                 }`}
-                key={label}
+                key={labelKey}
               >
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-md border ${
@@ -176,7 +180,7 @@ export function OAuthSuccessPage() {
                     <ShieldCheck className="h-4 w-4" />
                   )}
                 </span>
-                <span className="font-semibold">{label}</span>
+                <span className="font-semibold">{t(labelKey)}</span>
               </div>
             );
           })}

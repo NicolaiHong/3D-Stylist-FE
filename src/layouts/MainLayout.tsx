@@ -4,12 +4,15 @@ import { Box, LogOut, UserRound } from "lucide-react";
 import { Button } from "../components/common/Button";
 import { useAuthStore } from "../features/auth/auth.store";
 import { AUTH_ROLES } from "../features/auth/auth.types";
+import { LanguageSwitch } from "../i18n/LanguageSwitch";
+import { useI18n } from "../i18n/useI18n";
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const { t } = useI18n();
   const logout = useAuthStore((state) => state.logout);
   const isLoading = useAuthStore((state) => state.isLoading);
   const user = useAuthStore((state) => state.user);
@@ -25,11 +28,15 @@ export function MainLayout({ children }: MainLayoutProps) {
             </span>
             <div>
               <p className="text-base font-bold leading-tight">3D Stylist</p>
-              <p className="text-sm text-ink/58">Studio dashboard</p>
+              <p className="text-sm text-ink/58">{t("shell.planFallback")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <nav className="hidden items-center gap-1 sm:flex" aria-label="Main">
+            <LanguageSwitch />
+            <nav
+              className="hidden items-center gap-1 sm:flex"
+              aria-label={t("shell.nav.mainAria")}
+            >
               <NavLink
                 className={({ isActive }) =>
                   `rounded-md px-3 py-2 text-sm font-semibold transition ${
@@ -40,7 +47,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 }
                 to="/dashboard"
               >
-                Dashboard
+                {t("shell.nav.dashboard")}
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
@@ -54,7 +61,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               >
                 <span className="inline-flex items-center gap-1.5">
                   <UserRound className="h-4 w-4" />
-                  Profile
+                  {t("shell.nav.profile")}
                 </span>
               </NavLink>
               {isAdmin ? (
@@ -68,7 +75,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   }
                   to="/admin"
                 >
-                  Admin
+                  {t("shell.nav.admin")}
                 </NavLink>
               ) : null}
             </nav>
@@ -79,7 +86,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               isLoading={isLoading}
               onClick={() => void logout()}
             >
-              Logout
+              {t("common.logout")}
             </Button>
           </div>
         </div>
