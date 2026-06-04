@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
@@ -10,9 +11,17 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
+import { billingApi } from "../features/billing/billing.api";
+import type { BillingOrderStatus } from "../features/billing/billing.types";
+import { getApiErrorMessage } from "../services/apiClient";
 import { useI18n } from "../i18n/useI18n";
 
-type PaymentResultStatus = "success" | "failed" | "cancelled" | "unknown";
+type PaymentResultStatus =
+  | "success"
+  | "pending"
+  | "failed"
+  | "cancelled"
+  | "unknown";
 
 interface PaymentResultCopy {
   keyPrefix: string;
@@ -27,6 +36,12 @@ const resultCopy: Record<PaymentResultStatus, PaymentResultCopy> = {
     icon: CheckCircle2,
     panelClassName: "border-[#00e5ff]/30 bg-[#00e5ff]/10 text-[#c3f5ff]",
     iconClassName: "border-[#00e5ff]/35 bg-[#00e5ff]/12 text-[#00e5ff]",
+  },
+  pending: {
+    keyPrefix: "paymentResult.pending",
+    icon: Clock3,
+    panelClassName: "border-[#f3bf26]/30 bg-[#f3bf26]/10 text-[#ffeac0]",
+    iconClassName: "border-[#f3bf26]/35 bg-[#f3bf26]/12 text-[#f3bf26]",
   },
   failed: {
     keyPrefix: "paymentResult.failed",
@@ -49,7 +64,12 @@ const resultCopy: Record<PaymentResultStatus, PaymentResultCopy> = {
 };
 
 function normalizeStatus(value: string | undefined): PaymentResultStatus {
-  if (value === "success" || value === "failed" || value === "cancelled") {
+  if (
+    value === "success" ||
+    value === "pending" ||
+    value === "failed" ||
+    value === "cancelled"
+  ) {
     return value;
   }
 
@@ -60,18 +80,100 @@ function normalizeStatus(value: string | undefined): PaymentResultStatus {
   return "unknown";
 }
 
+function resolveDisplayStatus(
+  urlStatus: PaymentResultStatus,
+  backendStatus: BillingOrderStatus | null,
+  provider: string | null,
+  hasOrderId: boolean,
+): PaymentResultStatus {
+  if (backendStatus === "paid") {
+    return "success";
+  }
+
+  if (urlStatus === "cancelled") {
+    return "cancelled";
+  }
+
+  if (backendStatus === "pending") {
+    return "pending";
+  }
+
+  if (backendStatus === "failed" || backendStatus === "expired") {
+    return "failed";
+  }
+
+  if (backendStatus === "cancelled") {
+    return "cancelled";
+  }
+
+  if (provider === "payos" && urlStatus === "success") {
+    return "pending";
+  }
+
+  if (hasOrderId && urlStatus === "success") {
+    return "pending";
+  }
+
+  return urlStatus;
+}
+
 export function PaymentResultPage() {
   const { t } = useI18n();
   const { status: rawStatus } = useParams();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
-  const status = normalizeStatus(rawStatus);
+  const provider = searchParams.get("provider");
+  const [backendStatus, setBackendStatus] =
+    useState<BillingOrderStatus | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const urlStatus = normalizeStatus(rawStatus);
+  const status = useMemo(
+    () => resolveDisplayStatus(urlStatus, backendStatus, provider, Boolean(orderId)),
+    [backendStatus, orderId, provider, urlStatus],
+  );
   const copy = resultCopy[status];
   const statusLabel = t(`paymentResult.status.${status}`);
   const Icon = copy.icon;
+  const sourceLabel =
+    provider === "payos"
+      ? t("paymentResult.source.payos")
+      : t("paymentResult.source.gateway");
   const canViewOrderCheckout =
     Boolean(orderId) &&
-    (status === "failed" || status === "cancelled" || status === "unknown");
+    (status === "pending" ||
+      status === "failed" ||
+      status === "cancelled" ||
+      status === "unknown");
+
+  useEffect(() => {
+    if (!orderId) {
+      return;
+    }
+
+    const resolvedOrderId = orderId;
+    let isActive = true;
+
+    async function loadOrderStatus() {
+      try {
+        const order = await billingApi.getBillingOrder(resolvedOrderId);
+
+        if (isActive) {
+          setBackendStatus(order.status);
+          setStatusError(null);
+        }
+      } catch (error) {
+        if (isActive) {
+          setStatusError(getApiErrorMessage(error));
+        }
+      }
+    }
+
+    void loadOrderStatus();
+
+    return () => {
+      isActive = false;
+    };
+  }, [orderId]);
 
   return (
     <DashboardShell>
@@ -79,7 +181,7 @@ export function PaymentResultPage() {
         <div className="mx-auto w-full max-w-[980px] space-y-5">
           <header className="rounded-lg border border-[#262626] bg-[#121212] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-              {t("paymentResult.source.gateway")}
+              {sourceLabel}
             </p>
             <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
               {t(`${copy.keyPrefix}.title`)}
@@ -114,10 +216,15 @@ export function PaymentResultPage() {
                       {t("paymentResult.source")}
                     </dt>
                     <dd className="mt-2 font-semibold text-[#e5e2e1]">
-                      {t("paymentResult.source.gateway")}
+                      {sourceLabel}
                     </dd>
                   </div>
                 </dl>
+                {statusError ? (
+                  <p className="mt-4 text-sm leading-6 text-[#ffdad6]">
+                    {statusError}
+                  </p>
+                ) : null}
               </div>
             </div>
           </section>

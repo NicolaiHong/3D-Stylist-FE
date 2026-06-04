@@ -182,7 +182,7 @@ function getOrderTransferContent(order: AdminOrder, t: Translate) {
 }
 
 function getOrderPaymentMethod(order: AdminOrder) {
-  return order.paymentMethod ?? order.provider ?? "vietqr_bank_transfer";
+  return order.provider ?? order.paymentMethod ?? "vietqr_bank_transfer";
 }
 
 function getStatusTone(status: string) {
@@ -615,8 +615,12 @@ function OrdersTable({
                     )}
                   </p>
                 </td>
-                <td className="px-5 py-4 font-mono text-xs font-bold text-[#bac9cc]">
-                  {getOrderPaymentMethod(order)}
+                <td className="px-5 py-4 text-xs font-bold text-[#bac9cc]">
+                  {getDisplayLabel(
+                    "paymentProvider",
+                    getOrderPaymentMethod(order),
+                    language,
+                  )}
                 </td>
                 <td className="px-5 py-4">
                   <StatusBadge status={order.status} />
@@ -712,8 +716,12 @@ function TransactionsTable({
                   {transaction.user.email || t("admin.table.noEmail")}
                 </p>
               </td>
-              <td className="px-5 py-4 font-mono text-xs font-bold text-[#bac9cc]">
-                {transaction.provider}
+              <td className="px-5 py-4 text-xs font-bold text-[#bac9cc]">
+                {getDisplayLabel(
+                  "paymentProvider",
+                  transaction.provider,
+                  language,
+                )}
               </td>
               <td className="px-5 py-4">
                 <StatusBadge status={transaction.status} />
@@ -761,6 +769,14 @@ function HealthPanel({
     {
       label: t("admin.health.vietqr"),
       value: health?.billing?.vietQrConfigured ? "configured" : "pending",
+    },
+    {
+      label: t("admin.health.payos"),
+      value: health?.billing?.payosEnabled
+        ? health.billing.payosConfigured
+          ? "enabled"
+          : "pending"
+        : "disabled",
     },
     {
       label: t("admin.health.manualMarkPaid"),
@@ -1160,7 +1176,11 @@ function ManualMarkPaidDialog({
                 {t("admin.dialog.paymentMethod")}
               </dt>
               <dd className="font-mono text-xs font-bold text-white sm:text-right">
-                {getOrderPaymentMethod(order)}
+                {getDisplayLabel(
+                  "paymentProvider",
+                  getOrderPaymentMethod(order),
+                  language,
+                )}
               </dd>
             </div>
             <div className="grid gap-1 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-start sm:gap-4">
