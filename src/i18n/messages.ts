@@ -51,11 +51,11 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.hero.eyebrow": "3D Stylist",
     "auth.hero.title": "AI fashion-tech for sharper outfit concepts.",
     "auth.hero.subtitle":
-      "A focused studio layer for personal styling, fit signals, and production-ready wardrobe direction.",
+      "A focused studio layer for personal styling, fit signals, and studio-ready wardrobe direction.",
     "auth.hero.metricPreviews": "figure previews",
     "auth.hero.metricPresets": "style presets",
-    "auth.hero.metricAssets": "ready assets",
-    "auth.hero.mobileBadge": "AI atelier",
+    "auth.hero.metricAssets": "review-ready assets",
+    "auth.hero.mobileBadge": "AI studio",
     "auth.login.title": "Welcome back",
     "auth.login.subtitle": "Sign in to continue creating AI outfit concepts.",
     "auth.login.submit": "Sign in",
@@ -102,16 +102,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthSuccess.status.profile": "Loading profile",
     "auth.oauthSuccess.status.workspace": "Opening workspace",
     "auth.oauthError.fallbackMessage":
-      "The provider could not complete sign in.",
+      "The sign-in service could not complete sign in.",
     "auth.oauthError.emailTitle": "Email permission is required",
     "auth.oauthError.sessionTitle": "Sign-in session could not be restored",
     "auth.oauthError.genericTitle": "Sign-in could not be completed",
     "auth.oauthError.emailDescription":
-      "Your provider did not share an email address for this account.",
+      "Your sign-in service did not share an email address for this account.",
     "auth.oauthError.sessionDescription":
-      "Your provider sign-in completed, but this browser could not restore your 3D Stylist session.",
+      "Sign-in completed, but this browser could not restore your 3D Stylist session.",
     "auth.oauthError.genericDescription":
-      "The provider could not complete sign in. Please try another sign-in method.",
+      "The sign-in service could not complete sign in. Please try another sign-in method.",
     "auth.oauthError.emailAlertTitle": "An email address is required.",
     "auth.oauthError.sessionAlertTitle": "Session handoff was interrupted.",
     "auth.oauthError.genericAlertTitle":
@@ -121,12 +121,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthError.sessionAlertDescription":
       "Your browser may have blocked or cleared the secure sign-in cookie. Return to login and try again.",
     "auth.oauthError.genericAlertDescription":
-      "Return to login and retry the provider, or choose another sign-in method.",
+      "Return to login and retry sign in, or choose another sign-in method.",
     "auth.oauthError.nextSteps": "What you can do next",
     "auth.oauthError.facebookEmailSuggestion1":
       "Reconnect Facebook and approve the email permission if you used Facebook.",
     "auth.oauthError.facebookEmailSuggestion2":
-      "Try another provider account that can share a verified email.",
+      "Try another account that can share a verified email.",
     "auth.oauthError.facebookEmailSuggestion3":
       "Continue with Google or use email/password login.",
     "auth.oauthError.sessionSuggestion1":
@@ -136,9 +136,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthError.sessionSuggestion3":
       "Use email/password login if browser privacy settings prevent session restore.",
     "auth.oauthError.genericSuggestion1":
-      "Return to login and try the provider again.",
+      "Return to login and try sign in again.",
     "auth.oauthError.genericSuggestion2":
-      "Continue with Google if another provider could not complete sign in.",
+      "Continue with Google if another sign-in service could not complete sign in.",
     "auth.oauthError.genericSuggestion3": "Use email/password login to continue.",
     "auth.oauthError.continueWithGoogle": "Continue with Google",
     "auth.oauthError.backToLogin": "Back to Login",
@@ -165,40 +165,40 @@ export const messages: Record<Language, Record<string, string>> = {
     "landing.preview.loading": "Preparing 3D fashion preview",
     "landing.preview.error": "3D preview is temporarily unavailable.",
     "landing.hero.eyebrow": "AI 3D fashion studio",
-    "landing.hero.titleLead": "Turn prompts into production-ready",
-    "landing.hero.titleAccent": "AI fashion previews.",
+    "landing.hero.titleLead": "Turn design briefs into AI fashion previews for",
+    "landing.hero.titleAccent": "Studio review.",
     "landing.hero.body":
       "Generate outfit direction from style intent, then inspect silhouette and proportion in an interactive 3D review surface before moving into the credits-backed studio workflow.",
-    "landing.metric.prompt": "Prompt",
+    "landing.metric.prompt": "Design brief",
     "landing.metric.promptDetail": "Figure context",
     "landing.metric.credits": "Credits",
-    "landing.metric.creditsDetail": "Checkout guardrails",
+    "landing.metric.creditsDetail": "Payment checks",
     "landing.metric.preview": "3D",
     "landing.metric.previewDetail": "Preview review",
     "landing.preview.toolbar": "Interactive 3D preview",
-    "landing.preview.captionLeft": "Prompt-ready styling surface",
+    "landing.preview.captionLeft": "Design-ready styling surface",
     "landing.preview.captionRight": "Orbit preview",
     "landing.features.eyebrow": "Studio infrastructure",
     "landing.features.title":
-      "Premium fashion generation, wired to the MVP flows that already matter.",
+      "Premium fashion generation connected to the product flows that matter.",
     "landing.value.ai.title": "AI outfit generation",
     "landing.value.ai.description":
-      "Turn prompts, figure context, and style preferences into premium outfit directions for the studio workflow.",
+      "Turn design briefs, figure context, and style preferences into premium outfit directions for the studio workflow.",
     "landing.value.preview.title": "3D preview direction",
     "landing.value.preview.description":
       "Keep the interactive fashion viewer at the center of review, silhouette checks, and export planning.",
     "landing.value.credits.title": "Credits and plans",
     "landing.value.credits.description":
-      "Connect generation access to the existing credits and subscription workflow without frontend-only grants.",
-    "landing.value.checkout.title": "VietQR MVP checkout",
+      "Connect generation access to the existing credits and subscription workflow with access updated only after verified payment.",
+    "landing.value.checkout.title": "Manual VietQR payment",
     "landing.value.checkout.description":
-      "Support the manual bank-transfer path with clear order codes and admin verification before access is granted.",
+      "Support bank transfer with clear order codes and verification before access changes.",
     "landing.workflow.eyebrow": "How it works",
     "landing.workflow.title":
-      "Prompt to generation to 3D review, without pretending checkout is magic.",
+      "Design brief to generation to 3D review, with payment status handled carefully.",
     "landing.workflow.body":
       "The landing page stays visual and aspirational, while the product path still respects authentication, credits, and payment verification.",
-    "landing.workflow.prompt.title": "Prompt",
+    "landing.workflow.prompt.title": "Design brief",
     "landing.workflow.prompt.description":
       "Describe the outfit, occasion, body context, and visual vibe.",
     "landing.workflow.generate.title": "Generate",
@@ -220,18 +220,18 @@ export const messages: Record<Language, Record<string, string>> = {
       "For individual creators exploring the 3D styling workflow.",
     "landing.plan.creator.badge": "Most balanced",
     "landing.plan.creator.description":
-      "For fashion teams that need more renders and stronger texture quality.",
+      "For fashion teams that need more renders and stronger material detail.",
     "landing.plan.pro.badge": "Priority studio",
     "landing.plan.pro.description":
       "For high-volume concepting with priority production polish.",
     "landing.plan.feature.10": "10 included HD generations",
     "landing.plan.feature.30": "30 included HD generations",
     "landing.plan.feature.80": "80 included HD generations",
-    "landing.plan.feature.export": "Download model and basic export",
+    "landing.plan.feature.export": "Model download and basic export",
     "landing.plan.feature.standardQueue": "Standard queue and basic export",
-    "landing.plan.feature.fasterQueue": "Faster queue and better texture",
+    "landing.plan.feature.fasterQueue": "Faster queue and better material detail",
     "landing.plan.feature.priorityQueue":
-      "Priority render and high quality texture",
+      "Priority render and high-detail materials",
     "landing.plan.popular": "Popular",
     "landing.plan.cadence": "/ month",
     "landing.creditPack": "Credit pack",
@@ -242,12 +242,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "landing.final.title":
       "Start with a premium 3D preview surface, then move into the full styling workspace.",
     "landing.footer.description":
-      "AI fashion generation MVP with authentication, credits, and a cinematic 3D preview experience.",
+      "AI fashion generation with authentication, credits, and a cinematic 3D preview experience.",
 
     "dashboard.header.eyebrow": "Dashboard",
     "dashboard.header.greeting": "Good day, {name}.",
     "dashboard.header.body":
-      "Generate a 3D fashion figure from a prompt, track its render state, and keep credits accurate as results complete.",
+      "Generate a fashion preview, track its status, and keep credits accurate as results complete.",
     "dashboard.header.creditsPlans": "Credits and plans",
     "dashboard.pending.waiting": "Waiting for admin verification",
     "dashboard.pending.transferRequired": "Transfer required",
@@ -270,29 +270,29 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.generate.credits": "{count} credits",
     "dashboard.generate.balanceAfter": "Balance after submit",
     "dashboard.generate.estimate":
-      "Estimate only. Backend confirms the final balance.",
-    "dashboard.generate.promptLabel": "Generation prompt",
+      "Estimate only. Your final balance is updated after the request is accepted.",
+    "dashboard.generate.promptLabel": "Design brief",
     "dashboard.generate.promptPlaceholder":
       "Example: oversized cropped bomber jacket, matte nylon, cyan stitch highlights, runway streetwear pose",
     "dashboard.generate.promptHelp":
       "Start with a garment type, then add material, fit, color, and mood.",
     "dashboard.generate.promptCount":
-      "{promptCount} prompt chars + {setupCount} setup detail chars / {maxCount}",
+      "{promptCount} design chars + {setupCount} setup chars / {maxCount}",
     "dashboard.generate.styleIntent": "Style intent",
     "dashboard.generate.styleHelp":
-      "Optional style direction. Applied to your prompt when you generate.",
+      "Optional style direction. Applied to your design brief when you generate.",
     "dashboard.generate.buyCredits": "Buy credits",
     "dashboard.generate.generating": "Generating",
     "dashboard.generate.generate": "Generate",
-    "dashboard.generate.checkExportGate": "Check export gate",
+    "dashboard.generate.checkExportGate": "Check export access",
     "dashboard.generate.error.insufficientCredits":
       "You've used all your generation credits. Buy more credits or upgrade your plan to continue.",
     "dashboard.generate.error.promptTooLong":
-      "Prompt plus setup details must be 600 characters or fewer for real 3D generation.",
+      "Design brief plus setup details must be 600 characters or fewer for real 3D generation.",
     "dashboard.generate.error.serviceUnavailable":
       "The generation service is temporarily unavailable. Try again later.",
     "dashboard.generate.error.failedBeforeResult":
-      "Generation failed before a result was created. Try a shorter prompt or try again later.",
+      "Generation failed before a result was created. Try a shorter design brief or try again later.",
     "dashboard.generate.error.slow":
       "Generation is taking longer than expected. Refresh recent generations in a moment.",
     "dashboard.generate.error.notFound":
@@ -311,7 +311,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.previewPending": "Preview pending",
     "dashboard.figure.generating": "Generating...",
     "dashboard.figure.completeNoAssets":
-      "Generation complete. Preview will appear when provider result is available.",
+      "Generation complete. Preview will appear when the result is ready.",
     "dashboard.figure.failedFallback": "Generation failed. Please try again later.",
     "dashboard.figure.canceled": "Generation canceled.",
     "dashboard.figure.status.queued":
@@ -321,18 +321,19 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.status.success":
       "Generation complete. Open the available preview or model.",
     "dashboard.figure.status.failed":
-      "Generation did not complete. Your balance is refreshed from backend state; check credits before submitting another request.",
+      "Generation did not complete. Your balance has been refreshed. Check credits before submitting another request.",
     "dashboard.figure.status.canceled": "Generation was canceled.",
     "dashboard.figure.status.draft": "Generation draft is waiting to be submitted.",
-    "dashboard.figure.prompt": "Prompt",
+    "dashboard.figure.prompt": "Design brief",
     "dashboard.figure.created": "Created",
     "dashboard.figure.viewImage": "View image",
     "dashboard.figure.viewImageAria": "View image for {prompt}",
     "dashboard.figure.downloadImage": "Download image",
     "dashboard.figure.downloadImageAria": "Download image for {prompt}",
-    "dashboard.figure.openModel": "Open model",
-    "dashboard.figure.downloadModel": "Download model",
-    "dashboard.figure.downloadModelAria": "Download model for {prompt}",
+    "dashboard.figure.openModel": "Open model link",
+    "dashboard.figure.downloadModel": "Download GLB when allowed",
+    "dashboard.figure.downloadModelAria":
+      "Download GLB when allowed for {prompt}",
     "dashboard.dialog.generatedResult": "Generated result",
     "dashboard.dialog.imagePreview": "Image preview",
     "dashboard.dialog.closeImagePreview": "Close image preview",
@@ -340,20 +341,20 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.active.currentGeneration": "Current generation",
     "dashboard.empty.title": "No generated garments yet.",
     "dashboard.empty.body":
-      "Submit a prompt above and your first result will appear here.",
+      "Submit a design brief above and your first result will appear here.",
     "dashboard.notice.success": "Generation complete. Preview it in Studio.",
     "dashboard.notice.failed":
-      "Generation failed. Try a shorter prompt or generate again.",
+      "Generation failed. Try a shorter design brief or generate again.",
     "dashboard.notice.submitted":
       "Generation submitted. Result will appear in Studio when ready.",
     "dashboard.notice.backendSource":
-      "The backend remains the source of truth for status and ready assets.",
+      "Status and available assets are confirmed by the system.",
     "dashboard.notice.openStudioStatus": "Open Studio status",
     "dashboard.notice.openStudio": "Open Studio",
     "dashboard.setup.eyebrow": "Studio request",
     "dashboard.setup.title": "Generation setup",
     "dashboard.setup.body":
-      "Confirm the request details before the backend consumes one generation credit.",
+      "Confirm the request before one generation credit is used.",
     "dashboard.setup.close": "Close generation setup",
     "dashboard.setup.modelSource": "A. Model source",
     "dashboard.setup.defaultModel": "Default model",
@@ -372,12 +373,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.output.2d": "2D Preview",
     "dashboard.setup.output.2dHelper":
       "Generate a visual fashion concept preview.",
-    "dashboard.setup.output.3d": "3D GLB Model",
+    "dashboard.setup.output.3d": "3D model preview",
     "dashboard.setup.output.3dHelper":
-      "Generate or preview an interactive 3D model when available.",
+      "Request a 3D model preview. GLB is available only when the result includes it.",
     "dashboard.setup.summary": "D. Submit summary",
     "dashboard.setup.currentBalance": "Current balance",
-    "dashboard.setup.promptLength": "Prompt length",
+    "dashboard.setup.promptLength": "Design brief length",
     "dashboard.setup.noneSelected": "None selected",
     "dashboard.setup.composedRequest":
       "Composed request: {count}/{max} chars",
@@ -399,9 +400,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.card.upgrade": "Upgrade",
     "dashboard.card.exportAccess": "Export access",
     "dashboard.card.exportConfirmed":
-      "Paid plan capability confirmed by backend billing state.",
+      "Your paid plan currently includes model export.",
     "dashboard.card.exportBlocked":
-      "PAYWALL_REQUIRED opens when export/download is blocked.",
+      "A paid plan is required for model download/export.",
     "dashboard.card.downloadExportAccess": "Download/export access",
     "dashboard.card.account": "Account",
     "dashboard.card.noEmail": "No email",
@@ -429,24 +430,24 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.empty.goDashboard": "Go to Dashboard",
     "studio.preview2dPending": "2D preview pending",
     "studio.preview2dPendingBody":
-      "The backend has not returned a preview image for this generation yet.",
+      "The preview image is not ready yet.",
     "studio.modelPending": "3D model pending or not available.",
     "studio.modelPendingBody":
-      "This figure does not currently expose a GLB result. Refresh after the backend status changes or continue with the 2D preview.",
-    "studio.glbReady": "GLB output ready",
+      "This figure does not currently expose a GLB result. Refresh later or continue with the 2D preview.",
+    "studio.glbReady": "GLB link available",
     "studio.glbReadyBody":
-      "Temporary model link. Access depends on backend-owned generation result.",
-    "studio.openGlb": "Open GLB",
-    "studio.downloadGlb": "Download GLB",
+      "A temporary model link is available when the generation result includes GLB access.",
+    "studio.openGlb": "Open model link",
+    "studio.downloadGlb": "Download GLB when allowed",
     "studio.glbRestricted":
-      "Direct GLB access is restricted by your backend billing state.",
-    "studio.currentPrompt": "Current prompt",
+      "Direct GLB access is limited by your billing state.",
+    "studio.currentPrompt": "Current design brief",
     "studio.styleDirection": "Style direction",
     "studio.notSpecified": "Not specified",
     "studio.recentAssets": "Recent assets",
     "studio.metadata": "Gen metadata",
     "studio.status": "Status",
-    "studio.provider": "Provider",
+    "studio.provider": "Source",
     "studio.notReported": "Not reported",
     "studio.assetManifest": "Asset manifest",
     "studio.masterImage": "Master image (2D)",
@@ -454,17 +455,18 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.exportAvailable": "Export available",
     "studio.exportRestricted": "Export restricted",
     "studio.exportAvailableBody":
-      "Backend billing state confirms model export access for this account.",
+      "Billing state confirms model export access for this account.",
     "studio.exportRestrictedBody":
       "Download and export are available on paid plans. Previewing remains available.",
 
+    "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
-    "paywall.title": "Export is a paid feature.",
+    "paywall.title": "Paid plan required",
     "paywall.body":
-      "Download and export are available on paid plans. Starter unlocks model downloads and basic export.",
+      "A paid plan is required for model download/export.",
     "paywall.viewPlans": "View plans",
     "paywall.continuePreviewing": "Continue previewing",
-    "paywall.close": "Close paywall",
+    "paywall.close": "Close",
 
     "credits.header.eyebrow": "Credits",
     "credits.header.title": "Plans and credit packs.",
@@ -474,36 +476,37 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.summary.credits": "Credits",
     "credits.summary.free": "Free",
     "credits.error.title": "Billing data failed to load",
-    "credits.cart.eyebrow": "One-item cart",
+    "credits.cart.eyebrow": "Selected item",
     "credits.cart.monthlyPlan": "Monthly plan",
     "credits.cart.hdCredits": "{count} HD credits",
     "credits.cart.checkoutNote":
       "Checkout creates a manual VietQR order. Access does not change until admin verification.",
     "credits.cart.remove": "Remove",
-    "credits.cart.checkout": "Checkout",
+    "credits.cart.checkout": "Continue to payment",
     "credits.cart.ready": "{product} is ready for checkout.",
     "credits.cart.currentPlan": "{product} is already your current plan.",
     "credits.cart.currentPlanCancelled":
       "Current plan cancelled. You can now continue with your new plan.",
     "credits.plans.title": "Subscription plans",
-    "credits.plans.emptyTitle": "No subscription plans returned",
+    "credits.plans.emptyTitle": "No plans available",
     "credits.plans.emptyBody":
-      "Refresh billing data after the catalog endpoint is ready.",
-    "credits.plans.manualMonthly": "Manual monthly plan",
+      "Refresh after plans are available.",
+    "credits.plans.manualMonthly": "Monthly plan",
     "credits.plans.current": "Current",
     "credits.plans.cadence": "/ month",
     "credits.plan.includedGenerations": "{count} included HD generations",
-    "credits.plan.export": "Download model and basic export",
-    "credits.plan.benefit.pro": "Priority render and high quality texture",
-    "credits.plan.benefit.creator": "Faster queue and better texture",
+    "credits.plan.export": "Model download and basic export",
+    "credits.plan.benefit.pro": "Priority render and high-detail materials",
+    "credits.plan.benefit.creator":
+      "Faster queue and better material detail",
     "credits.plan.benefit.default": "Standard queue and basic export",
     "credits.actions.inCart": "In cart",
     "credits.actions.addToCart": "Add to cart",
     "credits.actions.buyNow": "Buy now",
     "credits.packs.title": "Credit packs",
-    "credits.packs.emptyTitle": "No credit packs returned",
+    "credits.packs.emptyTitle": "No credit packs available",
     "credits.packs.emptyBody":
-      "Refresh billing data after the catalog endpoint is ready.",
+      "Refresh after credit packs are available.",
     "credits.packs.rule": "1 credit = 1 HD generation",
     "credits.packs.body":
       "Adds {count} credits after admin verifies the VietQR transfer. Credit packs do not unlock export by themselves.",
@@ -527,8 +530,8 @@ export const messages: Record<Language, Record<string, string>> = {
       "VietQR orders will appear here after checkout starts.",
     "credits.history.created": "Created {date}",
     "credits.history.resume": "Resume checkout",
-    "credits.history.confirmed": "Confirmed",
-    "credits.history.paymentIncomplete": "Payment not completed",
+    "credits.history.confirmed": "Paid",
+    "credits.history.paymentIncomplete": "Not paid",
     "credits.cancel.closeAria": "Close cancellation dialog",
     "credits.cancel.eyebrow": "Plan change blocked",
     "credits.cancel.title": "Cancel current subscription?",
@@ -553,7 +556,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.status.preparing":
       "Checkout is preparing your VietQR instructions.",
     "checkout.status.paid":
-      "Your transfer has been verified and marked paid. Billing access is now confirmed.",
+      "Your transfer has been verified and marked paid. Your plan or credits are now active.",
     "checkout.status.expired":
       "This order expired. Return to credits and create a fresh checkout before transferring.",
     "checkout.status.terminal":
@@ -574,7 +577,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.detail.bankBody":
       "Use these details if the QR scan fails. Keep the amount and transfer content exactly as shown.",
     "checkout.detail.bankName": "Bank name",
-    "checkout.detail.configuredBank": "Configured bank",
+    "checkout.detail.configuredBank": "Bank information unavailable",
     "checkout.detail.accountNumber": "Account number",
     "checkout.detail.copyAccount": "Copy account",
     "checkout.detail.accountHolder": "Account holder",
@@ -595,12 +598,12 @@ export const messages: Record<Language, Record<string, string>> = {
       "After sending the transfer, report it here and wait for admin verification.",
     "checkout.report.warning":
       "This only reports your transfer. Credits or plan access start after admin verification. This app does not auto-detect bank transfers.",
-    "checkout.payos.title": "Optional instant checkout",
+    "checkout.payos.title": "payOS checkout",
     "checkout.payos.body":
-      "payOS is an optional instant checkout method. Manual VietQR remains available.",
+      "Use payOS only when this enabled option appears. Manual VietQR remains available for this order.",
     "checkout.payos.warning":
       "Do not pay both methods for the same order.",
-    "checkout.payos.button": "Pay with payOS",
+    "checkout.payos.button": "Open payOS checkout",
     "checkout.payos.unavailable": "payOS unavailable",
     "checkout.payos.fallback": "Manual VietQR remains available.",
     "checkout.badge": "Manual VietQR checkout",
@@ -630,16 +633,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "paymentResult.status.cancelled": "Cancelled",
     "paymentResult.status.pending": "Pending",
     "paymentResult.status.unknown": "Unknown",
-    "paymentResult.source.gateway": "Gateway return",
-    "paymentResult.source.payos": "payOS return",
+    "paymentResult.source.gateway": "Payment status check",
+    "paymentResult.source.payos": "Payment status check",
     "paymentResult.orderId": "Order id",
     "paymentResult.source": "Source",
     "paymentResult.success.title": "Payment confirmed",
     "paymentResult.success.description":
-      "The backend has marked this order paid. Open credits to refresh your current billing state.",
-    "paymentResult.pending.title": "Payment is still pending",
+      "This order is marked paid. Open credits to refresh your current billing state.",
+    "paymentResult.pending.title": "Payment status check",
     "paymentResult.pending.description":
-      "The return URL was received, but the backend has not marked this order paid yet. If you used payOS, the signed webhook may still be processing.",
+      "We received the payment return page, but this order is not marked paid yet. Credits or plan access stay unchanged until payment is confirmed by the server.",
     "paymentResult.failed.title": "Payment was not completed",
     "paymentResult.failed.description":
       "The payment result was not successful. You can return to credits or view this checkout if the order is still valid.",
@@ -648,10 +651,11 @@ export const messages: Record<Language, Record<string, string>> = {
       "The checkout was cancelled. No credits or subscription access are granted from cancellation.",
     "paymentResult.unknown.title": "Payment result received",
     "paymentResult.unknown.description":
-      "The return URL used a status this app does not recognize. Check your credits page before starting another checkout.",
-    "paymentResult.backendOwned.title": "Billing remains backend-owned",
+      "The payment page used a status this app does not recognize. Check your credits page before starting another checkout.",
+    "paymentResult.backendOwned.title":
+      "Payment status is confirmed by the system",
     "paymentResult.backendOwned.body":
-      "This page only displays the return URL result. It does not grant credits or subscriptions. VietQR manual bank transfers still require admin verification before access changes.",
+      "This page only shows the return result. It does not grant credits or subscriptions.",
     "paymentResult.backToCredits": "Back to credits",
     "paymentResult.viewOrderCheckout": "View order checkout",
     "paymentResult.openDashboard": "Open dashboard",
@@ -667,7 +671,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "profile.billingUnavailable": "Billing unavailable",
     "profile.noEmailReturned": "No email returned",
     "profile.hero.body":
-      "Manage the identity details used across your 3D Stylist workspace. Upload a clear front-facing selfie now so future outfit personalization has a stronger profile reference.",
+      "Upload a clear front-facing selfie to improve future outfit previews.",
     "profile.currentPlan": "Current plan",
     "profile.credits": "Credits",
     "profile.memberSince": "Member since",
@@ -683,7 +687,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "profile.identity.notProvided": "Not provided",
     "profile.identity.visibilityTitle": "Account visibility",
     "profile.identity.visibilityBody":
-      "Display name is editable. Email, membership date, and billing plan details come from protected backend responses.",
+      "Display name is editable. Email, membership date, and billing plan details come from secure account records.",
     "profile.identity.unsaved": "Unsaved display name change",
     "profile.identity.current": "Profile details are current",
     "profile.selfie.eyebrow": "Selfie upload",
@@ -761,7 +765,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.health.lastChecked": "Last checked: {date}",
     "admin.subscriptions.title": "Subscriptions And Credits",
     "admin.subscriptions.description":
-      "Sandbox grants and credit ledger totals from backend billing state.",
+      "Subscription grants and credit ledger totals from billing state.",
     "admin.subscriptions.active": "Active subscriptions",
     "admin.subscriptions.empty": "No active subscription rows returned.",
     "admin.credits.ledger": "Credit ledger",
@@ -769,12 +773,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.credits.consumed": "Consumed in range",
     "admin.catalog.title": "Product Catalog",
     "admin.catalog.description":
-      "Read-only status for the six MVP billing products.",
+      "Read-only status for the six core billing products.",
     "admin.catalog.activeCount": "{active}/{total} active",
     "admin.catalog.kind": "Kind",
     "admin.catalog.price": "Price",
     "admin.catalog.credits": "Credits",
-    "admin.catalog.missing": "Missing MVP products: {products}",
+    "admin.catalog.missing": "Missing core products: {products}",
     "admin.dialog.eyebrow": "Manual verification",
     "admin.dialog.title": "Verify this transfer and mark it paid?",
     "admin.dialog.closeAria": "Close mark paid dialog",
@@ -811,8 +815,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.creditBalance": "Credit Balance",
     "admin.kpi.purchasedInRange": "{count} purchased in range",
     "admin.kpi.catalogStatus": "Catalog Status",
-    "admin.kpi.missingProducts": "{count} missing MVP products",
-    "admin.kpi.catalogCoverage": "MVP catalog coverage",
+    "admin.kpi.missingProducts": "{count} missing core products",
+    "admin.kpi.catalogCoverage": "Core catalog coverage",
     "admin.success.markPaid": "Order {orderId} returned {status}.",
     "admin.orders.title": "Recent Orders",
     "admin.orders.description":
@@ -820,12 +824,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.orders.statusFilter": "Order status",
     "admin.transactions.title": "Payment Transactions",
     "admin.transactions.description":
-      "{count} matching payment records. Gateway transactions remain secondary when present.",
+      "Payment records for enabled methods. Manual VietQR remains the baseline flow.",
     "admin.transactions.statusFilter": "Payment status",
     "admin.users.title": "Recent Users",
     "admin.users.description": "{count} matching accounts. Safe fields only.",
     "admin.footer.console":
-      "3D Stylist admin console · Week 03B VietQR operations",
+      "3D Stylist admin console - VietQR operations",
     "admin.footer.manualMarkPaid": "Manual mark-paid: {state}",
     "admin.footer.pagination": "Pagination: page {page} of {totalPages}",
 
@@ -850,8 +854,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "display.payment.expired": "Expired",
     "display.payment.pending_verification": "Pending verification",
     "display.provider.vietqr": "Manual VietQR",
-    "display.provider.momo": "MoMo sandbox",
-    "display.provider.vnpay": "VNPay sandbox",
+    "display.provider.momo": "MoMo",
+    "display.provider.vnpay": "VNPay",
     "display.provider.payos": "payOS",
     "display.verification.awaiting_transfer": "Awaiting transfer",
     "display.verification.user_reported_transferred": "Transfer reported",
@@ -933,11 +937,11 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.hero.eyebrow": "3D Stylist",
     "auth.hero.title": "Công nghệ thời trang AI cho ý tưởng trang phục sắc nét hơn.",
     "auth.hero.subtitle":
-      "Một lớp studio tập trung cho phong cách cá nhân, tín hiệu dáng mặc và định hướng tủ đồ sẵn sàng sản xuất.",
+      "Một lớp studio tập trung cho phong cách cá nhân, tín hiệu dáng mặc và định hướng tủ đồ sẵn sàng duyệt.",
     "auth.hero.metricPreviews": "bản xem trước dáng người",
     "auth.hero.metricPresets": "bộ phong cách",
-    "auth.hero.metricAssets": "tài sản sẵn sàng",
-    "auth.hero.mobileBadge": "AI atelier",
+    "auth.hero.metricAssets": "tài sản sẵn sàng xem lại",
+    "auth.hero.mobileBadge": "Studio AI",
     "auth.login.title": "Chào mừng trở lại",
     "auth.login.subtitle": "Đăng nhập để tiếp tục tạo ý tưởng trang phục AI.",
     "auth.login.submit": "Đăng nhập",
@@ -984,16 +988,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthSuccess.status.profile": "Đang tải hồ sơ",
     "auth.oauthSuccess.status.workspace": "Đang mở không gian làm việc",
     "auth.oauthError.fallbackMessage":
-      "Nhà cung cấp không thể hoàn tất đăng nhập.",
+      "Dịch vụ đăng nhập không thể hoàn tất đăng nhập.",
     "auth.oauthError.emailTitle": "Cần cấp quyền email",
     "auth.oauthError.sessionTitle": "Không thể khôi phục phiên đăng nhập",
     "auth.oauthError.genericTitle": "Không thể hoàn tất đăng nhập",
     "auth.oauthError.emailDescription":
-      "Nhà cung cấp không chia sẻ địa chỉ email cho tài khoản này.",
+      "Dịch vụ đăng nhập không chia sẻ địa chỉ email cho tài khoản này.",
     "auth.oauthError.sessionDescription":
-      "Đăng nhập qua nhà cung cấp đã hoàn tất, nhưng trình duyệt này không thể khôi phục phiên 3D Stylist.",
+      "Đăng nhập đã hoàn tất, nhưng trình duyệt này không thể khôi phục phiên 3D Stylist.",
     "auth.oauthError.genericDescription":
-      "Nhà cung cấp không thể hoàn tất đăng nhập. Hãy thử phương thức đăng nhập khác.",
+      "Dịch vụ đăng nhập không thể hoàn tất đăng nhập. Hãy thử phương thức đăng nhập khác.",
     "auth.oauthError.emailAlertTitle": "Cần có địa chỉ email.",
     "auth.oauthError.sessionAlertTitle": "Quá trình bàn giao phiên bị gián đoạn.",
     "auth.oauthError.genericAlertTitle": "Lần đăng nhập chưa hoàn tất.",
@@ -1002,12 +1006,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthError.sessionAlertDescription":
       "Trình duyệt có thể đã chặn hoặc xóa cookie đăng nhập an toàn. Quay lại trang đăng nhập và thử lại.",
     "auth.oauthError.genericAlertDescription":
-      "Quay lại đăng nhập và thử lại nhà cung cấp, hoặc chọn phương thức đăng nhập khác.",
+      "Quay lại đăng nhập và thử đăng nhập lại, hoặc chọn phương thức đăng nhập khác.",
     "auth.oauthError.nextSteps": "Bạn có thể làm gì tiếp theo",
     "auth.oauthError.facebookEmailSuggestion1":
       "Kết nối lại Facebook và cấp quyền email nếu bạn dùng Facebook.",
     "auth.oauthError.facebookEmailSuggestion2":
-      "Thử tài khoản nhà cung cấp khác có thể chia sẻ email đã xác minh.",
+      "Thử tài khoản khác có thể chia sẻ email đã xác minh.",
     "auth.oauthError.facebookEmailSuggestion3":
       "Tiếp tục với Google hoặc dùng đăng nhập email/mật khẩu.",
     "auth.oauthError.sessionSuggestion1":
@@ -1017,9 +1021,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthError.sessionSuggestion3":
       "Dùng đăng nhập email/mật khẩu nếu cài đặt riêng tư của trình duyệt chặn khôi phục phiên.",
     "auth.oauthError.genericSuggestion1":
-      "Quay lại đăng nhập và thử lại nhà cung cấp.",
+      "Quay lại đăng nhập và thử đăng nhập lại.",
     "auth.oauthError.genericSuggestion2":
-      "Tiếp tục với Google nếu nhà cung cấp khác không hoàn tất đăng nhập.",
+      "Tiếp tục với Google nếu dịch vụ đăng nhập khác không hoàn tất đăng nhập.",
     "auth.oauthError.genericSuggestion3":
       "Dùng đăng nhập email/mật khẩu để tiếp tục.",
     "auth.oauthError.continueWithGoogle": "Tiếp tục với Google",
@@ -1047,40 +1051,41 @@ export const messages: Record<Language, Record<string, string>> = {
     "landing.preview.loading": "Đang chuẩn bị bản xem trước thời trang 3D",
     "landing.preview.error": "Bản xem trước 3D tạm thời không khả dụng.",
     "landing.hero.eyebrow": "Studio thời trang AI 3D",
-    "landing.hero.titleLead": "Biến prompt thành",
-    "landing.hero.titleAccent": "bản xem trước thời trang AI sẵn sàng sản xuất.",
+    "landing.hero.titleLead":
+      "Biến mô tả thiết kế thành bản xem trước thời trang AI để duyệt trong",
+    "landing.hero.titleAccent": "Studio.",
     "landing.hero.body":
       "Tạo định hướng trang phục từ ý đồ phong cách, rồi kiểm tra dáng và tỷ lệ trên bề mặt xem trước 3D tương tác trước khi chuyển vào quy trình studio dùng tín dụng.",
-    "landing.metric.prompt": "Prompt",
+    "landing.metric.prompt": "Mô tả thiết kế",
     "landing.metric.promptDetail": "Bối cảnh dáng người",
     "landing.metric.credits": "Tín dụng",
-    "landing.metric.creditsDetail": "Ràng buộc thanh toán",
+    "landing.metric.creditsDetail": "Kiểm tra thanh toán",
     "landing.metric.preview": "3D",
     "landing.metric.previewDetail": "Xem lại bản preview",
     "landing.preview.toolbar": "Bản xem trước 3D tương tác",
-    "landing.preview.captionLeft": "Bề mặt tạo phong cách sẵn sàng prompt",
+    "landing.preview.captionLeft": "Bề mặt tạo phong cách sẵn sàng thiết kế",
     "landing.preview.captionRight": "Xem xoay quỹ đạo",
     "landing.features.eyebrow": "Hạ tầng studio",
     "landing.features.title":
-      "Tạo thời trang cao cấp, nối với các luồng MVP đang quan trọng.",
+      "Tạo thời trang cao cấp, kết nối với những luồng sản phẩm quan trọng.",
     "landing.value.ai.title": "Tạo trang phục bằng AI",
     "landing.value.ai.description":
-      "Biến prompt, bối cảnh dáng người và sở thích phong cách thành định hướng trang phục cao cấp cho quy trình studio.",
+      "Biến mô tả thiết kế, bối cảnh dáng người và sở thích phong cách thành định hướng trang phục cao cấp cho quy trình studio.",
     "landing.value.preview.title": "Định hướng xem trước 3D",
     "landing.value.preview.description":
       "Giữ trình xem thời trang tương tác ở trung tâm của bước đánh giá, kiểm tra phom dáng và chuẩn bị xuất file.",
     "landing.value.credits.title": "Gói & tín dụng",
     "landing.value.credits.description":
-      "Kết nối quyền tạo với quy trình tín dụng và thuê bao hiện có mà không cấp quyền chỉ từ frontend.",
-    "landing.value.checkout.title": "Thanh toán VietQR MVP",
+      "Kết nối quyền tạo với quy trình tín dụng và thuê bao hiện có, và chỉ cập nhật quyền sau khi thanh toán được xác minh.",
+    "landing.value.checkout.title": "Thanh toán VietQR thủ công",
     "landing.value.checkout.description":
-      "Hỗ trợ luồng chuyển khoản thủ công với mã đơn rõ ràng và xác minh quản trị trước khi cấp quyền.",
+      "Hỗ trợ chuyển khoản với mã đơn rõ ràng và xác minh trước khi quyền truy cập thay đổi.",
     "landing.workflow.eyebrow": "Cách hoạt động",
     "landing.workflow.title":
-      "Từ prompt đến tạo mẫu rồi xem lại 3D, không giả vờ thanh toán là phép màu.",
+      "Từ mô tả thiết kế đến tạo mẫu rồi xem lại 3D, với trạng thái thanh toán được xử lý rõ ràng.",
     "landing.workflow.body":
       "Trang giới thiệu vẫn trực quan và truyền cảm hứng, trong khi đường đi sản phẩm vẫn tôn trọng đăng nhập, tín dụng và xác minh thanh toán.",
-    "landing.workflow.prompt.title": "Prompt",
+    "landing.workflow.prompt.title": "Mô tả thiết kế",
     "landing.workflow.prompt.description":
       "Mô tả trang phục, dịp sử dụng, bối cảnh cơ thể và cảm giác thị giác.",
     "landing.workflow.generate.title": "Tạo",
@@ -1102,18 +1107,19 @@ export const messages: Record<Language, Record<string, string>> = {
       "Cho creator cá nhân đang khám phá quy trình tạo phong cách 3D.",
     "landing.plan.creator.badge": "Cân bằng nhất",
     "landing.plan.creator.description":
-      "Cho đội thời trang cần nhiều lượt render hơn và chất lượng texture tốt hơn.",
+      "Cho đội thời trang cần nhiều lượt render hơn và chi tiết chất liệu tốt hơn.",
     "landing.plan.pro.badge": "Studio ưu tiên",
     "landing.plan.pro.description":
       "Cho khối lượng lên ý tưởng lớn với độ hoàn thiện sản xuất ưu tiên.",
     "landing.plan.feature.10": "10 lượt tạo HD đi kèm",
     "landing.plan.feature.30": "30 lượt tạo HD đi kèm",
     "landing.plan.feature.80": "80 lượt tạo HD đi kèm",
-    "landing.plan.feature.export": "Tải mô hình và xuất cơ bản",
+    "landing.plan.feature.export": "Quyền tải mô hình và xuất cơ bản",
     "landing.plan.feature.standardQueue": "Hàng đợi tiêu chuẩn và xuất cơ bản",
-    "landing.plan.feature.fasterQueue": "Hàng đợi nhanh hơn và texture tốt hơn",
+    "landing.plan.feature.fasterQueue":
+      "Hàng đợi nhanh hơn và chi tiết chất liệu tốt hơn",
     "landing.plan.feature.priorityQueue":
-      "Render ưu tiên và texture chất lượng cao",
+      "Render ưu tiên và chất liệu chi tiết cao",
     "landing.plan.popular": "Phổ biến",
     "landing.plan.cadence": "/ tháng",
     "landing.creditPack": "Gói tín dụng",
@@ -1124,12 +1130,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "landing.final.title":
       "Bắt đầu bằng bề mặt xem trước 3D cao cấp, rồi chuyển vào workspace tạo phong cách đầy đủ.",
     "landing.footer.description":
-      "MVP tạo thời trang AI với đăng nhập, tín dụng và trải nghiệm xem trước 3D điện ảnh.",
+      "Tạo thời trang AI với đăng nhập, tín dụng và trải nghiệm xem trước 3D điện ảnh.",
 
     "dashboard.header.eyebrow": "Bảng điều khiển",
     "dashboard.header.greeting": "Chúc một ngày tốt lành, {name}.",
     "dashboard.header.body":
-      "Tạo figure thời trang 3D từ prompt, theo dõi trạng thái render và giữ số tín dụng chính xác khi kết quả hoàn tất.",
+      "Tạo bản xem trước thời trang, theo dõi trạng thái và giữ tín dụng chính xác khi kết quả hoàn tất.",
     "dashboard.header.creditsPlans": "Gói & tín dụng",
     "dashboard.pending.waiting": "Đang chờ quản trị xác minh",
     "dashboard.pending.transferRequired": "Cần chuyển khoản",
@@ -1152,7 +1158,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.generate.credits": "{count} tín dụng",
     "dashboard.generate.balanceAfter": "Số dư sau khi gửi",
     "dashboard.generate.estimate":
-      "Chỉ là ước tính. Backend xác nhận số dư cuối cùng.",
+      "Chỉ là ước tính. Số dư cuối cùng sẽ cập nhật sau khi yêu cầu được chấp nhận.",
     "dashboard.generate.promptLabel": "Mô tả thiết kế",
     "dashboard.generate.promptPlaceholder":
       "Ví dụ: áo bomber dáng rộng, nylon mờ, đường chỉ cyan, phong cách streetwear runway",
@@ -1162,11 +1168,11 @@ export const messages: Record<Language, Record<string, string>> = {
       "{promptCount} ký tự mô tả + {setupCount} ký tự thiết lập / {maxCount}",
     "dashboard.generate.styleIntent": "Ý đồ phong cách",
     "dashboard.generate.styleHelp":
-      "Định hướng phong cách tùy chọn. Áp dụng vào prompt khi bạn tạo.",
+      "Định hướng phong cách tùy chọn. Áp dụng vào mô tả thiết kế khi bạn tạo.",
     "dashboard.generate.buyCredits": "Mua tín dụng",
     "dashboard.generate.generating": "Đang tạo",
     "dashboard.generate.generate": "Tạo",
-    "dashboard.generate.checkExportGate": "Kiểm tra cổng xuất file",
+    "dashboard.generate.checkExportGate": "Kiểm tra quyền xuất file",
     "dashboard.generate.error.insufficientCredits":
       "Bạn đã dùng hết tín dụng tạo mẫu. Mua thêm tín dụng hoặc nâng cấp gói để tiếp tục.",
     "dashboard.generate.error.promptTooLong":
@@ -1192,7 +1198,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.previewPending": "Đang chờ xem trước",
     "dashboard.figure.generating": "Đang tạo...",
     "dashboard.figure.completeNoAssets":
-      "Tạo hình đã hoàn tất. Bản xem trước sẽ xuất hiện khi nhà cung cấp trả kết quả.",
+      "Tạo hình đã hoàn tất. Bản xem trước sẽ xuất hiện khi kết quả sẵn sàng.",
     "dashboard.figure.failedFallback": "Tạo hình thất bại. Hãy thử lại sau.",
     "dashboard.figure.canceled": "Tạo hình đã hủy.",
     "dashboard.figure.status.queued":
@@ -1202,18 +1208,18 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.status.success":
       "Tạo hình hoàn tất. Mở bản xem trước hoặc mô hình có sẵn.",
     "dashboard.figure.status.failed":
-      "Tạo hình chưa hoàn tất. Số dư được làm mới từ trạng thái backend; hãy kiểm tra tín dụng trước khi gửi yêu cầu khác.",
+      "Tạo hình chưa hoàn tất. Số dư đã được làm mới. Hãy kiểm tra tín dụng trước khi gửi yêu cầu khác.",
     "dashboard.figure.status.canceled": "Tạo hình đã bị hủy.",
     "dashboard.figure.status.draft": "Bản nháp đang chờ gửi.",
-    "dashboard.figure.prompt": "Prompt",
+    "dashboard.figure.prompt": "Mô tả thiết kế",
     "dashboard.figure.created": "Đã tạo",
     "dashboard.figure.viewImage": "Xem ảnh",
     "dashboard.figure.viewImageAria": "Xem ảnh cho {prompt}",
     "dashboard.figure.downloadImage": "Tải ảnh",
     "dashboard.figure.downloadImageAria": "Tải ảnh cho {prompt}",
-    "dashboard.figure.openModel": "Mở mô hình",
-    "dashboard.figure.downloadModel": "Tải mô hình",
-    "dashboard.figure.downloadModelAria": "Tải mô hình cho {prompt}",
+    "dashboard.figure.openModel": "Mở liên kết mô hình",
+    "dashboard.figure.downloadModel": "Tải GLB khi được phép",
+    "dashboard.figure.downloadModelAria": "Tải GLB khi được phép cho {prompt}",
     "dashboard.dialog.generatedResult": "Kết quả đã tạo",
     "dashboard.dialog.imagePreview": "Xem trước ảnh",
     "dashboard.dialog.closeImagePreview": "Đóng xem trước ảnh",
@@ -1221,20 +1227,20 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.active.currentGeneration": "Bản tạo hiện tại",
     "dashboard.empty.title": "Chưa có trang phục được tạo.",
     "dashboard.empty.body":
-      "Gửi prompt ở trên và kết quả đầu tiên sẽ xuất hiện tại đây.",
+      "Gửi mô tả thiết kế ở trên và kết quả đầu tiên sẽ xuất hiện tại đây.",
     "dashboard.notice.success": "Tạo hình hoàn tất. Xem trước trong Studio.",
     "dashboard.notice.failed":
-      "Tạo hình thất bại. Hãy thử prompt ngắn hơn hoặc tạo lại.",
+      "Tạo hình thất bại. Hãy thử mô tả thiết kế ngắn hơn hoặc tạo lại.",
     "dashboard.notice.submitted":
       "Đã gửi tạo hình. Kết quả sẽ xuất hiện trong Studio khi sẵn sàng.",
     "dashboard.notice.backendSource":
-      "Backend vẫn là nguồn sự thật cho trạng thái và tài sản sẵn sàng.",
+      "Trạng thái và tài sản sẵn sàng được hệ thống xác nhận.",
     "dashboard.notice.openStudioStatus": "Mở trạng thái Studio",
     "dashboard.notice.openStudio": "Mở Studio",
     "dashboard.setup.eyebrow": "Yêu cầu studio",
     "dashboard.setup.title": "Thiết lập tạo mẫu",
     "dashboard.setup.body":
-      "Xác nhận chi tiết yêu cầu trước khi backend trừ một tín dụng tạo mẫu.",
+      "Xác nhận yêu cầu trước khi dùng một tín dụng tạo mẫu.",
     "dashboard.setup.close": "Đóng thiết lập tạo mẫu",
     "dashboard.setup.modelSource": "A. Nguồn mô hình",
     "dashboard.setup.defaultModel": "Mô hình mặc định",
@@ -1252,12 +1258,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.outputType": "C. Loại đầu ra",
     "dashboard.setup.output.2d": "Xem trước 2D",
     "dashboard.setup.output.2dHelper": "Tạo bản xem trước concept thời trang.",
-    "dashboard.setup.output.3d": "Mô hình GLB 3D",
+    "dashboard.setup.output.3d": "Bản xem trước mô hình 3D",
     "dashboard.setup.output.3dHelper":
-      "Tạo hoặc xem trước mô hình 3D tương tác khi khả dụng.",
+      "Yêu cầu bản xem trước mô hình 3D. GLB chỉ có khi kết quả bao gồm tệp này.",
     "dashboard.setup.summary": "D. Tóm tắt gửi",
     "dashboard.setup.currentBalance": "Số dư hiện tại",
-    "dashboard.setup.promptLength": "Độ dài prompt",
+    "dashboard.setup.promptLength": "Độ dài mô tả thiết kế",
     "dashboard.setup.noneSelected": "Chưa chọn",
     "dashboard.setup.composedRequest":
       "Yêu cầu đã ghép: {count}/{max} ký tự",
@@ -1279,9 +1285,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.card.upgrade": "Nâng cấp",
     "dashboard.card.exportAccess": "Quyền xuất file",
     "dashboard.card.exportConfirmed":
-      "Trạng thái thanh toán backend xác nhận quyền xuất mô hình trả phí.",
+      "Gói trả phí hiện tại bao gồm quyền xuất mô hình.",
     "dashboard.card.exportBlocked":
-      "PAYWALL_REQUIRED mở khi xuất/tải xuống bị chặn.",
+      "Cần gói trả phí để tải xuống hoặc xuất mô hình.",
     "dashboard.card.downloadExportAccess": "Quyền tải xuống/xuất file",
     "dashboard.card.account": "Tài khoản",
     "dashboard.card.noEmail": "Không có email",
@@ -1310,24 +1316,24 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.empty.goDashboard": "Đến Bảng điều khiển",
     "studio.preview2dPending": "Đang chờ bản xem trước 2D",
     "studio.preview2dPendingBody":
-      "Backend chưa trả ảnh xem trước cho bản tạo này.",
+      "Ảnh xem trước chưa sẵn sàng.",
     "studio.modelPending": "Mô hình 3D đang chờ hoặc không khả dụng.",
     "studio.modelPendingBody":
-      "Mẫu này hiện chưa có kết quả GLB. Hãy làm mới sau khi trạng thái backend thay đổi hoặc tiếp tục với bản xem trước 2D.",
-    "studio.glbReady": "Đầu ra GLB đã sẵn sàng",
+      "Mẫu này hiện chưa có kết quả GLB. Làm mới sau hoặc tiếp tục với bản xem trước 2D.",
+    "studio.glbReady": "Có liên kết GLB",
     "studio.glbReadyBody":
-      "Liên kết mô hình tạm thời. Quyền truy cập phụ thuộc vào kết quả tạo hình do backend sở hữu.",
-    "studio.openGlb": "Mở GLB",
-    "studio.downloadGlb": "Tải GLB",
+      "Liên kết mô hình tạm thời chỉ hiển thị khi kết quả tạo có GLB.",
+    "studio.openGlb": "Mở liên kết mô hình",
+    "studio.downloadGlb": "Tải GLB khi được phép",
     "studio.glbRestricted":
-      "Quyền truy cập GLB trực tiếp bị giới hạn bởi trạng thái thanh toán backend.",
-    "studio.currentPrompt": "Prompt hiện tại",
+      "Quyền truy cập GLB trực tiếp bị giới hạn bởi trạng thái thanh toán của bạn.",
+    "studio.currentPrompt": "Mô tả thiết kế hiện tại",
     "studio.styleDirection": "Định hướng phong cách",
     "studio.notSpecified": "Chưa chỉ định",
     "studio.recentAssets": "Tài sản gần đây",
     "studio.metadata": "Thông tin bản tạo",
     "studio.status": "Trạng thái",
-    "studio.provider": "Nhà cung cấp",
+    "studio.provider": "Nguồn",
     "studio.notReported": "Chưa báo cáo",
     "studio.assetManifest": "Danh sách tài sản",
     "studio.masterImage": "Ảnh chính (2D)",
@@ -1335,17 +1341,18 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.exportAvailable": "Có thể xuất",
     "studio.exportRestricted": "Xuất bị giới hạn",
     "studio.exportAvailableBody":
-      "Trạng thái thanh toán backend xác nhận quyền xuất mô hình cho tài khoản này.",
+      "Trạng thái thanh toán xác nhận quyền xuất mô hình cho tài khoản này.",
     "studio.exportRestrictedBody":
       "Tải xuống và xuất mô hình khả dụng cho các gói trả phí. Xem trước vẫn khả dụng.",
 
+    "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",
-    "paywall.title": "Xuất mô hình là tính năng trả phí.",
+    "paywall.title": "Cần gói trả phí",
     "paywall.body":
-      "Tải xuống và xuất mô hình khả dụng cho các gói trả phí. Starter mở khóa tải mô hình và xuất cơ bản.",
+      "Cần gói trả phí để tải xuống hoặc xuất mô hình.",
     "paywall.viewPlans": "Xem gói",
     "paywall.continuePreviewing": "Tiếp tục xem trước",
-    "paywall.close": "Đóng thông báo trả phí",
+    "paywall.close": "Đóng",
 
     "credits.header.eyebrow": "Tín dụng",
     "credits.header.title": "Gói thuê bao & tín dụng.",
@@ -1355,36 +1362,37 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.summary.credits": "Tín dụng",
     "credits.summary.free": "Miễn phí",
     "credits.error.title": "Không tải được dữ liệu thanh toán",
-    "credits.cart.eyebrow": "Giỏ một mục",
+    "credits.cart.eyebrow": "Mục đã chọn",
     "credits.cart.monthlyPlan": "Gói hằng tháng",
     "credits.cart.hdCredits": "{count} tín dụng HD",
     "credits.cart.checkoutNote":
       "Thanh toán sẽ tạo một đơn VietQR thủ công. Quyền truy cập không thay đổi cho đến khi quản trị xác minh.",
     "credits.cart.remove": "Xóa",
-    "credits.cart.checkout": "Thanh toán",
+    "credits.cart.checkout": "Tiếp tục thanh toán",
     "credits.cart.ready": "{product} đã sẵn sàng để thanh toán.",
     "credits.cart.currentPlan": "{product} đã là gói hiện tại của bạn.",
     "credits.cart.currentPlanCancelled":
       "Gói hiện tại đã hủy. Bạn có thể tiếp tục với gói mới.",
     "credits.plans.title": "Gói thuê bao",
-    "credits.plans.emptyTitle": "Chưa có gói thuê bao trả về",
+    "credits.plans.emptyTitle": "Chưa có gói khả dụng",
     "credits.plans.emptyBody":
-      "Làm mới dữ liệu thanh toán sau khi endpoint catalog sẵn sàng.",
-    "credits.plans.manualMonthly": "Gói hằng tháng thủ công",
+      "Làm mới sau khi danh sách gói khả dụng.",
+    "credits.plans.manualMonthly": "Gói hằng tháng",
     "credits.plans.current": "Hiện tại",
     "credits.plans.cadence": "/ tháng",
     "credits.plan.includedGenerations": "{count} lượt tạo HD kèm theo",
-    "credits.plan.export": "Tải mô hình và xuất cơ bản",
-    "credits.plan.benefit.pro": "Render ưu tiên và texture chất lượng cao",
-    "credits.plan.benefit.creator": "Hàng đợi nhanh hơn và texture tốt hơn",
+    "credits.plan.export": "Quyền tải mô hình và xuất cơ bản",
+    "credits.plan.benefit.pro": "Render ưu tiên và chất liệu chi tiết cao",
+    "credits.plan.benefit.creator":
+      "Hàng đợi nhanh hơn và chi tiết chất liệu tốt hơn",
     "credits.plan.benefit.default": "Hàng đợi tiêu chuẩn và xuất cơ bản",
     "credits.actions.inCart": "Trong giỏ",
     "credits.actions.addToCart": "Thêm vào giỏ",
     "credits.actions.buyNow": "Mua ngay",
     "credits.packs.title": "Gói tín dụng",
-    "credits.packs.emptyTitle": "Chưa có gói tín dụng trả về",
+    "credits.packs.emptyTitle": "Chưa có gói tín dụng khả dụng",
     "credits.packs.emptyBody":
-      "Làm mới dữ liệu thanh toán sau khi endpoint catalog sẵn sàng.",
+      "Làm mới sau khi gói tín dụng khả dụng.",
     "credits.packs.rule": "1 tín dụng = 1 lượt tạo bản xem trước HD",
     "credits.packs.body":
       "Cộng {count} tín dụng sau khi quản trị xác minh chuyển khoản VietQR. Gói tín dụng không tự mở khóa quyền xuất file.",
@@ -1408,8 +1416,8 @@ export const messages: Record<Language, Record<string, string>> = {
       "Đơn VietQR sẽ xuất hiện ở đây sau khi thanh toán bắt đầu.",
     "credits.history.created": "Đã tạo {date}",
     "credits.history.resume": "Tiếp tục thanh toán",
-    "credits.history.confirmed": "Đã xác nhận",
-    "credits.history.paymentIncomplete": "Thanh toán chưa hoàn tất",
+    "credits.history.confirmed": "Đã thanh toán",
+    "credits.history.paymentIncomplete": "Chưa thanh toán",
     "credits.cancel.closeAria": "Đóng hộp thoại hủy gói",
     "credits.cancel.eyebrow": "Đổi gói đang bị chặn",
     "credits.cancel.title": "Hủy gói hiện tại?",
@@ -1434,7 +1442,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.status.preparing":
       "Trang thanh toán đang chuẩn bị hướng dẫn VietQR cho bạn.",
     "checkout.status.paid":
-      "Chuyển khoản đã được xác minh và đánh dấu đã thanh toán. Quyền thanh toán hiện đã được xác nhận.",
+      "Chuyển khoản đã được xác minh và đánh dấu đã thanh toán. Gói hoặc tín dụng của bạn đã được kích hoạt.",
     "checkout.status.expired":
       "Đơn này đã hết hạn. Quay lại tín dụng và tạo thanh toán mới trước khi chuyển khoản.",
     "checkout.status.terminal":
@@ -1455,7 +1463,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.detail.bankBody":
       "Dùng các thông tin này nếu quét QR thất bại. Giữ đúng số tiền và nội dung chuyển khoản như hiển thị.",
     "checkout.detail.bankName": "Tên ngân hàng",
-    "checkout.detail.configuredBank": "Ngân hàng đã cấu hình",
+    "checkout.detail.configuredBank": "Chưa có thông tin ngân hàng",
     "checkout.detail.accountNumber": "Số tài khoản",
     "checkout.detail.copyAccount": "Sao chép số tài khoản",
     "checkout.detail.accountHolder": "Chủ tài khoản",
@@ -1476,12 +1484,12 @@ export const messages: Record<Language, Record<string, string>> = {
       "Sau khi chuyển khoản, báo tại đây và chờ quản trị xác minh.",
     "checkout.report.warning":
       "Thao tác này chỉ báo rằng bạn đã chuyển khoản. Tín dụng hoặc gói chỉ bắt đầu sau khi quản trị xác minh. Ứng dụng không tự phát hiện chuyển khoản ngân hàng.",
-    "checkout.payos.title": "Thanh toán nhanh tùy chọn",
+    "checkout.payos.title": "Thanh toán payOS",
     "checkout.payos.body":
-      "payOS là phương thức thanh toán nhanh tùy chọn. VietQR thủ công vẫn luôn khả dụng.",
+      "Chỉ dùng payOS khi tùy chọn này được hệ thống bật. VietQR thủ công vẫn khả dụng cho đơn này.",
     "checkout.payos.warning":
       "Không thanh toán cả hai phương thức cho cùng một đơn.",
-    "checkout.payos.button": "Thanh toán bằng payOS",
+    "checkout.payos.button": "Mở thanh toán payOS",
     "checkout.payos.unavailable": "payOS không khả dụng",
     "checkout.payos.fallback": "VietQR thủ công vẫn khả dụng.",
     "checkout.badge": "Thanh toán VietQR thủ công",
@@ -1511,16 +1519,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "paymentResult.status.cancelled": "Đã hủy",
     "paymentResult.status.pending": "Đang chờ",
     "paymentResult.status.unknown": "Không rõ",
-    "paymentResult.source.gateway": "Kết quả trả về từ cổng thanh toán",
-    "paymentResult.source.payos": "Kết quả trả về từ payOS",
+    "paymentResult.source.gateway": "Kiểm tra trạng thái thanh toán",
+    "paymentResult.source.payos": "Kiểm tra trạng thái thanh toán",
     "paymentResult.orderId": "ID đơn",
     "paymentResult.source": "Nguồn",
     "paymentResult.success.title": "Thanh toán đã được xác nhận",
     "paymentResult.success.description":
-      "Backend đã đánh dấu đơn này là đã thanh toán. Mở trang tín dụng để làm mới trạng thái thanh toán.",
-    "paymentResult.pending.title": "Thanh toán vẫn đang chờ",
+      "Đơn này đã được ghi nhận là đã thanh toán. Mở trang tín dụng để làm mới trạng thái thanh toán.",
+    "paymentResult.pending.title": "Kiểm tra trạng thái thanh toán",
     "paymentResult.pending.description":
-      "URL trả về đã được nhận, nhưng backend chưa đánh dấu đơn là đã thanh toán. Nếu bạn dùng payOS, webhook đã ký có thể vẫn đang xử lý.",
+      "Trang trả về đã mở, nhưng đơn này chưa được ghi nhận là đã thanh toán. Tín dụng hoặc gói chỉ thay đổi sau khi máy chủ xác nhận thanh toán.",
     "paymentResult.failed.title": "Thanh toán chưa hoàn tất",
     "paymentResult.failed.description":
       "Kết quả thanh toán không thành công. Bạn có thể quay lại tín dụng hoặc xem trang thanh toán này nếu đơn vẫn còn hợp lệ.",
@@ -1529,10 +1537,11 @@ export const messages: Record<Language, Record<string, string>> = {
       "Thanh toán đã bị hủy. Việc hủy không cấp tín dụng hoặc quyền gói thuê bao.",
     "paymentResult.unknown.title": "Đã nhận kết quả thanh toán",
     "paymentResult.unknown.description":
-      "URL trả về dùng trạng thái ứng dụng chưa nhận diện. Kiểm tra trang tín dụng trước khi bắt đầu thanh toán khác.",
-    "paymentResult.backendOwned.title": "Thanh toán vẫn do backend quản lý",
+      "Trang thanh toán dùng trạng thái ứng dụng chưa nhận diện. Kiểm tra trang tín dụng trước khi bắt đầu thanh toán khác.",
+    "paymentResult.backendOwned.title":
+      "Trạng thái thanh toán do hệ thống xác nhận",
     "paymentResult.backendOwned.body":
-      "Trang này chỉ hiển thị kết quả từ URL trả về. Trang không cấp tín dụng hoặc gói thuê bao. Chuyển khoản VietQR thủ công vẫn cần quản trị xác minh trước khi quyền truy cập thay đổi.",
+      "Trang này chỉ hiển thị kết quả trả về. Trang không cấp tín dụng hoặc gói thuê bao.",
     "paymentResult.backToCredits": "Quay lại tín dụng",
     "paymentResult.viewOrderCheckout": "Xem thanh toán của đơn",
     "paymentResult.openDashboard": "Mở Bảng điều khiển",
@@ -1548,7 +1557,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "profile.billingUnavailable": "Thanh toán không khả dụng",
     "profile.noEmailReturned": "Không có email trả về",
     "profile.hero.body":
-      "Quản lý thông tin định danh dùng trong workspace 3D Stylist. Tải lên selfie rõ mặt từ phía trước để cá nhân hóa trang phục trong tương lai tốt hơn.",
+      "Tải selfie rõ mặt từ phía trước để cải thiện các bản xem trước sau này.",
     "profile.currentPlan": "Gói hiện tại",
     "profile.credits": "Tín dụng",
     "profile.memberSince": "Thành viên từ",
@@ -1564,7 +1573,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "profile.identity.notProvided": "Chưa cung cấp",
     "profile.identity.visibilityTitle": "Hiển thị tài khoản",
     "profile.identity.visibilityBody":
-      "Tên hiển thị có thể chỉnh sửa. Email, ngày tham gia và chi tiết gói thanh toán đến từ phản hồi backend được bảo vệ.",
+      "Tên hiển thị có thể chỉnh sửa. Email, ngày tham gia và chi tiết gói thanh toán đến từ dữ liệu tài khoản bảo mật.",
     "profile.identity.unsaved": "Tên hiển thị có thay đổi chưa lưu",
     "profile.identity.current": "Chi tiết hồ sơ đang mới nhất",
     "profile.selfie.eyebrow": "Tải selfie",
@@ -1642,20 +1651,20 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.health.lastChecked": "Kiểm tra lần cuối: {date}",
     "admin.subscriptions.title": "Thuê bao và tín dụng",
     "admin.subscriptions.description":
-      "Tổng sandbox grant và sổ cái tín dụng từ trạng thái thanh toán backend.",
+      "Tổng cấp quyền thuê bao và sổ cái tín dụng từ trạng thái thanh toán.",
     "admin.subscriptions.active": "Thuê bao đang hoạt động",
     "admin.subscriptions.empty": "Không có dòng thuê bao đang hoạt động.",
     "admin.credits.ledger": "Sổ cái tín dụng",
     "admin.credits.purchased": "Đã mua trong khoảng",
     "admin.credits.consumed": "Đã dùng trong khoảng",
-    "admin.catalog.title": "Catalog sản phẩm",
+    "admin.catalog.title": "Danh mục sản phẩm",
     "admin.catalog.description":
-      "Trạng thái chỉ đọc cho sáu sản phẩm thanh toán MVP.",
+      "Trạng thái chỉ đọc cho sáu sản phẩm thanh toán cốt lõi.",
     "admin.catalog.activeCount": "{active}/{total} đang hoạt động",
     "admin.catalog.kind": "Loại",
     "admin.catalog.price": "Giá",
     "admin.catalog.credits": "Tín dụng",
-    "admin.catalog.missing": "Thiếu sản phẩm MVP: {products}",
+    "admin.catalog.missing": "Thiếu sản phẩm cốt lõi: {products}",
     "admin.dialog.eyebrow": "Xác minh thủ công",
     "admin.dialog.title": "Xác minh chuyển khoản này và đánh dấu đã thanh toán?",
     "admin.dialog.closeAria": "Đóng hộp thoại đánh dấu đã thanh toán",
@@ -1692,8 +1701,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.creditBalance": "Số dư tín dụng",
     "admin.kpi.purchasedInRange": "{count} đã mua trong khoảng",
     "admin.kpi.catalogStatus": "Trạng thái catalog",
-    "admin.kpi.missingProducts": "{count} sản phẩm MVP bị thiếu",
-    "admin.kpi.catalogCoverage": "Độ phủ catalog MVP",
+    "admin.kpi.missingProducts": "{count} sản phẩm cốt lõi bị thiếu",
+    "admin.kpi.catalogCoverage": "Độ phủ danh mục cốt lõi",
     "admin.success.markPaid": "Đơn {orderId} trả về {status}.",
     "admin.orders.title": "Đơn gần đây",
     "admin.orders.description":
@@ -1701,12 +1710,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.orders.statusFilter": "Trạng thái đơn",
     "admin.transactions.title": "Giao dịch thanh toán",
     "admin.transactions.description":
-      "{count} bản ghi thanh toán khớp. Giao dịch gateway chỉ là dữ liệu phụ khi có.",
+      "Bản ghi thanh toán cho các phương thức đang bật. VietQR thủ công vẫn là luồng cơ sở.",
     "admin.transactions.statusFilter": "Trạng thái thanh toán",
     "admin.users.title": "Người dùng gần đây",
     "admin.users.description": "{count} tài khoản khớp. Chỉ các trường an toàn.",
     "admin.footer.console":
-      "Console quản trị 3D Stylist · Vận hành VietQR Week 03B",
+      "Console quản trị 3D Stylist - vận hành VietQR",
     "admin.footer.manualMarkPaid": "Đánh dấu thủ công: {state}",
     "admin.footer.pagination": "Phân trang: trang {page} / {totalPages}",
 
@@ -1731,8 +1740,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "display.payment.expired": "Hết hạn",
     "display.payment.pending_verification": "Chờ xác minh",
     "display.provider.vietqr": "VietQR thủ công",
-    "display.provider.momo": "MoMo sandbox",
-    "display.provider.vnpay": "VNPay sandbox",
+    "display.provider.momo": "MoMo",
+    "display.provider.vnpay": "VNPay",
     "display.provider.payos": "payOS",
     "display.verification.awaiting_transfer": "Chờ chuyển khoản",
     "display.verification.user_reported_transferred": "Đã báo chuyển khoản",

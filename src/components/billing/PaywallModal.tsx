@@ -95,7 +95,7 @@ export function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         </div>
 
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
-          {t("paywall.code")}
+          {t("paywall.eyebrow")}
         </p>
         <h2
           className="mt-3 font-display text-2xl font-semibold text-white"
