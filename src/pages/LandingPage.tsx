@@ -1,4 +1,13 @@
-import { Component, ErrorInfo, ReactNode, Suspense, lazy } from "react";
+import {
+  Component,
+  ErrorInfo,
+  ReactNode,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -22,6 +31,7 @@ import { useI18n } from "../i18n/useI18n";
 const FashionPreview3D = lazy(
   () => import("../components/landing/FashionPreview3D"),
 );
+const PREVIEW_LOAD_ROOT_MARGIN = "320px 0px";
 
 interface PreviewBoundaryProps {
   children: ReactNode;
@@ -79,6 +89,52 @@ function PreviewErrorFallback() {
     <div className="landing-preview-fallback" role="alert">
       <CircuitBoard className="h-6 w-6 text-[#ffeac0]" />
       <span>{t("landing.preview.error")}</span>
+    </div>
+  );
+}
+
+function LazyFashionPreview3D() {
+  const [shouldLoadPreview, setShouldLoadPreview] = useState(false);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (shouldLoadPreview) {
+      return undefined;
+    }
+
+    const previewNode = previewRef.current;
+
+    if (!previewNode || !("IntersectionObserver" in window)) {
+      setShouldLoadPreview(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadPreview(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: PREVIEW_LOAD_ROOT_MARGIN },
+    );
+
+    observer.observe(previewNode);
+
+    return () => observer.disconnect();
+  }, [shouldLoadPreview]);
+
+  return (
+    <div ref={previewRef} className="h-full w-full">
+      {shouldLoadPreview ? (
+        <PreviewErrorBoundary fallback={<PreviewErrorFallback />}>
+          <Suspense fallback={<PreviewLoadingFallback />}>
+            <FashionPreview3D />
+          </Suspense>
+        </PreviewErrorBoundary>
+      ) : (
+        <PreviewLoadingFallback />
+      )}
     </div>
   );
 }
@@ -323,11 +379,7 @@ export function LandingPage() {
               <span>GLB</span>
             </div>
             <div className="landing-preview-viewport h-[390px] sm:h-[460px] md:h-[540px] lg:h-[640px]">
-              <PreviewErrorBoundary fallback={<PreviewErrorFallback />}>
-                <Suspense fallback={<PreviewLoadingFallback />}>
-                  <FashionPreview3D />
-                </Suspense>
-              </PreviewErrorBoundary>
+              <LazyFashionPreview3D />
             </div>
             <div className="landing-preview-caption">
               <span>{t("landing.preview.captionLeft")}</span>
