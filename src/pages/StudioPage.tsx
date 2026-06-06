@@ -159,6 +159,11 @@ function StudioPreview({
   }
 
   if (!figure.modelUrl) {
+    const modelCopyKey =
+      canOpenModel || canDownloadModel
+        ? "studio.modelPendingBody"
+        : "studio.modelLinkLocked";
+
     return (
       <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
@@ -166,11 +171,13 @@ function StudioPreview({
           {t("studio.modelPending")}
         </h3>
         <p className="mt-2 max-w-md text-sm leading-6 text-[#bac9cc]">
-          {t("studio.modelPendingBody")}
+          {t(modelCopyKey)}
         </p>
       </div>
     );
   }
+
+  const modelUrl = figure.modelUrl;
 
   return (
     <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
@@ -188,7 +195,7 @@ function StudioPreview({
           {canOpenModel ? (
             <a
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
-              href={figure.modelUrl}
+              href={modelUrl}
               rel="noreferrer"
               target="_blank"
             >
@@ -200,7 +207,7 @@ function StudioPreview({
             <a
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               download
-              href={figure.modelUrl}
+              href={modelUrl}
             >
               {t("studio.downloadGlb")}
               <Download className="h-4 w-4" />
@@ -370,6 +377,10 @@ export function StudioPage() {
     }
   }
 
+  const canOpenModel = summary?.capabilities.canExportModel === true;
+  const canDownloadModel = summary?.capabilities.canDownloadModel === true;
+  const canAccessModelLink = canOpenModel || canDownloadModel;
+
   return (
     <DashboardShell planLabel={summary?.plan.name}>
       <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -508,12 +519,8 @@ export function StudioPage() {
                     </div>
                     <div className="relative flex min-h-[540px] items-center justify-center">
                       <StudioPreview
-                        canDownloadModel={
-                          summary?.capabilities.canDownloadModel === true
-                        }
-                        canOpenModel={
-                          summary?.capabilities.canExportModel === true
-                        }
+                        canDownloadModel={canDownloadModel}
+                        canOpenModel={canOpenModel}
                         figure={selectedFigure}
                         viewMode={viewMode}
                       />
@@ -586,7 +593,7 @@ export function StudioPage() {
                               </span>
                               <span className="flex flex-wrap gap-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                                 {previewUrl ? <span>2D</span> : null}
-                                {figure.modelUrl ? (
+                                {canAccessModelLink && figure.modelUrl ? (
                                   <span className="text-[#00e5ff]">3D</span>
                                 ) : null}
                                 <span>
@@ -693,7 +700,7 @@ export function StudioPage() {
                           {t("studio.geometry")}
                         </span>
                         <span className="text-xs font-bold uppercase tracking-wide text-[#c9fff6]">
-                          {selectedFigure.modelUrl
+                          {canAccessModelLink && selectedFigure.modelUrl
                             ? t("common.ready")
                             : t("common.pending")}
                         </span>
@@ -703,29 +710,29 @@ export function StudioPage() {
 
                   <section
                     className={`rounded-lg border p-4 ${
-                      summary?.capabilities.canExportModel
+                      canOpenModel
                         ? "border-[#2cebcf]/30 bg-[#2cebcf]/10"
                         : "border-[#f3bf26]/35 bg-[#f3bf26]/10"
                     }`}
                   >
                     <div className="flex gap-3">
-                      {summary?.capabilities.canExportModel ? (
+                      {canOpenModel ? (
                         <CheckCircle2 className="h-5 w-5 shrink-0 text-[#2cebcf]" />
                       ) : (
                         <LockKeyhole className="h-5 w-5 shrink-0 text-[#f3bf26]" />
                       )}
                       <div>
                         <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
-                          {summary?.capabilities.canExportModel
+                          {canOpenModel
                             ? t("studio.exportAvailable")
                             : t("studio.exportRestricted")}
                         </h2>
                         <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
-                          {summary?.capabilities.canExportModel
+                          {canOpenModel
                             ? t("studio.exportAvailableBody")
                             : t("studio.exportRestrictedBody")}
                         </p>
-                        {!summary?.capabilities.canExportModel ? (
+                        {!canOpenModel ? (
                           <Link
                             className="mt-3 inline-flex min-h-10 items-center justify-center rounded-md border border-[#f3bf26]/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                             to="/credits"

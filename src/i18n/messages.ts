@@ -331,6 +331,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.downloadImage": "Download image",
     "dashboard.figure.downloadImageAria": "Download image for {prompt}",
     "dashboard.figure.openModel": "Open model link",
+    "dashboard.figure.modelLinkLocked":
+      "Model link available when export access is allowed.",
     "dashboard.figure.downloadModel": "Download GLB when allowed",
     "dashboard.figure.downloadModelAria":
       "Download GLB when allowed for {prompt}",
@@ -434,9 +436,11 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.modelPending": "3D model pending or not available.",
     "studio.modelPendingBody":
       "This figure does not currently expose a GLB result. Refresh later or continue with the 2D preview.",
+    "studio.modelLinkLocked":
+      "Model link available when export access is allowed.",
     "studio.glbReady": "GLB link available",
     "studio.glbReadyBody":
-      "A temporary model link is available when the generation result includes GLB access.",
+      "Model link available when export access is allowed.",
     "studio.openGlb": "Open model link",
     "studio.downloadGlb": "Download GLB when allowed",
     "studio.glbRestricted":
@@ -1223,6 +1227,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.downloadImage": "Tải ảnh",
     "dashboard.figure.downloadImageAria": "Tải ảnh cho {prompt}",
     "dashboard.figure.openModel": "Mở liên kết mô hình",
+    "dashboard.figure.modelLinkLocked":
+      "Liên kết mô hình chỉ hiển thị khi bạn có quyền xuất file.",
     "dashboard.figure.downloadModel": "Tải GLB khi được phép",
     "dashboard.figure.downloadModelAria": "Tải GLB khi được phép cho {prompt}",
     "dashboard.dialog.generatedResult": "Kết quả đã tạo",
@@ -1325,9 +1331,11 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.modelPending": "Mô hình 3D đang chờ hoặc không khả dụng.",
     "studio.modelPendingBody":
       "Mẫu này hiện chưa có kết quả GLB. Làm mới sau hoặc tiếp tục với bản xem trước 2D.",
+    "studio.modelLinkLocked":
+      "Liên kết mô hình chỉ hiển thị khi bạn có quyền xuất file.",
     "studio.glbReady": "Có liên kết GLB",
     "studio.glbReadyBody":
-      "Liên kết mô hình tạm thời chỉ hiển thị khi kết quả tạo có GLB.",
+      "Liên kết mô hình chỉ hiển thị khi bạn có quyền xuất file.",
     "studio.openGlb": "Mở liên kết mô hình",
     "studio.downloadGlb": "Tải GLB khi được phép",
     "studio.glbRestricted":

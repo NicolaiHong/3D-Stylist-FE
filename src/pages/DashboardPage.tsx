@@ -197,14 +197,18 @@ function getFigurePreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
 }
 
-function getFigureAssetAvailability(figure: FigureDto, t: Translate) {
+function getFigureAssetAvailability(
+  figure: FigureDto,
+  canAccessModelLink: boolean,
+  t: Translate,
+) {
   const availability: string[] = [];
 
   if (getFigurePreviewUrl(figure)) {
     availability.push(t("dashboard.figure.imageReady"));
   }
 
-  if (figure.modelUrl) {
+  if (canAccessModelLink && figure.modelUrl) {
     availability.push(t("dashboard.figure.modelReady"));
   }
 
@@ -249,7 +253,13 @@ function getDownloadFileName(figure: FigureDto, kind: FigureAssetKind) {
   return `3d-stylist-generation-${figure.id}.png`;
 }
 
-function getFigurePlaceholderCopy(figure: FigureDto, t: Translate) {
+function getFigurePlaceholderCopy(
+  figure: FigureDto,
+  canAccessModelLink: boolean,
+  t: Translate,
+) {
+  const modelUrl = canAccessModelLink ? figure.modelUrl : null;
+
   if (figure.status === "queued" || figure.status === "processing") {
     return t("dashboard.figure.generating");
   }
@@ -257,7 +267,7 @@ function getFigurePlaceholderCopy(figure: FigureDto, t: Translate) {
   if (
     figure.status === "success" &&
     !getFigurePreviewUrl(figure) &&
-    !figure.modelUrl
+    !modelUrl
   ) {
     return t("dashboard.figure.completeNoAssets");
   }
@@ -348,14 +358,24 @@ function FigureStatusBadge({ status }: { status: FigureStatus }) {
   );
 }
 
-function FigurePreview({ figure }: { figure: FigureDto }) {
+function FigurePreview({
+  canAccessModelLink,
+  figure,
+}: {
+  canAccessModelLink: boolean;
+  figure: FigureDto;
+}) {
   const { t } = useI18n();
   const previewUrl = getFigurePreviewUrl(figure);
   const promptSnippet = getPromptSnippet(
     figure.prompt,
     t("dashboard.figure.untitled"),
   );
-  const placeholderCopy = getFigurePlaceholderCopy(figure, t);
+  const placeholderCopy = getFigurePlaceholderCopy(
+    figure,
+    canAccessModelLink,
+    t,
+  );
 
   if (previewUrl) {
     return (
@@ -379,11 +399,13 @@ function FigurePreview({ figure }: { figure: FigureDto }) {
 
 function FigureCard({
   figure,
+  canAccessModelLink,
   downloadingAssetKey,
   onDownload,
   onView,
 }: {
   figure: FigureDto;
+  canAccessModelLink: boolean;
   downloadingAssetKey: string | null;
   onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
   onView: (figure: FigureDto) => void;
@@ -397,8 +419,13 @@ function FigureCard({
     t("common.unknown"),
   );
   const previewUrl = getFigurePreviewUrl(figure);
-  const assetAvailability = getFigureAssetAvailability(figure, t);
+  const assetAvailability = getFigureAssetAvailability(
+    figure,
+    canAccessModelLink,
+    t,
+  );
   const canViewImage = figure.status === "success" && Boolean(previewUrl);
+  const modelUrl = canAccessModelLink ? figure.modelUrl : null;
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
@@ -407,7 +434,7 @@ function FigureCard({
   return (
     <article className="overflow-hidden rounded-lg border border-[#3b494c]/70 bg-[#201f1f]">
       <div className="aspect-square overflow-hidden border-b border-[#3b494c]/70 bg-[#0e0e0e]">
-        <FigurePreview figure={figure} />
+        <FigurePreview canAccessModelLink={canAccessModelLink} figure={figure} />
       </div>
       <div className="space-y-4 p-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -478,10 +505,10 @@ function FigureCard({
               {t("dashboard.figure.downloadImage")}
             </button>
           ) : null}
-          {figure.modelUrl ? (
+          {modelUrl ? (
             <a
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-              href={figure.modelUrl}
+              href={modelUrl}
               rel="noreferrer"
               target="_blank"
             >
@@ -489,7 +516,7 @@ function FigureCard({
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           ) : null}
-          {figure.modelUrl ? (
+          {modelUrl ? (
             <button
               aria-label={t("dashboard.figure.downloadModelAria", {
                 prompt: promptSnippet,
@@ -507,6 +534,12 @@ function FigureCard({
               {t("dashboard.figure.downloadModel")}
             </button>
           ) : null}
+          {!modelUrl && figure.status === "success" ? (
+            <p className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-3 py-2 text-xs font-semibold leading-5 text-[#ffdf96]">
+              <LockKeyhole className="h-3.5 w-3.5 shrink-0" />
+              {t("dashboard.figure.modelLinkLocked")}
+            </p>
+          ) : null}
         </div>
       </div>
     </article>
@@ -514,11 +547,13 @@ function FigureCard({
 }
 
 function FigurePreviewDialog({
+  canAccessModelLink,
   downloadingAssetKey,
   figure,
   onClose,
   onDownload,
 }: {
+  canAccessModelLink: boolean;
   downloadingAssetKey: string | null;
   figure: FigureDto;
   onClose: () => void;
@@ -533,6 +568,7 @@ function FigurePreviewDialog({
     language,
     t("common.unknown"),
   );
+  const modelUrl = canAccessModelLink ? figure.modelUrl : null;
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
@@ -588,7 +624,10 @@ function FigurePreviewDialog({
                 src={previewUrl}
               />
             ) : (
-              <FigurePreview figure={figure} />
+              <FigurePreview
+                canAccessModelLink={canAccessModelLink}
+                figure={figure}
+              />
             )}
           </div>
           <aside className="space-y-5 border-t border-[#3b494c]/70 p-5 lg:border-l lg:border-t-0">
@@ -624,10 +663,10 @@ function FigurePreviewDialog({
                   {t("dashboard.figure.downloadImage")}
                 </button>
               ) : null}
-              {figure.modelUrl ? (
+              {modelUrl ? (
                 <a
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                  href={figure.modelUrl}
+                  href={modelUrl}
                   rel="noreferrer"
                   target="_blank"
                 >
@@ -635,7 +674,7 @@ function FigurePreviewDialog({
                   <ExternalLink className="h-4 w-4" />
                 </a>
               ) : null}
-              {figure.modelUrl ? (
+              {modelUrl ? (
                 <button
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={isModelDownloading}
@@ -650,6 +689,11 @@ function FigurePreviewDialog({
                   {t("dashboard.figure.downloadModel")}
                 </button>
               ) : null}
+              {!modelUrl && figure.status === "success" ? (
+                <p className="rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-3 text-xs font-semibold leading-5 text-[#ffdf96]">
+                  {t("dashboard.figure.modelLinkLocked")}
+                </p>
+              ) : null}
             </div>
           </aside>
         </div>
@@ -659,12 +703,14 @@ function FigurePreviewDialog({
 }
 
 function ActiveFigurePanel({
+  canAccessModelLink,
   downloadingAssetKey,
   figure,
   isPolling,
   onDownload,
   onView,
 }: {
+  canAccessModelLink: boolean;
   downloadingAssetKey: string | null;
   figure: FigureDto;
   isPolling: boolean;
@@ -677,6 +723,7 @@ function ActiveFigurePanel({
     t("dashboard.figure.untitled"),
   );
   const previewUrl = getFigurePreviewUrl(figure);
+  const modelUrl = canAccessModelLink ? figure.modelUrl : null;
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
@@ -685,7 +732,7 @@ function ActiveFigurePanel({
   return (
     <div className="grid gap-4 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4 md:grid-cols-[160px_1fr]">
       <div className="aspect-square overflow-hidden rounded-md border border-[#3b494c] bg-[#090909]">
-        <FigurePreview figure={figure} />
+        <FigurePreview canAccessModelLink={canAccessModelLink} figure={figure} />
       </div>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
@@ -747,10 +794,10 @@ function ActiveFigurePanel({
               {t("dashboard.figure.downloadImage")}
             </button>
           ) : null}
-          {figure.modelUrl ? (
+          {modelUrl ? (
             <a
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
-              href={figure.modelUrl}
+              href={modelUrl}
               rel="noreferrer"
               target="_blank"
             >
@@ -758,7 +805,7 @@ function ActiveFigurePanel({
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           ) : null}
-          {figure.modelUrl ? (
+          {modelUrl ? (
             <button
               aria-label={t("dashboard.figure.downloadModelAria", {
                 prompt: promptSnippet,
@@ -775,6 +822,12 @@ function ActiveFigurePanel({
               )}
               {t("dashboard.figure.downloadModel")}
             </button>
+          ) : null}
+          {!modelUrl && figure.status === "success" ? (
+            <p className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-3 py-2 text-xs font-semibold leading-5 text-[#ffdf96]">
+              <LockKeyhole className="h-3.5 w-3.5 shrink-0" />
+              {t("dashboard.figure.modelLinkLocked")}
+            </p>
           ) : null}
         </div>
       </div>
@@ -1348,6 +1401,9 @@ export function DashboardPage() {
   );
   const latestPayment = summary?.latestPayment;
   const creditBalance = summary?.credits.balance ?? 0;
+  const canAccessModelLink =
+    summary?.capabilities.canExportModel === true ||
+    summary?.capabilities.canDownloadModel === true;
   const hasLoadedZeroCredits = Boolean(summary) && creditBalance <= 0;
   const trimmedPrompt = prompt.trim();
   const selectedStyleIntent = STYLE_INTENTS.find(
@@ -1405,6 +1461,10 @@ export function DashboardPage() {
 
   const handleDownloadFigureAsset = useCallback(
     async (figure: FigureDto, kind: FigureAssetKind) => {
+      if (kind === "model" && !canAccessModelLink) {
+        return;
+      }
+
       const url =
         kind === "image" ? getFigurePreviewUrl(figure) : figure.modelUrl;
 
@@ -1426,7 +1486,7 @@ export function DashboardPage() {
         }
       }
     },
-    [],
+    [canAccessModelLink],
   );
 
   function handleGenerate(event: FormEvent<HTMLFormElement>) {
@@ -1813,6 +1873,7 @@ export function DashboardPage() {
                     <>
                       <GenerationResultNotice figure={activeFigure} />
                       <ActiveFigurePanel
+                        canAccessModelLink={canAccessModelLink}
                         downloadingAssetKey={downloadingAssetKey}
                         figure={activeFigure}
                         isPolling={isPolling}
@@ -2009,6 +2070,7 @@ export function DashboardPage() {
                 ) : (
                   figures.map((figure) => (
                     <FigureCard
+                      canAccessModelLink={canAccessModelLink}
                       downloadingAssetKey={downloadingAssetKey}
                       figure={figure}
                       key={figure.id}
@@ -2054,6 +2116,7 @@ export function DashboardPage() {
       ) : null}
       {selectedFigure ? (
         <FigurePreviewDialog
+          canAccessModelLink={canAccessModelLink}
           downloadingAssetKey={downloadingAssetKey}
           figure={selectedFigure}
           onClose={handleCloseFigurePreview}
