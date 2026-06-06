@@ -18,10 +18,12 @@ import { useI18n } from "../i18n/useI18n";
 
 type PaymentResultStatus =
   | "success"
+  | "noOrder"
   | "pending"
   | "failed"
   | "cancelled"
   | "unknown";
+type OrderLookupStatus = "idle" | "loading" | "loaded" | "error";
 
 interface PaymentResultCopy {
   keyPrefix: string;
@@ -36,6 +38,12 @@ const resultCopy: Record<PaymentResultStatus, PaymentResultCopy> = {
     icon: CheckCircle2,
     panelClassName: "border-[#00e5ff]/30 bg-[#00e5ff]/10 text-[#c3f5ff]",
     iconClassName: "border-[#00e5ff]/35 bg-[#00e5ff]/12 text-[#00e5ff]",
+  },
+  noOrder: {
+    keyPrefix: "paymentResult.noOrder",
+    icon: Clock3,
+    panelClassName: "border-[#3b494c] bg-[#1c1b1b] text-[#c3f5ff]",
+    iconClassName: "border-[#3b494c] bg-[#0e0e0e] text-[#00e5ff]",
   },
   pending: {
     keyPrefix: "paymentResult.pending",
@@ -85,9 +93,26 @@ function resolveDisplayStatus(
   backendStatus: BillingOrderStatus | null,
   provider: string | null,
   hasOrderId: boolean,
+  orderLookupStatus: OrderLookupStatus,
 ): PaymentResultStatus {
+  if (hasOrderId && orderLookupStatus === "error") {
+    return "unknown";
+  }
+
   if (backendStatus === "paid") {
     return "success";
+  }
+
+  if (!hasOrderId) {
+    if (urlStatus === "failed" || urlStatus === "cancelled") {
+      return urlStatus;
+    }
+
+    if (urlStatus === "unknown") {
+      return "unknown";
+    }
+
+    return "noOrder";
   }
 
   if (urlStatus === "cancelled") {
@@ -110,7 +135,7 @@ function resolveDisplayStatus(
     return "pending";
   }
 
-  if (hasOrderId && urlStatus === "success") {
+  if (urlStatus === "success") {
     return "pending";
   }
 
@@ -125,11 +150,21 @@ export function PaymentResultPage() {
   const provider = searchParams.get("provider");
   const [backendStatus, setBackendStatus] =
     useState<BillingOrderStatus | null>(null);
+  const [orderLookupStatus, setOrderLookupStatus] =
+    useState<OrderLookupStatus>("idle");
   const [statusError, setStatusError] = useState<string | null>(null);
   const urlStatus = normalizeStatus(rawStatus);
+  const hasOrderId = Boolean(orderId);
   const status = useMemo(
-    () => resolveDisplayStatus(urlStatus, backendStatus, provider, Boolean(orderId)),
-    [backendStatus, orderId, provider, urlStatus],
+    () =>
+      resolveDisplayStatus(
+        urlStatus,
+        backendStatus,
+        provider,
+        hasOrderId,
+        orderLookupStatus,
+      ),
+    [backendStatus, hasOrderId, orderLookupStatus, provider, urlStatus],
   );
   const copy = resultCopy[status];
   const statusLabel = t(`paymentResult.status.${status}`);
@@ -139,7 +174,7 @@ export function PaymentResultPage() {
       ? t("paymentResult.source.payos")
       : t("paymentResult.source.gateway");
   const canViewOrderCheckout =
-    Boolean(orderId) &&
+    hasOrderId &&
     (status === "pending" ||
       status === "failed" ||
       status === "cancelled" ||
@@ -147,11 +182,17 @@ export function PaymentResultPage() {
 
   useEffect(() => {
     if (!orderId) {
+      setBackendStatus(null);
+      setStatusError(null);
+      setOrderLookupStatus("idle");
       return;
     }
 
     const resolvedOrderId = orderId;
     let isActive = true;
+    setBackendStatus(null);
+    setStatusError(null);
+    setOrderLookupStatus("loading");
 
     async function loadOrderStatus() {
       try {
@@ -160,10 +201,13 @@ export function PaymentResultPage() {
         if (isActive) {
           setBackendStatus(order.status);
           setStatusError(null);
+          setOrderLookupStatus("loaded");
         }
       } catch (error) {
         if (isActive) {
+          setBackendStatus(null);
           setStatusError(getApiErrorMessage(error));
+          setOrderLookupStatus("error");
         }
       }
     }
@@ -251,7 +295,15 @@ export function PaymentResultPage() {
               {t("paymentResult.backToCredits")}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            {canViewOrderCheckout && orderId ? (
+            {!hasOrderId ? (
+              <Link
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-5 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                to="/credits/checkout"
+              >
+                <RotateCcw className="h-4 w-4" />
+                {t("paymentResult.backToCheckout")}
+              </Link>
+            ) : canViewOrderCheckout && orderId ? (
               <Link
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-5 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                 to={`/credits/checkout/${orderId}`}

@@ -629,6 +629,7 @@ export const messages: Record<Language, Record<string, string>> = {
 
     "paymentResult.statusLabel": "Status",
     "paymentResult.status.success": "Success",
+    "paymentResult.status.noOrder": "Verification needed",
     "paymentResult.status.failed": "Failed",
     "paymentResult.status.cancelled": "Cancelled",
     "paymentResult.status.pending": "Pending",
@@ -639,24 +640,28 @@ export const messages: Record<Language, Record<string, string>> = {
     "paymentResult.source": "Source",
     "paymentResult.success.title": "Payment confirmed",
     "paymentResult.success.description":
-      "This order is marked paid. Open credits to refresh your current billing state.",
+      "The server has confirmed this order as paid. Open Credits to refresh your latest credits or plan access.",
+    "paymentResult.noOrder.title": "Payment result received",
+    "paymentResult.noOrder.description":
+      "Open Credits or Checkout to verify the latest order status. Credits or plan access are updated only after the server confirms payment.",
     "paymentResult.pending.title": "Payment status check",
     "paymentResult.pending.description":
-      "We received the payment return page, but this order is not marked paid yet. Credits or plan access stay unchanged until payment is confirmed by the server.",
+      "This order is still being verified. Credits or plan access stay unchanged until the server confirms payment.",
     "paymentResult.failed.title": "Payment was not completed",
     "paymentResult.failed.description":
-      "The payment result was not successful. You can return to credits or view this checkout if the order is still valid.",
+      "The payment was not completed. No credits or plan access were granted. Open Credits or Checkout to verify the latest order status.",
     "paymentResult.cancelled.title": "Payment was cancelled",
     "paymentResult.cancelled.description":
-      "The checkout was cancelled. No credits or subscription access are granted from cancellation.",
-    "paymentResult.unknown.title": "Payment result received",
+      "The checkout was cancelled. No credits or plan access were granted. Open Credits or Checkout to verify the latest order status.",
+    "paymentResult.unknown.title": "Check payment status",
     "paymentResult.unknown.description":
-      "The payment page used a status this app does not recognize. Check your credits page before starting another checkout.",
+      "We could not match this payment result to a known order status. Open Credits or Checkout to verify the latest order status before starting another payment.",
     "paymentResult.backendOwned.title":
       "Payment status is confirmed by the system",
     "paymentResult.backendOwned.body":
-      "This page only shows the return result. It does not grant credits or subscriptions.",
-    "paymentResult.backToCredits": "Back to credits",
+      "This page only displays a payment result. It does not grant credits or subscriptions.",
+    "paymentResult.backToCredits": "Go to Credits",
+    "paymentResult.backToCheckout": "Back to Checkout",
     "paymentResult.viewOrderCheckout": "View order checkout",
     "paymentResult.openDashboard": "Open dashboard",
 
@@ -1515,6 +1520,7 @@ export const messages: Record<Language, Record<string, string>> = {
 
     "paymentResult.statusLabel": "Trạng thái",
     "paymentResult.status.success": "Thành công",
+    "paymentResult.status.noOrder": "Cần xác minh",
     "paymentResult.status.failed": "Thất bại",
     "paymentResult.status.cancelled": "Đã hủy",
     "paymentResult.status.pending": "Đang chờ",
@@ -1525,24 +1531,28 @@ export const messages: Record<Language, Record<string, string>> = {
     "paymentResult.source": "Nguồn",
     "paymentResult.success.title": "Thanh toán đã được xác nhận",
     "paymentResult.success.description":
-      "Đơn này đã được ghi nhận là đã thanh toán. Mở trang tín dụng để làm mới trạng thái thanh toán.",
+      "Máy chủ đã xác nhận đơn này đã thanh toán. Mở trang Tín dụng để làm mới tín dụng hoặc quyền gói mới nhất.",
+    "paymentResult.noOrder.title": "Đã nhận kết quả thanh toán",
+    "paymentResult.noOrder.description":
+      "Mở trang Tín dụng hoặc Thanh toán để kiểm tra trạng thái đơn mới nhất. Tín dụng hoặc gói chỉ được cập nhật sau khi máy chủ xác nhận thanh toán.",
     "paymentResult.pending.title": "Kiểm tra trạng thái thanh toán",
     "paymentResult.pending.description":
-      "Trang trả về đã mở, nhưng đơn này chưa được ghi nhận là đã thanh toán. Tín dụng hoặc gói chỉ thay đổi sau khi máy chủ xác nhận thanh toán.",
+      "Đơn này vẫn đang được xác minh. Tín dụng hoặc gói chưa thay đổi cho đến khi máy chủ xác nhận thanh toán.",
     "paymentResult.failed.title": "Thanh toán chưa hoàn tất",
     "paymentResult.failed.description":
-      "Kết quả thanh toán không thành công. Bạn có thể quay lại tín dụng hoặc xem trang thanh toán này nếu đơn vẫn còn hợp lệ.",
+      "Thanh toán chưa hoàn tất. Không có tín dụng hoặc quyền gói nào được cấp. Mở trang Tín dụng hoặc Thanh toán để kiểm tra trạng thái đơn mới nhất.",
     "paymentResult.cancelled.title": "Thanh toán đã bị hủy",
     "paymentResult.cancelled.description":
-      "Thanh toán đã bị hủy. Việc hủy không cấp tín dụng hoặc quyền gói thuê bao.",
-    "paymentResult.unknown.title": "Đã nhận kết quả thanh toán",
+      "Thanh toán đã bị hủy. Không có tín dụng hoặc quyền gói nào được cấp. Mở trang Tín dụng hoặc Thanh toán để kiểm tra trạng thái đơn mới nhất.",
+    "paymentResult.unknown.title": "Kiểm tra trạng thái thanh toán",
     "paymentResult.unknown.description":
-      "Trang thanh toán dùng trạng thái ứng dụng chưa nhận diện. Kiểm tra trang tín dụng trước khi bắt đầu thanh toán khác.",
+      "Không thể khớp kết quả thanh toán này với trạng thái đơn đã biết. Mở trang Tín dụng hoặc Thanh toán để kiểm tra trạng thái đơn mới nhất trước khi bắt đầu thanh toán khác.",
     "paymentResult.backendOwned.title":
       "Trạng thái thanh toán do hệ thống xác nhận",
     "paymentResult.backendOwned.body":
-      "Trang này chỉ hiển thị kết quả trả về. Trang không cấp tín dụng hoặc gói thuê bao.",
-    "paymentResult.backToCredits": "Quay lại tín dụng",
+      "Trang này chỉ hiển thị kết quả thanh toán. Trang không cấp tín dụng hoặc gói thuê bao.",
+    "paymentResult.backToCredits": "Đến Tín dụng",
+    "paymentResult.backToCheckout": "Quay lại Thanh toán",
     "paymentResult.viewOrderCheckout": "Xem thanh toán của đơn",
     "paymentResult.openDashboard": "Mở Bảng điều khiển",
 
