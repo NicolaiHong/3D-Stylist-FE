@@ -1,14 +1,17 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   Box,
   Database,
   LayoutDashboard,
   LogOut,
+  Menu,
+  ReceiptText,
   ShieldCheck,
   Shirt,
   Sparkles,
   UserRound,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "../../features/auth/auth.store";
@@ -19,6 +22,7 @@ import { useI18n } from "../../i18n/useI18n";
 interface DashboardShellProps {
   children: ReactNode;
   planLabel?: string;
+  variant?: "admin" | "user";
 }
 
 interface NavigationItem {
@@ -29,11 +33,24 @@ interface NavigationItem {
   adminOnly?: boolean;
 }
 
-const navigationItems: NavigationItem[] = [
+const adminNavigationItems: NavigationItem[] = [
   { labelKey: "shell.nav.dashboard", to: "/dashboard", icon: LayoutDashboard },
   { labelKey: "shell.nav.outfits", icon: Shirt, disabled: true },
   { labelKey: "shell.nav.studio", to: "/studio", icon: Sparkles },
   { labelKey: "shell.nav.credits", to: "/credits", icon: Database },
+  { labelKey: "shell.nav.profile", to: "/profile", icon: UserRound },
+  {
+    labelKey: "shell.nav.admin",
+    to: "/admin",
+    icon: ShieldCheck,
+    adminOnly: true,
+  },
+];
+
+const userNavigationItems: NavigationItem[] = [
+  { labelKey: "shell.nav.dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "shell.nav.credits", to: "/credits", icon: Database },
+  { labelKey: "shell.nav.payments", to: "/payments", icon: ReceiptText },
   { labelKey: "shell.nav.profile", to: "/profile", icon: UserRound },
   {
     labelKey: "shell.nav.admin",
@@ -112,65 +129,166 @@ function MobileNavItem({ item }: { item: NavigationItem }) {
   );
 }
 
-export function DashboardShell({ children, planLabel }: DashboardShellProps) {
+function UserTopNavItem({
+  item,
+  onNavigate,
+}: {
+  item: NavigationItem;
+  onNavigate?: () => void;
+}) {
+  const Icon = item.icon;
+  const { t } = useI18n();
+
+  if (!item.to || item.disabled) {
+    return (
+      <span
+        aria-disabled="true"
+        className="app-top-nav-link app-top-nav-link-disabled inline-flex min-h-11 items-center justify-center gap-2 px-3 py-2 text-sm font-bold text-[#849396]/70"
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {t(item.labelKey)}
+      </span>
+    );
+  }
+
+  return (
+    <NavLink
+      className={({ isActive }) =>
+        `app-top-nav-link inline-flex min-h-11 items-center justify-center gap-2 px-3 py-2 text-sm font-bold ${
+          isActive ? "app-top-nav-link--active text-[#c3f5ff]" : "text-[#bac9cc]"
+        }`
+      }
+      to={item.to}
+      onClick={onNavigate}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span>{t(item.labelKey)}</span>
+    </NavLink>
+  );
+}
+
+export function DashboardShell({
+  children,
+  planLabel,
+  variant = "user",
+}: DashboardShellProps) {
   const { t } = useI18n();
   const logout = useAuthStore((state) => state.logout);
   const isLoading = useAuthStore((state) => state.isLoading);
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === AUTH_ROLES.ADMIN;
-  const visibleNavigation = navigationItems.filter(
+  const visibleUserNavigation = userNavigationItems.filter(
     (item) => !item.adminOnly || isAdmin,
   );
+  const visibleAdminNavigation = adminNavigationItems.filter(
+    (item) => !item.adminOnly || isAdmin,
+  );
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  if (variant === "admin") {
+    return (
+      <div className="min-h-screen overflow-x-hidden bg-[#0a0a0a] text-[#e5e2e1]">
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[#3b494c] bg-[#1c1b1b] p-4 lg:flex">
+          <Link
+            className="mb-4 border-b border-[#3b494c]/60 px-3 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            to="/dashboard"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] text-[#001f24]">
+                <Box className="h-5 w-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-display text-xl font-bold text-white">
+                  3D Stylist
+                </span>
+                <span className="mt-1 block truncate text-xs font-semibold tracking-[0.04em] text-[#bac9cc]">
+                  {planLabel || t("shell.planFallback")}
+                </span>
+              </span>
+            </span>
+          </Link>
+
+          <nav className="flex-1 space-y-2" aria-label={t("shell.nav.dashboardAria")}>
+            {visibleAdminNavigation.map((item) => (
+              <SidebarNavItem item={item} key={item.labelKey} />
+            ))}
+          </nav>
+
+          <div className="flex flex-col items-center gap-2 border-t border-[#3b494c]/60 pt-3">
+            <LanguageSwitch />
+            <button
+              className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isLoading}
+              type="button"
+              onClick={() => void logout()}
+            >
+              <LogOut className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{t("common.logout")}</span>
+            </button>
+          </div>
+        </aside>
+
+        <div className="relative min-h-screen lg:pl-64">
+          <div
+            aria-hidden="true"
+            className="authenticated-app-surface pointer-events-none fixed inset-0 lg:left-64"
+          />
+          <header className="sticky top-0 z-30 border-b border-[#3b494c] bg-[#0a0a0a]/92 px-4 py-3 backdrop-blur lg:hidden">
+            <div className="flex items-center justify-between gap-3">
+              <Link
+                className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                to="/dashboard"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] text-[#001f24]">
+                  <Box className="h-5 w-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-lg font-bold text-white">
+                    3D Stylist
+                  </span>
+                  <span className="block truncate text-xs font-semibold tracking-[0.04em] text-[#bac9cc]">
+                    {planLabel || t("shell.planFallback")}
+                  </span>
+                </span>
+              </Link>
+              <div className="flex shrink-0 items-center gap-2">
+                <LanguageSwitch />
+                <button
+                  aria-label={t("common.logout")}
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isLoading}
+                  type="button"
+                  onClick={() => void logout()}
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <nav
+              aria-label={t("shell.nav.dashboardMobileAria")}
+              className="mt-3 flex flex-wrap gap-2"
+            >
+              {visibleAdminNavigation.map((item) => (
+                <MobileNavItem item={item} key={item.labelKey} />
+              ))}
+            </nav>
+          </header>
+
+          <div className="relative z-10">{children}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#0a0a0a] text-[#e5e2e1]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[#3b494c] bg-[#1c1b1b] p-4 lg:flex">
-        <Link
-          className="mb-4 border-b border-[#3b494c]/60 px-3 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-          to="/dashboard"
-        >
-          <span className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] text-[#001f24]">
-              <Box className="h-5 w-5" />
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate font-display text-xl font-bold text-white">
-                3D Stylist
-              </span>
-              <span className="mt-1 block truncate text-xs font-semibold tracking-[0.04em] text-[#bac9cc]">
-                {planLabel || t("shell.planFallback")}
-              </span>
-            </span>
-          </span>
-        </Link>
-
-        <nav className="flex-1 space-y-2" aria-label={t("shell.nav.dashboardAria")}>
-          {visibleNavigation.map((item) => (
-            <SidebarNavItem item={item} key={item.labelKey} />
-          ))}
-        </nav>
-
-        <div className="flex flex-col items-center gap-2 border-t border-[#3b494c]/60 pt-3">
-          <LanguageSwitch />
-          <button
-            className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isLoading}
-            type="button"
-            onClick={() => void logout()}
-          >
-            <LogOut className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{t("common.logout")}</span>
-          </button>
-        </div>
-      </aside>
-
-      <div className="relative min-h-screen lg:pl-64">
+      <div className="relative min-h-screen">
         <div
           aria-hidden="true"
-          className="authenticated-app-surface pointer-events-none fixed inset-0 lg:left-64"
+          className="authenticated-app-surface pointer-events-none fixed inset-0"
         />
-        <header className="sticky top-0 z-30 border-b border-[#3b494c] bg-[#0a0a0a]/92 px-4 py-3 backdrop-blur lg:hidden">
-          <div className="flex items-center justify-between gap-3">
+        <header className="sticky top-0 z-30 border-b border-[#3b494c]/70 bg-[#0a0a0a]/92 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-10">
+          <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4">
             <Link
               className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               to="/dashboard"
@@ -187,27 +305,72 @@ export function DashboardShell({ children, planLabel }: DashboardShellProps) {
                 </span>
               </span>
             </Link>
+
+            <nav
+              aria-label={t("shell.nav.mainAria")}
+              className="hidden items-center gap-1 lg:flex"
+            >
+              {visibleUserNavigation.map((item) => (
+                <UserTopNavItem item={item} key={item.labelKey} />
+              ))}
+            </nav>
+
             <div className="flex shrink-0 items-center gap-2">
+              <span className="hidden max-w-[180px] truncate rounded-md border border-[#00e5ff]/20 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[#c3f5ff] sm:inline-flex">
+                {planLabel || t("shell.planFallback")}
+              </span>
               <LanguageSwitch />
               <button
                 aria-label={t("common.logout")}
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                className="hidden h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 sm:flex"
                 disabled={isLoading}
                 type="button"
                 onClick={() => void logout()}
               >
                 <LogOut className="h-4 w-4" />
               </button>
+              <button
+                aria-expanded={isMobileNavOpen}
+                aria-label={
+                  isMobileNavOpen
+                    ? t("shell.nav.closeMenu")
+                    : t("shell.nav.openMenu")
+                }
+                className="flex h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] lg:hidden"
+                type="button"
+                onClick={() => setIsMobileNavOpen((isOpen) => !isOpen)}
+              >
+                {isMobileNavOpen ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  <Menu className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
-          <nav
-            aria-label={t("shell.nav.dashboardMobileAria")}
-            className="mt-3 flex flex-wrap gap-2"
-          >
-            {visibleNavigation.map((item) => (
-              <MobileNavItem item={item} key={item.labelKey} />
-            ))}
-          </nav>
+          {isMobileNavOpen ? (
+            <nav
+              aria-label={t("shell.nav.dashboardMobileAria")}
+              className="mx-auto mt-3 grid max-w-[1440px] gap-2 sm:grid-cols-2"
+            >
+              {visibleUserNavigation.map((item) => (
+                <UserTopNavItem
+                  item={item}
+                  key={item.labelKey}
+                  onNavigate={() => setIsMobileNavOpen(false)}
+                />
+              ))}
+              <button
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-sm font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 sm:hidden"
+                disabled={isLoading}
+                type="button"
+                onClick={() => void logout()}
+              >
+                <LogOut className="h-4 w-4" />
+                {t("common.logout")}
+              </button>
+            </nav>
+          ) : null}
         </header>
 
         <div className="relative z-10">{children}</div>

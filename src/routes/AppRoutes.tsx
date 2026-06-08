@@ -8,6 +8,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { StudioPage } from "../pages/StudioPage";
 import { CreditsPage } from "../pages/CreditsPage";
 import { CheckoutPage } from "../pages/CheckoutPage";
+import { PaymentsPage } from "../pages/PaymentsPage";
 import { PaymentResultPage } from "../pages/PaymentResultPage";
 import { AdminPage } from "../pages/AdminPage";
 import { ProfilePage } from "../pages/ProfilePage";
@@ -31,6 +32,7 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/studio" element={<StudioPage />} />
         <Route path="/credits" element={<CreditsPage />} />
+        <Route path="/payments" element={<PaymentsPage />} />
         <Route path="/credits/checkout" element={<CheckoutPage />} />
         <Route
           path="/credits/checkout/:orderId/:method"
