@@ -355,6 +355,48 @@ textarea {
     radial-gradient(circle at 50% 12%, transparent 0 24rem, rgba(0, 0, 0, 0.28) 54rem);
 }
 
+.app-top-nav-link {
+  position: relative;
+  border-radius: 0.375rem;
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    text-shadow 220ms ease;
+}
+
+.app-top-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.35rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: #00e5ff;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.32);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms ease;
+}
+
+.app-top-nav-link:hover,
+.app-top-nav-link:focus-visible,
+.app-top-nav-link--active {
+  color: #c3f5ff;
+  background: rgba(0, 229, 255, 0.075);
+  text-shadow: 0 0 18px rgba(0, 229, 255, 0.16);
+}
+
+.app-top-nav-link:hover::after,
+.app-top-nav-link:focus-visible::after,
+.app-top-nav-link--active::after {
+  transform: scaleX(1);
+}
+
+.app-top-nav-link-disabled::after {
+  display: none;
+}
+
 .credits-product-card {
   position: relative;
   overflow: hidden;

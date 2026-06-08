@@ -49,6 +49,10 @@ import { useI18n } from "../i18n/useI18n";
 const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_GENERATION_PROMPT_LENGTH = 600;
+const PENDING_PAYMENT_BANNER_DISMISSED_PREFIX =
+  "pendingPaymentBannerDismissed";
+const PENDING_PAYMENT_BANNER_DONT_SHOW_PREFIX =
+  "pendingPaymentBannerDontShow";
 const STYLE_INTENTS = [
   {
     id: "minimal-luxury",
@@ -119,6 +123,23 @@ const GENERATION_OUTPUT_TYPES: Array<{
 
 function getProductName(order: BillingOrder | null | undefined) {
   return order?.items[0]?.productName ?? "billing order";
+}
+
+function getPendingPaymentBannerScope(
+  user: { email?: string | null; id?: string } | null | undefined,
+) {
+  return user?.id || user?.email || "anonymous";
+}
+
+function getPendingPaymentBannerDismissedKey(
+  userScope: string,
+  orderId: string,
+) {
+  return `${PENDING_PAYMENT_BANNER_DISMISSED_PREFIX}:${userScope}:${orderId}`;
+}
+
+function getPendingPaymentBannerDontShowKey(userScope: string) {
+  return `${PENDING_PAYMENT_BANNER_DONT_SHOW_PREFIX}:${userScope}`;
 }
 
 type Translate = ReturnType<typeof useI18n>["t"];
@@ -1153,6 +1174,7 @@ function GenerationSetupDialog({
 export function DashboardPage() {
   const { language, t } = useI18n();
   const user = useAuthStore((state) => state.user);
+  const pendingBannerUserScope = getPendingPaymentBannerScope(user);
   const displayName =
     user?.displayName || user?.fullName || t("auth.hero.mobileBadge");
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -1177,6 +1199,10 @@ export function DashboardPage() {
     null,
   );
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [pendingBannerDismissedKeys, setPendingBannerDismissedKeys] = useState<
+    Record<string, boolean>
+  >({});
+  const [pendingBannerDontShow, setPendingBannerDontShow] = useState(false);
   const isMountedRef = useRef(true);
   const pollingStartedAtRef = useRef<number | null>(null);
   const pollingFigureIdRef = useRef<string | null>(null);
@@ -1248,6 +1274,16 @@ export function DashboardPage() {
       isMountedRef.current = false;
     };
   }, [loadBillingSummary, loadFigures]);
+
+  useEffect(() => {
+    const dontShowKey =
+      getPendingPaymentBannerDontShowKey(pendingBannerUserScope);
+
+    setPendingBannerDontShow(
+      window.localStorage.getItem(dontShowKey) === "true",
+    );
+    setPendingBannerDismissedKeys({});
+  }, [pendingBannerUserScope]);
 
   useEffect(() => {
     if (!activeFigure || !isPollingStatus(activeFigure.status)) {
@@ -1341,6 +1377,23 @@ export function DashboardPage() {
     pendingOrder?.paymentVerification === "pending_admin_verification";
   const pendingOrderTransferContent =
     pendingOrder?.bankTransferContent ?? pendingOrder?.orderCode;
+  const pendingBannerDismissedKey = pendingOrder
+    ? getPendingPaymentBannerDismissedKey(
+        pendingBannerUserScope,
+        pendingOrder.id,
+      )
+    : null;
+  const pendingBannerDismissed =
+    Boolean(
+      pendingBannerDismissedKey &&
+        pendingBannerDismissedKeys[pendingBannerDismissedKey],
+    ) ||
+    Boolean(
+      pendingBannerDismissedKey &&
+        window.localStorage.getItem(pendingBannerDismissedKey) === "true",
+    );
+  const shouldShowPendingOrderBanner =
+    Boolean(pendingOrder) && !pendingBannerDontShow && !pendingBannerDismissed;
   const renewalDate = formatI18nDate(
     summary?.plan.currentPeriodEnd,
     language,
@@ -1512,6 +1565,26 @@ export function DashboardPage() {
     }
   }
 
+  function dismissPendingPaymentBanner() {
+    if (!pendingBannerDismissedKey) {
+      return;
+    }
+
+    window.localStorage.setItem(pendingBannerDismissedKey, "true");
+    setPendingBannerDismissedKeys((currentKeys) => ({
+      ...currentKeys,
+      [pendingBannerDismissedKey]: true,
+    }));
+  }
+
+  function dontShowPendingPaymentBannerAgain() {
+    const dontShowKey =
+      getPendingPaymentBannerDontShowKey(pendingBannerUserScope);
+
+    window.localStorage.setItem(dontShowKey, "true");
+    setPendingBannerDontShow(true);
+  }
+
   return (
     <DashboardShell planLabel={summary?.plan.name}>
       <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
@@ -1537,9 +1610,9 @@ export function DashboardPage() {
             </Link>
           </header>
 
-          {pendingOrder ? (
+          {shouldShowPendingOrderBanner && pendingOrder ? (
             <section className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-[#ffeac0]">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div className="flex min-w-0 gap-3">
                   <CalendarClock className="mt-0.5 h-5 w-5 shrink-0" />
                   <div className="min-w-0">
@@ -1564,14 +1637,38 @@ export function DashboardPage() {
                     ) : null}
                   </div>
                 </div>
-                <Link
-                  className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-center text-sm font-bold leading-5 text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96] sm:w-auto"
-                  to={`/credits/checkout/${pendingOrder.id}`}
-                >
-                  {isPendingOrderWaitingForAdminVerification
-                    ? t("dashboard.pending.viewStatus")
-                    : t("dashboard.pending.continueCheckout")}
-                </Link>
+                <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[360px]">
+                  <Link
+                    className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-center text-sm font-bold leading-5 text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                    to={`/credits/checkout/${pendingOrder.id}`}
+                  >
+                    {isPendingOrderWaitingForAdminVerification
+                      ? t("dashboard.pending.viewStatus")
+                      : t("dashboard.pending.continueCheckout")}
+                  </Link>
+                  <Link
+                    className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#f3bf26]/45 px-4 py-2.5 text-center text-sm font-bold leading-5 text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                    to="/payments"
+                  >
+                    {t("dashboard.pending.viewPayments")}
+                  </Link>
+                  <button
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-xs font-bold text-[#ffeac0] transition hover:border-[#f3bf26]/45 hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                    type="button"
+                    onClick={dontShowPendingPaymentBannerAgain}
+                  >
+                    {t("dashboard.pending.dontShowAgain")}
+                  </button>
+                  <button
+                    aria-label={t("dashboard.pending.dismissAria")}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-xs font-bold text-[#ffeac0] transition hover:border-[#f3bf26]/45 hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                    type="button"
+                    onClick={dismissPendingPaymentBanner}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    {t("dashboard.pending.dismiss")}
+                  </button>
+                </div>
               </div>
             </section>
           ) : null}

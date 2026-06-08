@@ -1,5 +1,5 @@
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
@@ -18,13 +18,11 @@ import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { billingApi } from "../features/billing/billing.api";
 import {
   type BillingCatalog,
-  type BillingOrder,
   type BillingProduct,
   type BillingSummary,
 } from "../features/billing/billing.types";
 import { getApiErrorMessage } from "../services/apiClient";
-import { getDisplayLabel } from "../i18n/displayMaps";
-import { formatI18nCurrency, formatI18nDateTime } from "../i18n/formatters";
+import { formatI18nCurrency } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 
 export const BILLING_CART_STORAGE_KEY = "3d-stylist.checkout.productCode";
@@ -34,31 +32,6 @@ type Translate = ReturnType<typeof useI18n>["t"];
 
 interface PendingSubscriptionChange {
   product: BillingProduct;
-}
-
-function getOrderProductName(order: BillingOrder, t: Translate) {
-  return order.items[0]?.productName ?? t("checkout.productFallback");
-}
-
-function isWaitingForAdminVerification(order: BillingOrder) {
-  return (
-    order.paymentVerification === "user_reported_transferred" ||
-    order.paymentVerification === "pending_admin_verification"
-  );
-}
-
-function getPendingOrderCopy(order: BillingOrder, t: Translate) {
-  if (isWaitingForAdminVerification(order)) {
-    return {
-      title: t("credits.pending.waitingTitle"),
-      guidance: t("credits.pending.waitingGuidance"),
-    };
-  }
-
-  return {
-    title: t("credits.pending.transferTitle"),
-    guidance: t("credits.pending.transferGuidance"),
-  };
 }
 
 function getPlanBenefit(product: BillingProduct, t: Translate) {
@@ -71,18 +44,6 @@ function getPlanBenefit(product: BillingProduct, t: Translate) {
   }
 
   return t("credits.plan.benefit.default");
-}
-
-function statusTone(status: BillingOrder["status"]) {
-  if (status === "paid") {
-    return "border-[#00e5ff]/25 bg-[#00e5ff]/10 text-[#9cf0ff]";
-  }
-
-  if (status === "pending") {
-    return "border-[#f3bf26]/30 bg-[#f3bf26]/10 text-[#ffeac0]";
-  }
-
-  return "border-[#ffb4ab]/25 bg-[#93000a]/20 text-[#ffdad6]";
 }
 
 function EmptyCatalogState({ title, body }: { title: string; body: string }) {
@@ -322,7 +283,6 @@ export function CreditsPage() {
   const navigate = useNavigate();
   const [catalog, setCatalog] = useState<BillingCatalog | null>(null);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
-  const [orders, setOrders] = useState<BillingOrder[]>([]);
   const [cartProductCode, setCartProductCode] = useState<string | null>(() =>
     window.localStorage.getItem(BILLING_CART_STORAGE_KEY),
   );
@@ -348,15 +308,13 @@ export function CreditsPage() {
     setError(null);
 
     try {
-      const [catalogResult, summaryResult, ordersResult] = await Promise.all([
+      const [catalogResult, summaryResult] = await Promise.all([
         billingApi.getBillingCatalog(),
         billingApi.getBillingMe(),
-        billingApi.getBillingOrders(),
       ]);
 
       setCatalog(catalogResult);
       setSummary(summaryResult);
-      setOrders(ordersResult);
     } catch (loadError) {
       setError(getApiErrorMessage(loadError));
     } finally {
@@ -369,19 +327,6 @@ export function CreditsPage() {
   useEffect(() => {
     void loadBillingData();
   }, []);
-
-  const pendingOrders = useMemo(() => {
-    const byId = new Map<string, BillingOrder>();
-
-    summary?.pendingOrders.forEach((order) => byId.set(order.id, order));
-    orders
-      .filter((order) => order.status === "pending")
-      .forEach((order) => byId.set(order.id, order));
-
-    return Array.from(byId.values()).sort((a, b) =>
-      b.createdAt.localeCompare(a.createdAt),
-    );
-  }, [orders, summary?.pendingOrders]);
 
   const selectedProduct = useMemo(
     () =>
@@ -671,6 +616,31 @@ export function CreditsPage() {
             </section>
           ) : null}
 
+          <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 text-[#00e5ff]">
+                  <CreditCard className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-sm font-bold text-white">
+                    {t("credits.paymentsLink.title")}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[#bac9cc]">
+                    {t("credits.paymentsLink.body")}
+                  </p>
+                </div>
+              </div>
+              <Link
+                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                to="/payments"
+              >
+                {t("credits.paymentsLink.action")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+
           {isLoading ? (
             <div className="grid gap-5 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
@@ -818,178 +788,6 @@ export function CreditsPage() {
                 </div>
               </section>
 
-              <section className="space-y-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <h2 className="font-display text-2xl font-semibold text-white">
-                      {t("credits.pending.title")}
-                    </h2>
-                    <p className="mt-1 text-sm text-[#bac9cc]">
-                      {t("credits.pending.body")}
-                    </p>
-                  </div>
-                  <button
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                    type="button"
-                    onClick={() => void loadBillingData(false)}
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    {t("common.refresh")}
-                  </button>
-                </div>
-
-                {pendingOrders.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center">
-                    <CreditCard className="mx-auto h-7 w-7 text-[#3b494c]" />
-                    <p className="mt-3 text-sm font-bold text-white">
-                      {t("credits.pending.emptyTitle")}
-                    </p>
-                    <p className="mt-1 text-sm text-[#bac9cc]">
-                      {t("credits.pending.emptyBody")}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {pendingOrders.map((order) => {
-                      const pendingCopy = getPendingOrderCopy(order, t);
-                      const transferContent =
-                        order.bankTransferContent ?? order.orderCode;
-
-                      return (
-                        <article
-                          className="rounded-lg border border-[#f3bf26]/30 bg-[#201f1f] p-4"
-                          key={order.id}
-                        >
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                          <div>
-                            <span className="inline-flex rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#ffeac0]">
-                              {pendingCopy.title}
-                            </span>
-                            <h3 className="mt-3 font-display text-xl font-semibold text-white">
-                              {getOrderProductName(order, t)}
-                            </h3>
-                            <p className="mt-2 text-sm text-[#bac9cc]">
-                              {formatI18nCurrency(
-                                order.totalAmount,
-                                language,
-                                order.currency,
-                              )}
-                              {" · "}
-                              {t("credits.pending.expires", {
-                                date: formatI18nDateTime(
-                                  order.expiresAt,
-                                  language,
-                                  t("common.notReturned"),
-                                ),
-                              })}
-                            </p>
-                            <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                              {pendingCopy.guidance}
-                            </p>
-                            {transferContent ? (
-                              <p className="mt-2 break-all font-mono text-xs font-bold text-[#ffeac0]">
-                                {t("credits.pending.transferContent")}{" "}
-                                {transferContent}
-                              </p>
-                            ) : null}
-                          </div>
-                          <button
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
-                            type="button"
-                            onClick={() =>
-                              navigate(`/credits/checkout/${order.id}`)
-                            }
-                          >
-                            {t("credits.pending.viewCheckout")}
-                            <ArrowRight className="h-4 w-4" />
-                          </button>
-                        </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-
-              <section className="space-y-4">
-                <h2 className="font-display text-2xl font-semibold text-white">
-                  {t("credits.history.title")}
-                </h2>
-                {orders.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-[#3b494c] bg-[#1c1b1b] p-5 text-center">
-                    <p className="text-sm font-bold text-white">
-                      {t("credits.history.emptyTitle")}
-                    </p>
-                    <p className="mt-1 text-sm text-[#bac9cc]">
-                      {t("credits.history.emptyBody")}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
-                    {orders.slice(0, 8).map((order) => (
-                      <div
-                        className="grid gap-4 border-b border-[#3b494c]/70 p-4 last:border-b-0 md:grid-cols-[1fr_auto]"
-                        key={order.id}
-                      >
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="truncate text-sm font-bold text-white">
-                              {getOrderProductName(order, t)}
-                            </p>
-                            <span
-                              className={`rounded-md border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.12em] ${statusTone(
-                                order.status,
-                              )}`}
-                            >
-                              {getDisplayLabel(
-                                "orderStatus",
-                                order.status,
-                                language,
-                              )}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-sm text-[#bac9cc]">
-                            {formatI18nCurrency(
-                              order.totalAmount,
-                              language,
-                              order.currency,
-                            )}
-                            {" · "}
-                            {t("credits.history.created", {
-                              date: formatI18nDateTime(
-                                order.createdAt,
-                                language,
-                                t("common.notReturned"),
-                              ),
-                            })}
-                          </p>
-                        </div>
-                        {order.status === "pending" ? (
-                          <button
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                            type="button"
-                            onClick={() =>
-                              navigate(`/credits/checkout/${order.id}`)
-                            }
-                          >
-                            {t("credits.history.resume")}
-                            <ArrowRight className="h-4 w-4" />
-                          </button>
-                        ) : order.status === "paid" ? (
-                          <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#9cf0ff]">
-                            <CheckCircle2 className="h-4 w-4" />
-                            {t("credits.history.confirmed")}
-                          </span>
-                        ) : (
-                          <span className="inline-flex min-h-11 items-center justify-center rounded-md px-3 py-2 text-sm font-bold text-[#ffdad6]">
-                            {t("credits.history.paymentIncomplete")}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
             </>
           )}
         </div>
