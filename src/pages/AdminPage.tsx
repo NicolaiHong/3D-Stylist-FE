@@ -1464,7 +1464,7 @@ export function AdminPage() {
   }
 
   return (
-    <DashboardShell planLabel={t("shell.adminPlan")} variant="admin">
+    <DashboardShell planLabel={t("shell.adminPlan")}>
       <main className="min-h-screen overflow-x-hidden px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
         <div className="mx-auto w-full max-w-[1440px] space-y-6">
           <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] xl:items-end">
