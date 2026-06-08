@@ -32,6 +32,10 @@ export function AppRoutes() {
         <Route path="/studio" element={<StudioPage />} />
         <Route path="/credits" element={<CreditsPage />} />
         <Route path="/credits/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/credits/checkout/:orderId/:method"
+          element={<CheckoutPage />}
+        />
         <Route path="/credits/checkout/:orderId" element={<CheckoutPage />} />
         <Route path="/credits/payment/:status" element={<PaymentResultPage />} />
         <Route path="/profile" element={<ProfilePage />} />
