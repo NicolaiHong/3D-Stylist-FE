@@ -21,6 +21,7 @@ import {
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { billingApi } from "../features/billing/billing.api";
 import {
+  BILLING_PROVIDERS,
   type BillingOrder,
   type BillingSummary,
   type VietQrPaymentInstruction,
@@ -32,8 +33,27 @@ import { formatI18nCurrency, formatI18nDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 import type { Language } from "../i18n/types";
 
+type CheckoutMode = "select" | "manual" | "payos";
 type CopiedField = "account" | "transfer";
 type Translate = ReturnType<typeof useI18n>["t"];
+
+const MANUAL_REPORTED_STATUSES = [
+  "pending_admin_verification",
+  "user_reported_transferred",
+];
+const ACTIVE_PAYOS_TRANSACTION_STATUSES = ["initiated", "redirected"];
+
+function getCheckoutMode(method: string | undefined): CheckoutMode {
+  if (method === "manual" || method === "payos") {
+    return method;
+  }
+
+  return "select";
+}
+
+function getMethodPath(orderId: string, mode: Exclude<CheckoutMode, "select">) {
+  return `/credits/checkout/${orderId}/${mode}`;
+}
 
 function getOrderProductName(order: BillingOrder | null, t: Translate) {
   return order?.items[0]?.productName ?? t("checkout.productFallback");
@@ -51,6 +71,39 @@ function getTransferContent(
   );
 }
 
+function hasActivePayosTransaction(order: BillingOrder) {
+  return order.transactions.some(
+    (transaction) =>
+      transaction.provider === BILLING_PROVIDERS.PAYOS &&
+      ACTIVE_PAYOS_TRANSACTION_STATUSES.includes(transaction.status),
+  );
+}
+
+function isPayosLocked(order: BillingOrder) {
+  return order.provider === BILLING_PROVIDERS.PAYOS || hasActivePayosTransaction(order);
+}
+
+function isManualLocked(order: BillingOrder) {
+  return (
+    Boolean(order.userReportedTransferredAt) ||
+    MANUAL_REPORTED_STATUSES.includes(order.paymentVerification ?? "")
+  );
+}
+
+function getLockedCheckoutMode(
+  order: BillingOrder,
+): Exclude<CheckoutMode, "select"> | null {
+  if (isPayosLocked(order)) {
+    return "payos";
+  }
+
+  if (isManualLocked(order)) {
+    return "manual";
+  }
+
+  return null;
+}
+
 function getVerificationLabel(
   order: BillingOrder | null,
   language: Language,
@@ -64,10 +117,7 @@ function getVerificationLabel(
     return getDisplayLabel("orderStatus", "paid", language);
   }
 
-  if (
-    order.paymentVerification === "pending_admin_verification" ||
-    order.paymentVerification === "user_reported_transferred"
-  ) {
+  if (MANUAL_REPORTED_STATUSES.includes(order.paymentVerification ?? "")) {
     return getDisplayLabel(
       "verificationStatus",
       "pending_admin_verification",
@@ -103,10 +153,7 @@ function getStatusDescription(order: BillingOrder | null, t: Translate) {
     return t("checkout.status.terminal");
   }
 
-  if (
-    order.paymentVerification === "pending_admin_verification" ||
-    order.paymentVerification === "user_reported_transferred"
-  ) {
+  if (MANUAL_REPORTED_STATUSES.includes(order.paymentVerification ?? "")) {
     return t("checkout.status.reported");
   }
 
@@ -122,10 +169,7 @@ function getProgressIndex(order: BillingOrder | null) {
     return 3;
   }
 
-  if (
-    order.paymentVerification === "pending_admin_verification" ||
-    order.paymentVerification === "user_reported_transferred"
-  ) {
+  if (MANUAL_REPORTED_STATUSES.includes(order.paymentVerification ?? "")) {
     return 2;
   }
 
@@ -194,8 +238,8 @@ function CheckoutOrderSummary({
   const { language, t } = useI18n();
 
   return (
-    <section className="grid gap-3 sm:grid-cols-3">
-      <div className="rounded-lg border border-[#262626] bg-[#121212] p-4">
+    <section className="grid gap-3 sm:grid-cols-4">
+      <div className="rounded-lg border border-[#262626] bg-[#121212] p-4 sm:col-span-2">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
           {t("checkout.summary.product")}
         </p>
@@ -407,7 +451,80 @@ function PaymentInstructionCards() {
   );
 }
 
-function CheckoutStatusPanel({
+function MethodSelection({
+  order,
+  payosEnabled,
+}: {
+  order: BillingOrder;
+  payosEnabled: boolean;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <section className="space-y-4">
+      <div className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4">
+        <div className="flex gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#f3bf26]" />
+          <p className="text-sm font-semibold leading-6 text-[#ffeac0]">
+            {t("checkout.method.warning")}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {payosEnabled ? (
+          <article className="rounded-lg border border-[#00e5ff]/25 bg-[#121212] p-5">
+            <div className="flex h-full flex-col justify-between gap-5">
+              <div className="flex gap-3">
+                <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
+                <div>
+                  <h2 className="font-display text-2xl font-semibold text-white">
+                    {t("checkout.method.payos.title")}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                    {t("checkout.method.payos.body")}
+                  </p>
+                </div>
+              </div>
+              <Link
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
+                to={getMethodPath(order.id, "payos")}
+              >
+                {t("checkout.method.payos.button")}
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </Link>
+            </div>
+          </article>
+        ) : null}
+
+        <article className="rounded-lg border border-[#262626] bg-[#121212] p-5">
+          <div className="flex h-full flex-col justify-between gap-5">
+            <div className="flex gap-3">
+              <ScanLine className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
+              <div>
+                <h2 className="font-display text-2xl font-semibold text-white">
+                  {t("checkout.method.manual.title")}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                  {t("checkout.method.manual.body")}
+                </p>
+              </div>
+            </div>
+            <Link
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-3 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              to={getMethodPath(order.id, "manual")}
+            >
+              {t("checkout.method.manual.button")}
+              <ArrowLeft className="h-4 w-4 rotate-180" />
+            </Link>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function ManualStatusPanel({
   order,
   isReportingTransfer,
   canReportTransfer,
@@ -485,70 +602,250 @@ function CheckoutStatusPanel({
         </button>
         <Link
           className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-          to="/credits"
+          to={`/credits/checkout/${order.id}`}
         >
-          {t("checkout.backToCredits")}
+          {t("checkout.backToMethods")}
         </Link>
       </div>
     </section>
   );
 }
 
-function PayosCheckoutPanel({
-  canStartPayos,
+function PayosStatusPanel({
+  order,
+  canOpenPayos,
   isCreatingPayosLink,
-  isUnavailable,
+  payosUnavailable,
   onPayosCheckout,
+  onRefresh,
 }: {
-  canStartPayos: boolean;
+  order: BillingOrder;
+  canOpenPayos: boolean;
   isCreatingPayosLink: boolean;
-  isUnavailable: boolean;
+  payosUnavailable: boolean;
   onPayosCheckout: () => void;
+  onRefresh: () => void;
 }) {
-  const { t } = useI18n();
-  const isDisabled = !canStartPayos || isCreatingPayosLink || isUnavailable;
+  const { language, t } = useI18n();
+  const isPaid = order.status === "paid";
+  const isTerminal =
+    order.status === "expired" ||
+    order.status === "failed" ||
+    order.status === "cancelled";
+  const isDisabled =
+    isPaid || isTerminal || !canOpenPayos || isCreatingPayosLink || payosUnavailable;
 
   return (
-    <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <section className="rounded-lg border border-[#00e5ff]/25 bg-[#121212] p-5">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex gap-3">
           <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
           <div>
-            <h2 className="text-sm font-bold text-white">
+            <h2 className="font-display text-2xl font-semibold text-white">
               {t("checkout.payos.title")}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-[#c3f5ff]">
+            <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
               {t("checkout.payos.body")}
             </p>
-            <p className="mt-2 text-xs font-semibold leading-5 text-[#ffeac0]">
-              {t("checkout.payos.warning")}
+            <p className="mt-3 text-xs font-semibold leading-5 text-[#c3f5ff]">
+              {t("checkout.payos.webhookNotice")}
             </p>
+            {payosUnavailable ? (
+              <p className="mt-3 text-xs font-semibold leading-5 text-[#ffeac0]">
+                {t("checkout.payos.disabledHelp")}
+              </p>
+            ) : null}
           </div>
         </div>
-        <button
-          className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={isDisabled}
-          type="button"
-          onClick={onPayosCheckout}
-        >
-          {isCreatingPayosLink ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <ExternalLink className="h-4 w-4" />
-          )}
-          {isUnavailable
-            ? t("checkout.payos.unavailable")
-            : t("checkout.payos.button")}
-        </button>
+        <div className="grid w-full gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[260px] lg:grid-cols-1">
+          <button
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-3 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isDisabled}
+            type="button"
+            onClick={onPayosCheckout}
+          >
+            {isCreatingPayosLink ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ExternalLink className="h-4 w-4" />
+            )}
+            {isPaid
+              ? getDisplayLabel("orderStatus", "paid", language)
+              : payosUnavailable
+                ? t("checkout.payos.unavailable")
+                : t("checkout.payos.button")}
+          </button>
+          <button
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-3 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            type="button"
+            onClick={onRefresh}
+          >
+            <RefreshCw className="h-4 w-4" />
+            {t("checkout.refreshStatus")}
+          </button>
+          <Link
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            to={`/credits/checkout/${order.id}`}
+          >
+            {t("checkout.backToMethods")}
+          </Link>
+        </div>
       </div>
     </section>
   );
 }
 
-export function CheckoutPage() {
+function OrderStatusCard({ order }: { order: BillingOrder }) {
   const { language, t } = useI18n();
-  const { orderId } = useParams();
+  const statusLabel = getDisplayLabel("orderStatus", order.status, language);
+
+  return (
+    <section className="rounded-lg border border-[#262626] bg-[#121212] p-5">
+      <div className="flex gap-3">
+        <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
+        <div>
+          <h2 className="text-sm font-bold text-white">
+            {t("checkout.statusCard.title")}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+            {statusLabel}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ManualPaymentPage({
+  order,
+  payment,
+  copiedField,
+  qrFailed,
+  isReportingTransfer,
+  canReportTransfer,
+  onCopy,
+  onQrFailed,
+  onConfirmTransfer,
+  onRefresh,
+}: {
+  order: BillingOrder;
+  payment: VietQrPaymentInstruction | null;
+  copiedField: CopiedField | null;
+  qrFailed: boolean;
+  isReportingTransfer: boolean;
+  canReportTransfer: boolean;
+  onCopy: (value: string | null | undefined, field: CopiedField) => void;
+  onQrFailed: () => void;
+  onConfirmTransfer: () => void;
+  onRefresh: () => void;
+}) {
+  const { language, t } = useI18n();
+
+  return (
+    <>
+      <section className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4">
+        <div className="flex gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#f3bf26]" />
+          <p className="text-sm font-semibold leading-6 text-[#ffeac0]">
+            {t("checkout.manual.reportNotice")}
+          </p>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-[#262626] bg-[#121212]">
+        <div className="grid lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1.05fr)]">
+          <div className="border-b border-[#262626] bg-[#0a0a0a] p-5 sm:p-8 lg:border-b-0 lg:border-r">
+            <div className="flex h-full min-h-[430px] flex-col items-center justify-center gap-5">
+              <div className="text-center">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#00e5ff]">
+                  {t("checkout.qr.eyebrow")}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                  {t("checkout.qr.body")}
+                </p>
+              </div>
+
+              <div className="flex w-full max-w-[340px] items-center justify-center rounded-lg border border-[#00e5ff]/20 bg-white p-4 shadow-[0_0_42px_rgba(0,229,255,0.08)]">
+                {payment?.qr.imageUrl && !qrFailed ? (
+                  <img
+                    alt={t("checkout.qr.alt", {
+                      product: getOrderProductName(order, t),
+                    })}
+                    className="aspect-square w-full object-contain"
+                    src={payment.qr.imageUrl}
+                    onError={onQrFailed}
+                  />
+                ) : (
+                  <div className="flex aspect-square w-full flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-white p-6 text-center text-slate-800">
+                    <AlertTriangle className="h-9 w-9 text-amber-600" />
+                    <p className="mt-4 text-sm font-bold">
+                      {t("checkout.qr.unavailable")}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">
+                      {t("checkout.qr.manual")}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-full border border-[#3b494c] bg-[#1c1b1b] px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#c3f5ff]">
+                {t("checkout.expiresAt", {
+                  date: formatI18nDateTime(
+                    order.expiresAt,
+                    language,
+                    t("common.notReturned"),
+                  ),
+                })}
+              </div>
+            </div>
+          </div>
+
+          <BankTransferDetails
+            copiedField={copiedField}
+            order={order}
+            payment={payment}
+            onCopy={onCopy}
+          />
+        </div>
+      </section>
+
+      <PaymentProgress order={order} />
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <PaymentInstructionCards />
+
+        <div className="space-y-4">
+          <ManualStatusPanel
+            canReportTransfer={canReportTransfer}
+            isReportingTransfer={isReportingTransfer}
+            order={order}
+            onConfirmTransfer={onConfirmTransfer}
+            onRefresh={onRefresh}
+          />
+          <section className="rounded-lg border border-[#262626] bg-[#121212] p-5">
+            <div className="flex gap-3">
+              <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
+              <div>
+                <h2 className="text-sm font-bold text-white">
+                  {t("checkout.manualVerification.title")}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
+                  {t("checkout.manualVerification.body")}
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export function CheckoutPage() {
+  const { t } = useI18n();
+  const { orderId, method } = useParams();
   const navigate = useNavigate();
+  const mode = getCheckoutMode(method);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [order, setOrder] = useState<BillingOrder | null>(null);
   const [payment, setPayment] = useState<VietQrPaymentInstruction | null>(null);
@@ -570,7 +867,6 @@ export function CheckoutPage() {
     setIsLoading(true);
     setError(null);
     setActionError(null);
-    setPayosUnavailable(false);
 
     try {
       const summaryPromise = billingApi.getBillingMe();
@@ -615,6 +911,18 @@ export function CheckoutPage() {
   useEffect(() => {
     setQrFailed(false);
   }, [payment?.qr.imageUrl]);
+
+  useEffect(() => {
+    if (!order || isLoading) {
+      return;
+    }
+
+    const lockedMode = getLockedCheckoutMode(order);
+
+    if (lockedMode && lockedMode !== mode) {
+      navigate(getMethodPath(order.id, lockedMode), { replace: true });
+    }
+  }, [isLoading, mode, navigate, order]);
 
   async function handleConfirmTransfer() {
     if (!order) {
@@ -663,6 +971,7 @@ export function CheckoutPage() {
 
     setIsCreatingPayosLink(true);
     setActionError(null);
+    setPayosUnavailable(false);
 
     try {
       const result = await billingApi.createPayosPaymentLink(order.id);
@@ -680,12 +989,19 @@ export function CheckoutPage() {
   }
 
   const canReportTransfer =
+    mode === "manual" &&
     order?.status === "pending" &&
-    order.paymentVerification !== "pending_admin_verification" &&
-    order.paymentVerification !== "user_reported_transferred";
-  const canStartPayos =
-    Boolean(canReportTransfer) &&
-    Boolean(summary?.paymentOptions?.payosEnabled);
+    !MANUAL_REPORTED_STATUSES.includes(order.paymentVerification ?? "") &&
+    !isPayosLocked(order);
+  const payosEnabled = Boolean(summary?.paymentOptions?.payosEnabled);
+  const canOpenPayos =
+    mode === "payos" && Boolean(order) && payosEnabled && order?.status === "pending";
+  const headerKey =
+    mode === "payos"
+      ? "checkout.header.payos"
+      : mode === "manual"
+        ? "checkout.header.manual"
+        : "checkout.header.select";
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
@@ -694,15 +1010,17 @@ export function CheckoutPage() {
           <div className="flex flex-col gap-4 rounded-lg border border-[#262626] bg-[#121212] p-4 sm:flex-row sm:items-center sm:justify-between">
             <Link
               className="inline-flex min-h-11 items-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-              to="/credits"
+              to={mode === "select" || !order ? "/credits" : `/credits/checkout/${order.id}`}
             >
               <ArrowLeft className="h-4 w-4" />
-              {t("checkout.backToCredits")}
+              {mode === "select" || !order
+                ? t("checkout.backToCredits")
+                : t("checkout.backToMethods")}
             </Link>
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#c3f5ff]">
                 <LockKeyhole className="h-4 w-4" />
-                {t("checkout.badge")}
+                {t(`${headerKey}.badge`)}
               </span>
               <button
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -717,13 +1035,13 @@ export function CheckoutPage() {
 
           <header className="rounded-lg border border-[#262626] bg-[#121212] p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-              {t("checkout.header.eyebrow")}
+              {t(`${headerKey}.eyebrow`)}
             </p>
             <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-              {t("checkout.header.title")}
+              {t(`${headerKey}.title`)}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-              {t("checkout.header.body")}
+              {t(`${headerKey}.body`)}
             </p>
           </header>
 
@@ -758,8 +1076,8 @@ export function CheckoutPage() {
 
           {isLoading ? (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-              <div className="h-[560px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
-              <div className="h-[560px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
+              <div className="h-[420px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
+              <div className="h-[420px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
             </div>
           ) : !order ? (
             <section className="rounded-lg border border-dashed border-[#3b494c] bg-[#121212] p-6 text-center">
@@ -769,102 +1087,46 @@ export function CheckoutPage() {
             <>
               <CheckoutOrderSummary order={order} payment={payment} />
 
-              {summary?.paymentOptions?.payosEnabled ? (
-                <PayosCheckoutPanel
-                  canStartPayos={canStartPayos}
-                  isCreatingPayosLink={isCreatingPayosLink}
-                  isUnavailable={payosUnavailable}
-                  onPayosCheckout={() => void handlePayosCheckout()}
+              {mode === "select" ? (
+                <MethodSelection order={order} payosEnabled={payosEnabled} />
+              ) : mode === "manual" ? (
+                <ManualPaymentPage
+                  canReportTransfer={Boolean(canReportTransfer)}
+                  copiedField={copiedField}
+                  isReportingTransfer={isReportingTransfer}
+                  order={order}
+                  payment={payment}
+                  qrFailed={qrFailed}
+                  onConfirmTransfer={() => void handleConfirmTransfer()}
+                  onCopy={(value, field) => void copyPaymentText(value, field)}
+                  onQrFailed={() => setQrFailed(true)}
+                  onRefresh={() => void loadCheckout()}
                 />
-              ) : null}
-
-              <section className="overflow-hidden rounded-lg border border-[#262626] bg-[#121212]">
-                <div className="grid lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1.05fr)]">
-                  <div className="border-b border-[#262626] bg-[#0a0a0a] p-5 sm:p-8 lg:border-b-0 lg:border-r">
-                    <div className="flex h-full min-h-[430px] flex-col items-center justify-center gap-5">
-                      <div className="text-center">
-                        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#00e5ff]">
-                          {t("checkout.qr.eyebrow")}
-                        </p>
-                        <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                          {t("checkout.qr.body")}
+              ) : (
+                <>
+                  {!payosEnabled ? (
+                    <section className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4">
+                      <div className="flex gap-3">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#f3bf26]" />
+                        <p className="text-sm font-semibold leading-6 text-[#ffeac0]">
+                          {t("checkout.payos.disabledHelp")}
                         </p>
                       </div>
+                    </section>
+                  ) : null}
 
-                      <div className="flex w-full max-w-[340px] items-center justify-center rounded-lg border border-[#00e5ff]/20 bg-white p-4 shadow-[0_0_42px_rgba(0,229,255,0.08)]">
-                        {payment?.qr.imageUrl && !qrFailed ? (
-                          <img
-                            alt={t("checkout.qr.alt", {
-                              product: getOrderProductName(order, t),
-                            })}
-                            className="aspect-square w-full object-contain"
-                            src={payment.qr.imageUrl}
-                            onError={() => setQrFailed(true)}
-                          />
-                        ) : (
-                          <div className="flex aspect-square w-full flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-white p-6 text-center text-slate-800">
-                            <AlertTriangle className="h-9 w-9 text-amber-600" />
-                            <p className="mt-4 text-sm font-bold">
-                              {t("checkout.qr.unavailable")}
-                            </p>
-                            <p className="mt-2 text-xs leading-5 text-slate-600">
-                              {t("checkout.qr.manual")}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="rounded-full border border-[#3b494c] bg-[#1c1b1b] px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[#c3f5ff]">
-                        {t("checkout.expiresAt", {
-                          date: formatI18nDateTime(
-                            order.expiresAt,
-                            language,
-                            t("common.notReturned"),
-                          ),
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <BankTransferDetails
-                    copiedField={copiedField}
+                  <PayosStatusPanel
+                    canOpenPayos={canOpenPayos}
+                    isCreatingPayosLink={isCreatingPayosLink}
                     order={order}
-                    payment={payment}
-                    onCopy={(value, field) =>
-                      void copyPaymentText(value, field)
-                    }
-                  />
-                </div>
-              </section>
-
-              <PaymentProgress order={order} />
-
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-                <PaymentInstructionCards />
-
-                <div className="space-y-4">
-                  <CheckoutStatusPanel
-                    canReportTransfer={Boolean(canReportTransfer)}
-                    isReportingTransfer={isReportingTransfer}
-                    order={order}
-                    onConfirmTransfer={() => void handleConfirmTransfer()}
+                    payosUnavailable={payosUnavailable || !payosEnabled}
+                    onPayosCheckout={() => void handlePayosCheckout()}
                     onRefresh={() => void loadCheckout()}
                   />
-                  <section className="rounded-lg border border-[#262626] bg-[#121212] p-5">
-                    <div className="flex gap-3">
-                      <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#00e5ff]" />
-                      <div>
-                        <h2 className="text-sm font-bold text-white">
-                          {t("checkout.manualVerification.title")}
-                        </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#bac9cc]">
-                          {t("checkout.manualVerification.body")}
-                        </p>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-              </div>
+
+                  <OrderStatusCard order={order} />
+                </>
+              )}
             </>
           )}
         </div>

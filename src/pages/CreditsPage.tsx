@@ -328,6 +328,8 @@ export function CreditsPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isCartUpdating, setIsCartUpdating] = useState(false);
+  const [checkoutStartingProductCode, setCheckoutStartingProductCode] =
+    useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [pendingSubscriptionChange, setPendingSubscriptionChange] =
@@ -447,6 +449,27 @@ export function CreditsPage() {
     setCancellationError(null);
   }
 
+  async function startCheckoutForProduct(product: BillingProduct) {
+    setCheckoutStartingProductCode(product.code);
+    setError(null);
+    setActionMessage(null);
+
+    try {
+      const checkout = await billingApi.createBillingCheckout(
+        product.code,
+        "buy_now",
+      );
+
+      window.localStorage.removeItem(BILLING_CART_STORAGE_KEY);
+      setCartProductCode(null);
+      navigate(`/credits/checkout/${checkout.order.id}`);
+    } catch (checkoutError) {
+      setError(getApiErrorMessage(checkoutError));
+    } finally {
+      setCheckoutStartingProductCode(null);
+    }
+  }
+
   function handleProductSelection(
     product: BillingProduct,
     intent: ProductSelectionIntent,
@@ -456,11 +479,12 @@ export function CreditsPage() {
       return;
     }
 
-    setCartProduct(product);
-
     if (intent === "buy_now") {
-      navigate("/credits/checkout");
+      void startCheckoutForProduct(product);
+      return;
     }
+
+    setCartProduct(product);
   }
 
   function handleAddToCart(product: BillingProduct) {
@@ -488,7 +512,7 @@ export function CreditsPage() {
       return;
     }
 
-    navigate("/credits/checkout");
+    void startCheckoutForProduct(selectedProduct);
   }
 
   async function handleConfirmCancellation() {
@@ -632,11 +656,11 @@ export function CreditsPage() {
                   </button>
                   <button
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={isCartUpdating}
+                    disabled={isCartUpdating || Boolean(checkoutStartingProductCode)}
                     type="button"
                     onClick={handleCheckoutSelectedProduct}
                   >
-                    {isCartUpdating ? (
+                    {isCartUpdating || checkoutStartingProductCode === selectedProduct.code ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : null}
                     {t("credits.cart.checkout")}
@@ -724,7 +748,9 @@ export function CreditsPage() {
                             </li>
                           </ul>
                           <ProductActions
-                            disabled={isCurrent}
+                            disabled={
+                              isCurrent || Boolean(checkoutStartingProductCode)
+                            }
                             product={plan}
                             selectedProductCode={cartProductCode}
                             onAddToCart={handleAddToCart}
@@ -780,6 +806,7 @@ export function CreditsPage() {
                           })}
                         </p>
                         <ProductActions
+                          disabled={Boolean(checkoutStartingProductCode)}
                           product={pack}
                           selectedProductCode={cartProductCode}
                           onAddToCart={handleAddToCart}

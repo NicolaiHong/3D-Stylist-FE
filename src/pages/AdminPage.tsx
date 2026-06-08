@@ -565,6 +565,7 @@ function OrdersTable({
         <tbody className="divide-y divide-[#3b494c]/60">
           {orders.map((order) => {
             const product = getOrderProduct(order);
+            const paymentMethod = getOrderPaymentMethod(order);
             const canMarkPaid =
               manualMarkPaidEnabled &&
               order.status === "pending" &&
@@ -618,7 +619,7 @@ function OrdersTable({
                 <td className="px-5 py-4 text-xs font-bold text-[#bac9cc]">
                   {getDisplayLabel(
                     "paymentProvider",
-                    getOrderPaymentMethod(order),
+                    paymentMethod,
                     language,
                   )}
                 </td>
@@ -640,7 +641,9 @@ function OrdersTable({
                     </button>
                   ) : (
                     <span className="text-xs font-semibold text-[#849396]">
-                      {t("admin.table.noAction")}
+                      {paymentMethod === "payos"
+                        ? t("admin.table.payosNoVerification")
+                        : t("admin.table.noAction")}
                     </span>
                   )}
                 </td>

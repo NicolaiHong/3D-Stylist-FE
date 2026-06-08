@@ -471,7 +471,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.header.eyebrow": "Credits",
     "credits.header.title": "Plans and credit packs.",
     "credits.header.body":
-      "Add one item to cart or buy now, then complete checkout with VietQR bank transfer. Access activates after admin verification.",
+      "Choose a payment method at checkout. Manual VietQR remains available as fallback.",
     "credits.summary.currentPlan": "Current plan",
     "credits.summary.credits": "Credits",
     "credits.summary.free": "Free",
@@ -480,7 +480,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.cart.monthlyPlan": "Monthly plan",
     "credits.cart.hdCredits": "{count} HD credits",
     "credits.cart.checkoutNote":
-      "Checkout creates a manual VietQR order. Access does not change until admin verification.",
+      "Checkout creates an order, then you choose payOS or manual VietQR when available.",
     "credits.cart.remove": "Remove",
     "credits.cart.checkout": "Continue to payment",
     "credits.cart.ready": "{product} is ready for checkout.",
@@ -510,9 +510,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.packs.rule": "1 credit = 1 HD generation",
     "credits.packs.body":
       "Adds {count} credits after admin verifies the VietQR transfer. Credit packs do not unlock export by themselves.",
-    "credits.pending.title": "Pending VietQR orders",
+    "credits.pending.title": "Pending payments",
     "credits.pending.body":
-      "Resume a manual transfer or monitor admin verification after reporting it.",
+      "Resume a payment method or monitor admin verification after reporting a manual transfer.",
     "credits.pending.emptyTitle": "No pending payments",
     "credits.pending.emptyBody": "Choose a plan or credit pack to create one.",
     "credits.pending.waitingTitle": "Waiting for admin verification",
@@ -527,7 +527,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.history.title": "Order history",
     "credits.history.emptyTitle": "No billing orders yet",
     "credits.history.emptyBody":
-      "VietQR orders will appear here after checkout starts.",
+      "Payment orders will appear here after checkout starts.",
     "credits.history.created": "Created {date}",
     "credits.history.resume": "Resume checkout",
     "credits.history.confirmed": "Paid",
@@ -547,6 +547,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.cancel.newPlanFallback": "new plan",
 
     "checkout.backToCredits": "Back to credits",
+    "checkout.backToMethods": "Back to payment methods",
     "checkout.iTransferred": "I have transferred",
     "checkout.refreshStatus": "Refresh status",
     "checkout.copyFailed":
@@ -573,6 +574,31 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.summary.product": "Selected product",
     "checkout.summary.amount": "Exact amount",
     "checkout.summary.expires": "Expires",
+    "checkout.header.select.badge": "Payment method",
+    "checkout.header.select.eyebrow": "Checkout",
+    "checkout.header.select.title": "Choose payment method",
+    "checkout.header.select.body":
+      "Review this order and choose one payment method before paying.",
+    "checkout.header.manual.badge": "Manual VietQR",
+    "checkout.header.manual.eyebrow": "Manual bank transfer",
+    "checkout.header.manual.title": "Pay with manual VietQR",
+    "checkout.header.manual.body":
+      "Scan the VietQR code or enter the bank details manually. Your plan or credits activate after admin verification.",
+    "checkout.header.payos.badge": "payOS checkout",
+    "checkout.header.payos.eyebrow": "Automatic payment",
+    "checkout.header.payos.title": "Pay with payOS",
+    "checkout.header.payos.body":
+      "Open the hosted payOS checkout for automatic confirmation after a verified payment webhook.",
+    "checkout.method.warning":
+      "Use one payment method per order. Do not pay both methods for the same order.",
+    "checkout.method.payos.title": "payOS automatic checkout",
+    "checkout.method.payos.body":
+      "Automatic confirmation after successful payOS payment.",
+    "checkout.method.payos.button": "Continue with payOS",
+    "checkout.method.manual.title": "Manual VietQR bank transfer",
+    "checkout.method.manual.body":
+      "Requires admin verification after you transfer.",
+    "checkout.method.manual.button": "Use manual VietQR",
     "checkout.detail.bankTitle": "Bank transfer details",
     "checkout.detail.bankBody":
       "Use these details if the QR scan fails. Keep the amount and transfer content exactly as shown.",
@@ -600,12 +626,19 @@ export const messages: Record<Language, Record<string, string>> = {
       "This only reports your transfer. Credits or plan access start after admin verification. This app does not auto-detect bank transfers.",
     "checkout.payos.title": "payOS checkout",
     "checkout.payos.body":
-      "Use payOS only when this enabled option appears. Manual VietQR remains available for this order.",
+      "payOS payments are confirmed automatically by the payment webhook. Admin verification is not required.",
     "checkout.payos.warning":
       "Do not pay both methods for the same order.",
     "checkout.payos.button": "Open payOS checkout",
     "checkout.payos.unavailable": "payOS unavailable",
     "checkout.payos.fallback": "Manual VietQR remains available.",
+    "checkout.payos.webhookNotice":
+      "Browser return pages are display-only. Access starts only after the backend confirms paid status.",
+    "checkout.payos.disabledHelp":
+      "payOS is disabled or unavailable for this order. Return to payment methods or use manual VietQR fallback.",
+    "checkout.manual.reportNotice":
+      "This reports your transfer. Access starts only after admin verification.",
+    "checkout.statusCard.title": "Current order status",
     "checkout.badge": "Manual VietQR checkout",
     "checkout.header.eyebrow": "VietQR bank transfer",
     "checkout.header.title": "Complete your payment",
@@ -754,6 +787,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.noCode": "No code",
     "admin.table.verifyTransfer": "Verify transfer and mark paid",
     "admin.table.noAction": "No action",
+    "admin.table.payosNoVerification": "No admin verification required",
     "admin.health.title": "System Health",
     "admin.health.description":
       "Configuration presence only. Secret values stay server-side.",
@@ -1357,7 +1391,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.header.eyebrow": "Tín dụng",
     "credits.header.title": "Gói thuê bao & tín dụng.",
     "credits.header.body":
-      "Thêm một mục vào giỏ hoặc mua ngay, rồi hoàn tất thanh toán bằng chuyển khoản VietQR. Quyền truy cập chỉ kích hoạt sau khi quản trị xác minh.",
+      "Chọn phương thức thanh toán ở bước checkout. VietQR thủ công vẫn có thể dùng làm phương án dự phòng.",
     "credits.summary.currentPlan": "Gói hiện tại",
     "credits.summary.credits": "Tín dụng",
     "credits.summary.free": "Miễn phí",
@@ -1366,7 +1400,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.cart.monthlyPlan": "Gói hằng tháng",
     "credits.cart.hdCredits": "{count} tín dụng HD",
     "credits.cart.checkoutNote":
-      "Thanh toán sẽ tạo một đơn VietQR thủ công. Quyền truy cập không thay đổi cho đến khi quản trị xác minh.",
+      "Checkout tạo đơn trước, sau đó bạn chọn payOS hoặc VietQR thủ công khi khả dụng.",
     "credits.cart.remove": "Xóa",
     "credits.cart.checkout": "Tiếp tục thanh toán",
     "credits.cart.ready": "{product} đã sẵn sàng để thanh toán.",
@@ -1396,9 +1430,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.packs.rule": "1 tín dụng = 1 lượt tạo bản xem trước HD",
     "credits.packs.body":
       "Cộng {count} tín dụng sau khi quản trị xác minh chuyển khoản VietQR. Gói tín dụng không tự mở khóa quyền xuất file.",
-    "credits.pending.title": "Đơn VietQR đang chờ",
+    "credits.pending.title": "Thanh toán đang chờ",
     "credits.pending.body":
-      "Tiếp tục chuyển khoản thủ công hoặc theo dõi xác minh của quản trị sau khi đã báo chuyển khoản.",
+      "Tiếp tục phương thức thanh toán hoặc theo dõi xác minh của quản trị sau khi báo chuyển khoản thủ công.",
     "credits.pending.emptyTitle": "Không có thanh toán đang chờ",
     "credits.pending.emptyBody": "Chọn một gói hoặc gói tín dụng để tạo đơn.",
     "credits.pending.waitingTitle": "Đang chờ quản trị xác minh",
@@ -1413,7 +1447,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.history.title": "Lịch sử đơn",
     "credits.history.emptyTitle": "Chưa có đơn thanh toán",
     "credits.history.emptyBody":
-      "Đơn VietQR sẽ xuất hiện ở đây sau khi thanh toán bắt đầu.",
+      "Đơn thanh toán sẽ xuất hiện ở đây sau khi checkout bắt đầu.",
     "credits.history.created": "Đã tạo {date}",
     "credits.history.resume": "Tiếp tục thanh toán",
     "credits.history.confirmed": "Đã thanh toán",
@@ -1433,6 +1467,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.cancel.newPlanFallback": "gói mới",
 
     "checkout.backToCredits": "Quay lại tín dụng",
+    "checkout.backToMethods": "Quay lại phương thức thanh toán",
     "checkout.iTransferred": "Tôi đã chuyển khoản",
     "checkout.refreshStatus": "Làm mới trạng thái",
     "checkout.copyFailed":
@@ -1459,6 +1494,31 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.summary.product": "Sản phẩm đã chọn",
     "checkout.summary.amount": "Số tiền chính xác",
     "checkout.summary.expires": "Hết hạn",
+    "checkout.header.select.badge": "Phương thức thanh toán",
+    "checkout.header.select.eyebrow": "Checkout",
+    "checkout.header.select.title": "Chọn phương thức thanh toán",
+    "checkout.header.select.body":
+      "Kiểm tra đơn này và chọn một phương thức trước khi thanh toán.",
+    "checkout.header.manual.badge": "VietQR thủ công",
+    "checkout.header.manual.eyebrow": "Chuyển khoản thủ công",
+    "checkout.header.manual.title": "Thanh toán bằng VietQR thủ công",
+    "checkout.header.manual.body":
+      "Quét mã VietQR hoặc nhập thông tin ngân hàng thủ công. Gói hoặc tín dụng sẽ kích hoạt sau khi quản trị xác minh.",
+    "checkout.header.payos.badge": "Thanh toán payOS",
+    "checkout.header.payos.eyebrow": "Thanh toán tự động",
+    "checkout.header.payos.title": "Thanh toán bằng payOS",
+    "checkout.header.payos.body":
+      "Mở trang payOS được lưu trữ để xác nhận tự động sau webhook thanh toán đã xác minh.",
+    "checkout.method.warning":
+      "Chỉ dùng một phương thức cho mỗi đơn hàng. Không thanh toán cả hai phương thức cho cùng một đơn.",
+    "checkout.method.payos.title": "Thanh toán payOS tự động",
+    "checkout.method.payos.body":
+      "Tự động xác nhận sau khi thanh toán payOS thành công.",
+    "checkout.method.payos.button": "Tiếp tục với payOS",
+    "checkout.method.manual.title": "Chuyển khoản VietQR thủ công",
+    "checkout.method.manual.body":
+      "Cần quản trị viên xác minh sau khi bạn chuyển khoản.",
+    "checkout.method.manual.button": "Dùng VietQR thủ công",
     "checkout.detail.bankTitle": "Thông tin chuyển khoản",
     "checkout.detail.bankBody":
       "Dùng các thông tin này nếu quét QR thất bại. Giữ đúng số tiền và nội dung chuyển khoản như hiển thị.",
@@ -1486,12 +1546,19 @@ export const messages: Record<Language, Record<string, string>> = {
       "Thao tác này chỉ báo rằng bạn đã chuyển khoản. Tín dụng hoặc gói chỉ bắt đầu sau khi quản trị xác minh. Ứng dụng không tự phát hiện chuyển khoản ngân hàng.",
     "checkout.payos.title": "Thanh toán payOS",
     "checkout.payos.body":
-      "Chỉ dùng payOS khi tùy chọn này được hệ thống bật. VietQR thủ công vẫn khả dụng cho đơn này.",
+      "Thanh toán payOS được xác nhận tự động qua webhook thanh toán. Không cần quản trị viên xác minh.",
     "checkout.payos.warning":
       "Không thanh toán cả hai phương thức cho cùng một đơn.",
     "checkout.payos.button": "Mở thanh toán payOS",
     "checkout.payos.unavailable": "payOS không khả dụng",
     "checkout.payos.fallback": "VietQR thủ công vẫn khả dụng.",
+    "checkout.payos.webhookNotice":
+      "Trang quay lại của trình duyệt chỉ để hiển thị. Quyền truy cập chỉ bắt đầu sau khi backend xác nhận trạng thái đã thanh toán.",
+    "checkout.payos.disabledHelp":
+      "payOS đang tắt hoặc không khả dụng cho đơn này. Quay lại phương thức thanh toán hoặc dùng VietQR thủ công dự phòng.",
+    "checkout.manual.reportNotice":
+      "Thao tác này chỉ báo bạn đã chuyển khoản. Quyền truy cập chỉ bắt đầu sau khi quản trị viên xác minh.",
+    "checkout.statusCard.title": "Trạng thái đơn hiện tại",
     "checkout.badge": "Thanh toán VietQR thủ công",
     "checkout.header.eyebrow": "Chuyển khoản VietQR",
     "checkout.header.title": "Hoàn tất thanh toán",
@@ -1640,6 +1707,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.noCode": "Không có mã",
     "admin.table.verifyTransfer": "Xác minh chuyển khoản và đánh dấu đã thanh toán",
     "admin.table.noAction": "Không có thao tác",
+    "admin.table.payosNoVerification": "Không cần quản trị viên xác minh",
     "admin.health.title": "Sức khỏe hệ thống",
     "admin.health.description":
       "Chỉ hiển thị trạng thái cấu hình. Giá trị bí mật vẫn ở server.",
