@@ -11,7 +11,7 @@ export function LanguageSwitch({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`inline-flex h-[34px] items-center rounded-full border border-white/[0.12] bg-[#0e0e0e]/80 p-0.5 ${className}`}
+      className={`inline-flex h-9 w-[92px] items-center gap-0 rounded-full border border-white/[0.12] bg-[#0e0e0e]/80 p-0.5 ${className}`}
       role="group"
       aria-label={t("language.groupLabel")}
     >
@@ -26,7 +26,7 @@ export function LanguageSwitch({ className = "" }: { className?: string }) {
           <button
             aria-label={ariaLabel}
             aria-pressed={isActive}
-            className={`h-[30px] min-w-9 rounded-full px-2.5 text-xs font-semibold leading-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+            className={`inline-flex h-8 w-11 flex-none items-center justify-center rounded-full px-0 text-center text-xs font-semibold leading-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
               isActive
                 ? "bg-[#00e5ff]/12 text-[#c3f5ff] ring-1 ring-[#00e5ff]/20"
                 : "text-[#9daeb2] hover:bg-white/[0.06] hover:text-white"
