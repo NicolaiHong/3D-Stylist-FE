@@ -49,6 +49,7 @@ const adminNavigationItems: NavigationItem[] = [
 
 const userNavigationItems: NavigationItem[] = [
   { labelKey: "shell.nav.dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "shell.nav.studio", to: "/studio", icon: Sparkles },
   { labelKey: "shell.nav.credits", to: "/credits", icon: Database },
   { labelKey: "shell.nav.payments", to: "/payments", icon: ReceiptText },
   { labelKey: "shell.nav.profile", to: "/profile", icon: UserRound },
