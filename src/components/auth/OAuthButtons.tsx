@@ -1,4 +1,3 @@
-import { Facebook } from "lucide-react";
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { authApi } from "../../features/auth/auth.api";
@@ -17,13 +16,13 @@ export function OAuthButtons() {
     [location.state],
   );
 
-  const startOAuth = (provider: "google" | "facebook") => {
+  const startGoogleOAuth = () => {
     rememberOAuthIntent(intendedPath);
-    window.location.href = authApi.getOAuthUrl(provider);
+    window.location.href = authApi.getOAuthUrl("google");
   };
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3">
       <Button
         type="button"
         variant="authSecondary"
@@ -34,19 +33,9 @@ export function OAuthButtons() {
             G
           </span>
         }
-        onClick={() => startOAuth("google")}
+        onClick={startGoogleOAuth}
       >
         {t("auth.oauth.google")}
-      </Button>
-      <Button
-        type="button"
-        variant="authSecondary"
-        className="w-full"
-        aria-label={t("auth.oauth.continueWithFacebook")}
-        icon={<Facebook className="h-4 w-4 text-[#1877F2]" />}
-        onClick={() => startOAuth("facebook")}
-      >
-        {t("auth.oauth.facebook")}
       </Button>
     </div>
   );
