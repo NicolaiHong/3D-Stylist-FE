@@ -4,6 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
+        canvas: "rgb(var(--canvas) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        "surface-muted": "rgb(var(--surface-muted) / <alpha-value>)",
+        "surface-raised": "rgb(var(--surface-raised) / <alpha-value>)",
+        "border-soft": "rgb(var(--border-soft) / 0.12)",
+        "border-subtle": "rgb(var(--border-subtle) / 0.08)",
+        "text-primary": "rgb(var(--text-primary) / <alpha-value>)",
+        "text-secondary": "rgb(var(--text-secondary) / <alpha-value>)",
+        "text-muted": "rgb(var(--text-muted) / <alpha-value>)",
+        "accent-cyan": "rgb(var(--accent-cyan) / <alpha-value>)",
+        "accent-cyan-soft": "rgb(var(--accent-cyan-soft) / 0.12)",
+        "focus-ring": "rgb(var(--focus-ring) / <alpha-value>)",
         ink: "#17201d",
         mist: "#f6f4ef",
         moss: "#476657",
@@ -16,17 +28,17 @@ export default {
       },
       fontFamily: {
         display: [
-          "Be Vietnam Pro",
           "Outfit",
           "Inter",
+          "Be Vietnam Pro",
           "Plus Jakarta Sans",
           "ui-sans-serif",
           "system-ui",
           "sans-serif",
         ],
         sans: [
-          "Be Vietnam Pro",
           "Inter",
+          "Be Vietnam Pro",
           "Plus Jakarta Sans",
           "ui-sans-serif",
           "system-ui",

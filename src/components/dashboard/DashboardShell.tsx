@@ -188,10 +188,10 @@ export function DashboardShell({
 
   if (variant === "admin") {
     return (
-      <div className="min-h-screen overflow-x-hidden bg-[#0a0a0a] text-[#e5e2e1]">
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[#3b494c] bg-[#1c1b1b] p-4 lg:flex">
+      <div className="graphite-theme min-h-screen overflow-x-hidden bg-canvas text-text-primary">
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border-soft bg-surface p-4 lg:flex">
           <Link
-            className="mb-4 border-b border-[#3b494c]/60 px-3 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            className="mb-4 border-b border-border-subtle px-3 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring"
             to="/dashboard"
           >
             <span className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export function DashboardShell({
             ))}
           </nav>
 
-          <div className="flex flex-col items-center gap-2 border-t border-[#3b494c]/60 pt-3">
+          <div className="flex flex-col items-center gap-2 border-t border-border-subtle pt-3">
             <LanguageSwitch />
             <button
               className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
@@ -234,7 +234,7 @@ export function DashboardShell({
             aria-hidden="true"
             className="authenticated-app-surface pointer-events-none fixed inset-0 lg:left-64"
           />
-          <header className="sticky top-0 z-30 border-b border-[#3b494c] bg-[#0a0a0a]/92 px-4 py-3 backdrop-blur lg:hidden">
+          <header className="sticky top-0 z-30 border-b border-border-soft bg-canvas/[0.92] px-4 py-3 backdrop-blur lg:hidden">
             <div className="flex items-center justify-between gap-3">
               <Link
                 className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -282,13 +282,13 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#0a0a0a] text-[#e5e2e1]">
+    <div className="graphite-theme min-h-screen overflow-x-hidden bg-canvas text-text-primary">
       <div className="relative min-h-screen">
         <div
           aria-hidden="true"
           className="authenticated-app-surface pointer-events-none fixed inset-0"
         />
-        <header className="sticky top-0 z-30 border-b border-[#3b494c]/70 bg-[#0a0a0a]/92 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-10">
+        <header className="sticky top-0 z-30 border-b border-border-soft bg-canvas/[0.92] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-10">
           <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4">
             <Link
               className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
