@@ -283,8 +283,65 @@ textarea {
   background: linear-gradient(90deg, rgb(0 0 0 / 0.12), transparent 42%, rgb(0 0 0 / 0.08));
 }
 
+.landing-header-inner {
+  gap: 0.75rem;
+}
+
+.landing-header-brand,
+.landing-header-actions,
+.landing-header-primary,
+.landing-header-secondary {
+  min-width: 0;
+}
+
+.landing-header-actions {
+  flex: 0 0 auto;
+}
+
+.landing-header-primary,
+.landing-header-secondary {
+  white-space: nowrap;
+}
+
+.landing-header-primary svg {
+  flex: 0 0 auto;
+}
+
+.landing-hero-eyebrow,
+.landing-hero-title,
+.landing-hero-body,
+.landing-metric-card,
+.landing-preview-toolbar,
+.landing-preview-caption,
+.landing-preview-fallback {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.landing-hero-title {
+  font-size: clamp(2.45rem, 5.5vw + 0.8rem, 4.5rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.landing-hero-cta > * {
+  min-width: 0;
+  white-space: normal;
+}
+
+.landing-hero-cta span {
+  min-width: 0;
+}
+
+.landing-hero-cta svg {
+  flex: 0 0 auto;
+}
+
 .landing-preview-stage {
   position: relative;
+  max-width: 100%;
+  overflow: hidden;
   isolation: isolate;
 }
 
@@ -311,6 +368,8 @@ textarea {
 .landing-preview-card {
   position: relative;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border: 1px solid rgb(var(--accent-cyan) / 0.46);
   border-radius: 8px;
@@ -371,6 +430,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
   border-color: rgba(255, 255, 255, 0.08);
   background: rgba(10, 10, 10, 0.86);
@@ -379,6 +439,13 @@ textarea {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.14em;
+}
+
+.landing-preview-toolbar > span,
+.landing-preview-caption > span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .landing-preview-toolbar {
@@ -411,6 +478,32 @@ textarea {
   text-align: center;
   color: #e5e2e1;
   font-weight: 700;
+}
+
+@media (max-width: 479px) {
+  .landing-header-inner {
+    gap: 0.625rem;
+  }
+
+  .landing-header-secondary {
+    display: none;
+  }
+}
+
+@media (max-width: 374px) {
+  .landing-brand-wordmark {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .landing-preview-toolbar,
+  .landing-preview-caption {
+    gap: 0.45rem 0.75rem;
+    padding-inline: 0.75rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+  }
 }
 
 .landing-step-card {
