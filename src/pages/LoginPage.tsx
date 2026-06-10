@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { AlertCircle, ArrowRight, Mail } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle, Mail } from "lucide-react";
 import { AuthLayout } from "../components/auth/AuthLayout";
 import { OAuthButtons } from "../components/auth/OAuthButtons";
 import { Button } from "../components/common/Button";
@@ -34,6 +34,10 @@ export function LoginPage() {
   const redirectTo = useMemo(
     () => getAuthIntentPath(location.state),
     [location.state],
+  );
+  const resetSucceeded = useMemo(
+    () => new URLSearchParams(location.search).get("reset") === "success",
+    [location.search],
   );
 
   if (isAuthenticated) {
@@ -77,6 +81,16 @@ export function LoginPage() {
       subtitle={t("auth.login.subtitle")}
     >
       <form className="space-y-5" onSubmit={(event) => void handleSubmit(event)}>
+        {resetSucceeded ? (
+          <div
+            className="flex items-start gap-3 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/10 px-4 py-3 text-sm text-[#b9fff4]"
+            role="status"
+          >
+            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{t("auth.login.resetSuccess")}</span>
+          </div>
+        ) : null}
+
         <Input
           label={t("auth.email")}
           name="email"
@@ -104,6 +118,14 @@ export function LoginPage() {
             }))
           }
         />
+        <div className="-mt-2 flex justify-end">
+          <Link
+            className="text-sm font-semibold text-[#7df9df] transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7df9df]"
+            to="/forgot-password"
+          >
+            {t("auth.login.forgotPassword")}
+          </Link>
+        </div>
 
         {error ? (
           <div

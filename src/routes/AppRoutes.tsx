@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
+import { ForgotPasswordPage } from "../pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "../pages/ResetPasswordPage";
 import { OAuthSuccessPage } from "../pages/OAuthSuccessPage";
 import { OAuthErrorPage } from "../pages/OAuthErrorPage";
 import { DashboardPage } from "../pages/DashboardPage";
@@ -23,6 +25,8 @@ export function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/auth/success" element={<OAuthSuccessPage />} />
       <Route path="/auth/error" element={<OAuthErrorPage />} />
       <Route element={<ProtectedRoute requireCompletedOnboarding={false} />}>

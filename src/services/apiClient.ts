@@ -26,6 +26,8 @@ let refreshSessionPromise: Promise<RefreshResponse> | null = null;
 const AUTOMATIC_REFRESH_EXCLUDED_AUTH_PATHS = [
   "/auth/login",
   "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
   "/auth/refresh",
   "/auth/refresh-token",
 ];

@@ -32,6 +32,17 @@ export interface RegisterInput {
   password: string;
 }
 
+export interface ForgotPasswordInput {
+  email: string;
+}
+
+export interface ResetPasswordInput {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface AuthSession {
   user: AuthUser;
   accessToken: string;

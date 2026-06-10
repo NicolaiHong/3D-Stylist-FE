@@ -9,8 +9,10 @@ import type {
   AuthRole,
   AuthSession,
   AuthUser,
+  ForgotPasswordInput,
   LoginInput,
   RegisterInput,
+  ResetPasswordInput,
 } from "./auth.types";
 
 export type ApiAuthUser = Omit<
@@ -62,6 +64,11 @@ interface MeResponse {
   role?: string;
   status?: string;
   createdAt?: string;
+}
+
+interface AuthMessageResponse {
+  success: true;
+  message: string;
 }
 
 function normalizeRole(role: string): AuthRole {
@@ -152,6 +159,22 @@ export const authApi = {
     });
 
     return normalizeAuthResponse(data);
+  },
+
+  async forgotPassword(input: ForgotPasswordInput): Promise<string> {
+    const { data } = await apiClient.post<AuthMessageResponse>(
+      "/auth/forgot-password",
+      input,
+    );
+    return data.message;
+  },
+
+  async resetPassword(input: ResetPasswordInput): Promise<string> {
+    const { data } = await apiClient.post<AuthMessageResponse>(
+      "/auth/reset-password",
+      input,
+    );
+    return data.message;
   },
 
   async me(): Promise<AuthUser> {
