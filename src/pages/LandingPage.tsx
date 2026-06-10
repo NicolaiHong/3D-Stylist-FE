@@ -183,8 +183,8 @@ export function LandingPage() {
     : t("landing.createAccount");
 
   return (
-    <main className="landing-surface min-h-screen overflow-hidden bg-[#0a0a0a] text-[#e5e2e1]">
-      <header className="relative z-30 border-b border-white/[0.08] bg-[#0a0a0a]/90">
+    <main className="landing-surface graphite-theme min-h-screen overflow-hidden bg-canvas text-text-primary">
+      <header className="relative z-30 border-b border-border-subtle bg-canvas/90">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link
             className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00e5ff]"

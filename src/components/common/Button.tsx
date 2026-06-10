@@ -18,17 +18,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-ink text-white hover:bg-moss focus-visible:outline-ink shadow-sm",
+    "border border-accent-cyan/20 bg-accent-cyan text-[#001f24] hover:bg-[#9cf0ff] focus-visible:outline-focus-ring",
   secondary:
-    "border border-ink/15 bg-white text-ink hover:border-jade hover:text-jade focus-visible:outline-jade",
+    "border border-border-soft bg-surface-muted text-text-primary hover:bg-surface-raised focus-visible:outline-focus-ring",
   ghost:
-    "text-ink hover:bg-ink/5 focus-visible:outline-jade",
+    "text-text-secondary hover:bg-white/[0.045] hover:text-text-primary focus-visible:outline-focus-ring",
   danger:
     "bg-clay text-white hover:bg-clay/90 focus-visible:outline-clay shadow-sm",
   authPrimary:
-    "border border-[#34f5c5]/30 bg-[#2cebcf] text-[#06100e] shadow-[0_18px_45px_rgba(44,235,207,0.22)] hover:bg-[#7df9df] focus-visible:outline-[#7df9df]",
+    "border border-accent-cyan/20 bg-accent-cyan text-[#001f24] hover:bg-[#9cf0ff] focus-visible:outline-focus-ring",
   authSecondary:
-    "border border-white/10 bg-white/[0.04] text-slate-100 hover:border-[#34f5c5]/50 hover:bg-[#34f5c5]/10 focus-visible:outline-[#7df9df]",
+    "border border-border-soft bg-surface-muted text-text-primary hover:bg-surface-raised focus-visible:outline-focus-ring",
 };
 
 export function Button({

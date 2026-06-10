@@ -12,7 +12,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
   const { t } = useI18n();
 
   return (
-    <main className="atelier-grid relative min-h-screen overflow-hidden px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+    <main className="atelier-grid graphite-theme relative min-h-screen overflow-hidden px-4 py-6 text-text-primary sm:px-6 lg:px-8">
       <div className="absolute right-4 top-4 z-20 sm:right-6 lg:right-8">
         <LanguageSwitch />
       </div>
@@ -32,12 +32,12 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             </div>
 
             <div className="relative mx-auto my-10 h-[360px] w-full max-w-[430px]">
-              <div className="look-panel absolute inset-x-4 bottom-3 top-0 rounded-lg border border-white/10 bg-[#0c111a] shadow-[0_28px_90px_rgba(0,0,0,0.36)]">
-                <div className="absolute left-6 top-6 h-16 w-16 rounded-md border border-[#2cebcf]/20 bg-[#2cebcf]/10" />
+              <div className="look-panel absolute inset-x-4 bottom-3 top-0 rounded-lg border border-border-subtle bg-surface-muted shadow-[0_24px_72px_rgba(0,0,0,0.26)]">
+                <div className="absolute left-6 top-6 h-16 w-16 rounded-md border border-accent-cyan/[0.15] bg-accent-cyan/[0.08]" />
                 <div className="absolute right-7 top-7 flex gap-2">
                   <span className="h-6 w-6 rounded-full bg-[#ff8a65]" />
                   <span className="h-6 w-6 rounded-full bg-[#f0b44c]" />
-                  <span className="h-6 w-6 rounded-full bg-[#2cebcf]" />
+                  <span className="h-6 w-6 rounded-full bg-accent-cyan" />
                 </div>
                 <div className="garment-shape absolute bottom-10 left-1/2 h-56 w-36 -translate-x-1/2" />
                 <div className="absolute bottom-8 left-10 h-20 w-24 rounded-md border border-white/10 bg-white/[0.05]" />
@@ -46,19 +46,19 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-sm">
-              <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+              <div className="rounded-md border border-border-subtle bg-white/[0.025] p-3">
                 <span className="block text-lg font-bold text-white">12k</span>
                 <span className="text-slate-400">
                   {t("auth.hero.metricPreviews")}
                 </span>
               </div>
-              <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+              <div className="rounded-md border border-border-subtle bg-white/[0.025] p-3">
                 <span className="block text-lg font-bold text-white">42</span>
                 <span className="text-slate-400">
                   {t("auth.hero.metricPresets")}
                 </span>
               </div>
-              <div className="rounded-md border border-white/10 bg-white/[0.04] p-3">
+              <div className="rounded-md border border-border-subtle bg-white/[0.025] p-3">
                 <span className="block text-lg font-bold text-white">3D</span>
                 <span className="text-slate-400">
                   {t("auth.hero.metricAssets")}
@@ -68,7 +68,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           </div>
         </section>
 
-        <section className="w-full justify-self-center rounded-lg border border-white/10 bg-[#0b111a] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.42)] ring-1 ring-[#2cebcf]/10 sm:p-8 lg:p-9">
+        <section className="w-full justify-self-center rounded-lg border border-border-soft bg-surface-raised p-5 shadow-[0_24px_72px_rgba(0,0,0,0.28)] sm:p-8 lg:p-9">
           <div className="w-full max-w-md">
             <div className="mb-8 flex items-center justify-between md:hidden">
               <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#2cebcf]">
