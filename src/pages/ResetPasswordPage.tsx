@@ -100,13 +100,17 @@ export function ResetPasswordPage() {
       subtitle={t("auth.reset.subtitle")}
     >
       {state?.notice ? (
-        <div className="mb-5 flex items-start gap-3 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/10 px-4 py-3 text-sm text-[#b9fff4]">
+        <div
+          className="mb-4 flex items-start gap-3 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/10 px-4 py-3 text-sm text-[#b9fff4]"
+          role="status"
+          aria-live="polite"
+        >
           <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{state.notice}</span>
         </div>
       ) : null}
 
-      <p className="mb-5 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-slate-300">
+      <p className="mb-4 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-slate-300">
         {t("auth.reset.instruction")}
       </p>
 

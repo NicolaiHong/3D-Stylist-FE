@@ -85,6 +85,7 @@ export function LoginPage() {
           <div
             className="flex items-start gap-3 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/10 px-4 py-3 text-sm text-[#b9fff4]"
             role="status"
+            aria-live="polite"
           >
             <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{t("auth.login.resetSuccess")}</span>
@@ -148,10 +149,10 @@ export function LoginPage() {
         </Button>
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-sm text-slate-500">
-        <span className="h-px flex-1 bg-white/10" />
+      <div className="my-5 flex items-center gap-3 text-sm text-slate-400">
+        <span className="h-px flex-1 bg-white/[0.16]" />
         <span>{t("auth.separator")}</span>
-        <span className="h-px flex-1 bg-white/10" />
+        <span className="h-px flex-1 bg-white/[0.16]" />
       </div>
 
       <OAuthButtons />
