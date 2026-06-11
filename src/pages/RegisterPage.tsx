@@ -175,10 +175,10 @@ export function RegisterPage() {
         </Button>
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-sm text-slate-500">
-        <span className="h-px flex-1 bg-white/10" />
+      <div className="my-5 flex items-center gap-3 text-sm text-slate-400">
+        <span className="h-px flex-1 bg-white/[0.16]" />
         <span>{t("auth.separator")}</span>
-        <span className="h-px flex-1 bg-white/10" />
+        <span className="h-px flex-1 bg-white/[0.16]" />
       </div>
 
       <OAuthButtons />

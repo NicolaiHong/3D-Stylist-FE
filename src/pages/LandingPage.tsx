@@ -183,18 +183,18 @@ export function LandingPage() {
     : t("landing.createAccount");
 
   return (
-    <main className="landing-surface graphite-theme min-h-screen overflow-hidden bg-canvas text-text-primary">
+    <main className="landing-surface graphite-theme min-h-screen overflow-x-hidden bg-canvas text-text-primary">
       <header className="relative z-30 border-b border-border-subtle bg-canvas/90">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="landing-header-inner mx-auto flex w-full max-w-7xl items-center justify-between px-3 py-4 sm:px-6 lg:px-8">
           <Link
-            className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00e5ff]"
+            className="landing-header-brand flex min-w-0 items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00e5ff] sm:gap-3"
             to="/"
             aria-label={t("landing.homeAria")}
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#12dff3]/55 bg-[#12dff3]/15 text-[#c3f5ff]">
               <Sparkles className="h-5 w-5" />
             </span>
-            <span className="truncate font-display text-base font-bold text-white">
+            <span className="landing-brand-wordmark truncate font-display text-base font-bold text-white">
               3D Stylist
             </span>
           </Link>
@@ -217,7 +217,7 @@ export function LandingPage() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="landing-header-actions flex min-w-0 items-center gap-2">
             <LanguageSwitch />
             {isAuthenticated ? (
               <Link
@@ -229,15 +229,16 @@ export function LandingPage() {
               </Link>
             ) : (
               <Link
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#bac9cc] transition hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
+                className="landing-header-secondary inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#bac9cc] transition hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
                 to="/login"
+                aria-label={t("landing.signIn")}
               >
                 <LogIn className="hidden h-4 w-4 sm:block" />
                 {t("landing.signIn")}
               </Link>
             )}
             <Link
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#12dff3] bg-[#12dff3] px-4 py-2 text-sm font-bold text-[#001f24] shadow-[0_16px_42px_rgba(0,229,255,0.26)] transition hover:bg-[#c3f5ff] hover:shadow-[0_18px_50px_rgba(0,229,255,0.34)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff]"
+              className="landing-header-primary inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#12dff3] bg-[#12dff3] px-3 py-2 text-sm font-bold text-[#001f24] shadow-[0_16px_42px_rgba(0,229,255,0.26)] transition hover:bg-[#c3f5ff] hover:shadow-[0_18px_50px_rgba(0,229,255,0.34)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff] sm:px-4"
               to={primaryHref}
             >
               {isAuthenticated ? t("landing.openStudio") : t("landing.getStarted")}
@@ -249,57 +250,57 @@ export function LandingPage() {
 
       <section
         id="preview"
-        className="relative z-10 mx-auto grid w-full max-w-7xl gap-10 px-4 pb-20 pt-10 sm:px-6 md:pt-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8 lg:pb-24"
+        className="relative z-10 mx-auto grid w-full max-w-7xl min-w-0 gap-10 px-4 pb-16 pt-9 sm:px-6 md:pt-14 lg:px-8 lg:pb-20 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-center xl:pb-24"
       >
-        <div className="max-w-3xl">
-          <p className="inline-flex rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
+        <div className="min-w-0 max-w-3xl">
+          <p className="landing-hero-eyebrow inline-flex max-w-full rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
             {t("landing.hero.eyebrow")}
           </p>
-          <h1 className="mt-7 max-w-3xl font-display text-5xl font-bold leading-[1.02] text-white sm:text-6xl lg:text-7xl">
+          <h1 className="landing-hero-title mt-6 max-w-3xl font-display font-bold text-white sm:mt-7">
             {t("landing.hero.titleLead")}{" "}
             <span className="text-[#00e5ff]">
               {t("landing.hero.titleAccent")}
             </span>
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#bac9cc] sm:text-xl">
+          <p className="landing-hero-body mt-5 max-w-2xl text-base leading-7 text-[#bac9cc] sm:mt-6 sm:text-lg sm:leading-8 lg:text-xl">
             {t("landing.hero.body")}
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="landing-hero-cta mt-7 flex min-w-0 flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
             <Link
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#12dff3] px-5 py-3 text-sm font-bold text-[#001f24] shadow-[0_18px_56px_rgba(0,229,255,0.28)] transition hover:bg-[#c3f5ff] hover:shadow-[0_22px_64px_rgba(0,229,255,0.38)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff]"
+              className="inline-flex min-h-12 w-full max-w-full items-center justify-center gap-2 rounded-md bg-[#12dff3] px-5 py-3 text-center text-sm font-bold text-[#001f24] shadow-[0_18px_56px_rgba(0,229,255,0.28)] transition hover:bg-[#c3f5ff] hover:shadow-[0_22px_64px_rgba(0,229,255,0.38)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff] sm:w-auto"
               to={primaryHref}
             >
-              {primaryLabel}
+              <span>{primaryLabel}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
             {isAuthenticated ? (
               <Link
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-[#121212] px-5 py-3 text-sm font-bold text-white transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
+                className="inline-flex min-h-12 w-full max-w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-[#121212] px-5 py-3 text-center text-sm font-bold text-white transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff] sm:w-auto"
                 to="/credits"
               >
-                {t("landing.exploreCredits")}
+                <span>{t("landing.exploreCredits")}</span>
                 <ChevronRight className="h-4 w-4" />
               </Link>
             ) : (
               <a
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-[#121212] px-5 py-3 text-sm font-bold text-white transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
+                className="inline-flex min-h-12 w-full max-w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] bg-[#121212] px-5 py-3 text-center text-sm font-bold text-white transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff] sm:w-auto"
                 href="#pricing"
               >
-                {t("landing.viewPlans")}
+                <span>{t("landing.viewPlans")}</span>
                 <ChevronRight className="h-4 w-4" />
               </a>
             )}
           </div>
 
-          <dl className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
+          <dl className="mt-9 grid max-w-2xl min-w-0 gap-3 sm:mt-10 sm:grid-cols-3">
             {[
               [t("landing.metric.prompt"), t("landing.metric.promptDetail")],
               [t("landing.metric.credits"), t("landing.metric.creditsDetail")],
               [t("landing.metric.preview"), t("landing.metric.previewDetail")],
             ].map(([label, detail]) => (
               <div
-                className="rounded-lg border border-white/[0.08] bg-[#121212]/90 p-4"
+                className="landing-metric-card min-w-0 rounded-lg border border-white/[0.08] bg-[#121212]/90 p-4"
                 key={label}
               >
                 <dt className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
@@ -313,16 +314,16 @@ export function LandingPage() {
           </dl>
         </div>
 
-        <div className="landing-preview-stage">
+        <div className="landing-preview-stage mx-auto w-full max-w-4xl min-w-0 xl:max-w-none">
           <div className="landing-preview-card">
             <div className="landing-preview-toolbar">
-              <span className="flex items-center gap-1.5">
+              <span className="flex min-w-0 items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
                 {t("landing.preview.toolbar")}
               </span>
-              <span>GLB</span>
+              <span className="shrink-0">GLB</span>
             </div>
-            <div className="landing-preview-viewport h-[390px] sm:h-[460px] md:h-[540px] lg:h-[640px]">
+            <div className="landing-preview-viewport h-[320px] sm:h-[390px] md:h-[460px] lg:h-[500px] xl:h-[640px]">
               <PreviewErrorBoundary fallback={<PreviewErrorFallback />}>
                 <Suspense fallback={<PreviewLoadingFallback />}>
                   <FashionPreview3D />
