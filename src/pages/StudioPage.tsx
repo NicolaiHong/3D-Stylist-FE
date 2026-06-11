@@ -142,7 +142,7 @@ function StudioPreview({
     return previewUrl ? (
       <img
         alt={promptSnippet}
-        className="h-full w-full object-contain"
+        className="h-full max-h-full w-full max-w-full object-contain"
         src={previewUrl}
       />
     ) : (
@@ -372,10 +372,10 @@ export function StudioPage() {
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
-      <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="mx-auto w-full max-w-[1560px] space-y-6">
+      <main className="min-h-screen min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <div className="mx-auto w-full min-w-0 max-w-[1560px] space-y-6">
           <header className="flex flex-col gap-5 border-b border-[#3b494c]/70 pb-6 xl:flex-row xl:items-end xl:justify-between">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
                 {t("studio.header.eyebrow")}
               </p>
@@ -387,7 +387,7 @@ export function StudioPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
               <div
                 aria-label={t("studio.viewModeAria")}
                 className="grid grid-cols-2 rounded-md border border-[#3b494c] bg-[#1c1b1b] p-1"
@@ -395,7 +395,7 @@ export function StudioPage() {
               >
                 <button
                   aria-pressed={viewMode === "2d"}
-                  className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                  className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
                     viewMode === "2d"
                       ? "bg-[#00e5ff] text-[#001f24]"
                       : "text-[#bac9cc] hover:text-white"
@@ -407,7 +407,7 @@ export function StudioPage() {
                 </button>
                 <button
                   aria-pressed={viewMode === "3d"}
-                  className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                  className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
                     viewMode === "3d"
                       ? "bg-[#00e5ff] text-[#001f24]"
                       : "text-[#bac9cc] hover:text-white"
@@ -474,7 +474,7 @@ export function StudioPage() {
                   <p className="text-sm">{error}</p>
                 </div>
                 <button
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
                   type="button"
                   onClick={() => void loadFigures()}
                 >
@@ -486,7 +486,7 @@ export function StudioPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
               <div className="h-[620px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
               <div className="h-[620px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
             </div>
@@ -494,9 +494,9 @@ export function StudioPage() {
             <StudioEmptyState />
           ) : selectedFigure ? (
             <>
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section className="space-y-4">
-                  <div className="studio-grid relative min-h-[540px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-2xl shadow-black/40">
+              <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+                <section className="min-w-0 max-w-full space-y-4">
+                  <div className="studio-grid relative mx-auto h-[clamp(400px,56vw,640px)] w-full min-w-0 max-w-[960px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-2xl shadow-black/40">
                     <div className="absolute left-4 top-4 z-10">
                       <span className="block h-0.5 w-14 bg-[#00e5ff]" />
                       <span className="mt-2 block font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[#00e5ff]/75">
@@ -506,7 +506,7 @@ export function StudioPage() {
                     <div className="absolute right-4 top-4 z-10 rounded-sm bg-[#00e5ff] px-2 py-1 text-[0.65rem] font-black text-[#001f24]">
                       {viewMode === "3d" ? "GLB" : "IMG"}
                     </div>
-                    <div className="relative flex min-h-[540px] items-center justify-center">
+                    <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
                       <StudioPreview
                         canDownloadModel={
                           summary?.capabilities.canDownloadModel === true
@@ -518,8 +518,8 @@ export function StudioPage() {
                         viewMode={viewMode}
                       />
                     </div>
-                    <div className="absolute inset-x-4 bottom-4 z-10 grid gap-3 rounded-md border border-[#3b494c]/70 bg-[#0a0a0a]/90 p-4 backdrop-blur sm:grid-cols-2">
-                      <div>
+                    <div className="absolute inset-x-3 bottom-3 z-10 grid min-w-0 gap-3 rounded-md border border-[#3b494c]/70 bg-[#0a0a0a]/90 p-3 backdrop-blur sm:inset-x-4 sm:bottom-4 sm:grid-cols-2 sm:p-4">
+                      <div className="min-w-0">
                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#849396]">
                           {t("studio.currentPrompt")}
                         </p>
@@ -530,7 +530,7 @@ export function StudioPage() {
                           )}
                         </p>
                       </div>
-                      <div className="border-[#3b494c]/70 sm:border-l sm:pl-4">
+                      <div className="min-w-0 border-[#3b494c]/70 sm:border-l sm:pl-4">
                         <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#849396]">
                           {t("studio.styleDirection")}
                         </p>
@@ -542,11 +542,11 @@ export function StudioPage() {
                     </div>
                   </div>
 
-                  <section>
+                  <section className="min-w-0 max-w-full">
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
                       {t("studio.recentAssets")}
                     </h2>
-                    <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
+                    <div className="mt-3 flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pb-2">
                       {figures.map((figure) => {
                         const previewUrl = getPreviewUrl(figure);
                         const isSelected = figure.id === selectedFigure.id;
@@ -554,7 +554,7 @@ export function StudioPage() {
                         return (
                           <button
                             aria-pressed={isSelected}
-                            className={`w-44 shrink-0 overflow-hidden rounded-md border bg-[#1c1b1b] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                            className={`min-h-11 w-44 shrink-0 overflow-hidden rounded-md border bg-[#1c1b1b] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
                               isSelected
                                 ? "border-[#00e5ff]/70"
                                 : "border-[#3b494c] hover:border-[#00e5ff]/45"
@@ -612,7 +612,7 @@ export function StudioPage() {
                   </section>
                 </section>
 
-                <aside className="space-y-6 rounded-lg border border-[#3b494c] bg-[#121212] p-5">
+                <aside className="min-w-0 max-w-full space-y-6 rounded-lg border border-[#3b494c] bg-[#121212] p-5">
                   <section>
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
                       {t("studio.metadata")}
@@ -727,7 +727,7 @@ export function StudioPage() {
                         </p>
                         {!summary?.capabilities.canExportModel ? (
                           <Link
-                            className="mt-3 inline-flex min-h-10 items-center justify-center rounded-md border border-[#f3bf26]/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-[#f3bf26]/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                             to="/credits"
                           >
                             {t("landing.viewPlans")}

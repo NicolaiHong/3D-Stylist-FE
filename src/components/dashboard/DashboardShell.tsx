@@ -61,6 +61,9 @@ const userNavigationItems: NavigationItem[] = [
   },
 ];
 
+const authenticatedLanguageSwitchClassName =
+  "!h-12 !w-28 !basis-28 [&>button]:!h-11 [&>button]:!w-[54px] [&>button]:!basis-[54px]";
+
 function SidebarNavItem({ item }: { item: NavigationItem }) {
   const Icon = item.icon;
   const { t } = useI18n();
@@ -216,9 +219,9 @@ export function DashboardShell({
           </nav>
 
           <div className="flex flex-col items-center gap-2 border-t border-border-subtle pt-3">
-            <LanguageSwitch />
+            <LanguageSwitch className={authenticatedLanguageSwitchClassName} />
             <button
-              className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.08] px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isLoading}
               type="button"
               onClick={() => void logout()}
@@ -237,7 +240,7 @@ export function DashboardShell({
           <header className="sticky top-0 z-30 border-b border-border-soft bg-canvas/[0.92] px-4 py-3 backdrop-blur lg:hidden">
             <div className="flex items-center justify-between gap-3">
               <Link
-                className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                className="flex min-h-11 min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                 to="/dashboard"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] text-[#001f24]">
@@ -253,10 +256,12 @@ export function DashboardShell({
                 </span>
               </Link>
               <div className="flex shrink-0 items-center gap-2">
-                <LanguageSwitch />
+                <LanguageSwitch
+                  className={authenticatedLanguageSwitchClassName}
+                />
                 <button
                   aria-label={t("common.logout")}
-                  className="flex h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex h-11 w-11 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={isLoading}
                   type="button"
                   onClick={() => void logout()}
@@ -291,7 +296,7 @@ export function DashboardShell({
         <header className="sticky top-0 z-30 border-b border-border-soft bg-canvas/[0.92] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-10">
           <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4">
             <Link
-              className="flex min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              className="flex min-h-11 min-w-0 items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               to="/dashboard"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] text-[#001f24]">
@@ -309,7 +314,7 @@ export function DashboardShell({
 
             <nav
               aria-label={t("shell.nav.mainAria")}
-              className="hidden items-center gap-1 lg:flex"
+              className="hidden items-center gap-1 xl:flex"
             >
               {visibleUserNavigation.map((item) => (
                 <UserTopNavItem item={item} key={item.labelKey} />
@@ -320,10 +325,10 @@ export function DashboardShell({
               <span className="hidden max-w-[180px] truncate rounded-md border border-[#00e5ff]/20 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[#c3f5ff] sm:inline-flex">
                 {planLabel || t("shell.planFallback")}
               </span>
-              <LanguageSwitch />
+              <LanguageSwitch className={authenticatedLanguageSwitchClassName} />
               <button
                 aria-label={t("common.logout")}
-                className="hidden h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 sm:flex"
+                className="hidden h-11 w-11 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 sm:flex"
                 disabled={isLoading}
                 type="button"
                 onClick={() => void logout()}
@@ -337,7 +342,7 @@ export function DashboardShell({
                     ? t("shell.nav.closeMenu")
                     : t("shell.nav.openMenu")
                 }
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] lg:hidden"
+                className="flex h-11 w-11 items-center justify-center rounded-md border border-white/[0.08] text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] xl:hidden"
                 type="button"
                 onClick={() => setIsMobileNavOpen((isOpen) => !isOpen)}
               >
