@@ -448,7 +448,7 @@ function UsersTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="internal-scroll-region overflow-x-auto">
       <table className="min-w-[820px] w-full text-left">
         <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
           <tr>
@@ -544,7 +544,7 @@ function OrdersTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="internal-scroll-region overflow-x-auto">
       <table className="min-w-[1060px] w-full text-left">
         <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
           <tr>
@@ -629,7 +629,7 @@ function OrdersTable({
                 <td className="px-5 py-4">
                   {canMarkPaid ? (
                     <button
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#f3bf26] px-3 py-2 text-xs font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96] disabled:cursor-not-allowed disabled:opacity-70"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#f3bf26] px-3 py-2 text-xs font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96] disabled:cursor-not-allowed disabled:opacity-70"
                       disabled={markingOrderId === order.id}
                       type="button"
                       onClick={() => onRequestMarkPaid(order)}
@@ -674,7 +674,7 @@ function TransactionsTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="internal-scroll-region overflow-x-auto">
       <table className="min-w-[980px] w-full text-left">
         <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
           <tr>
@@ -942,7 +942,7 @@ function CatalogPanel({
       ) : productsResult.products.length === 0 ? (
         <AdminEmptyState message={t("admin.empty.products")} />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="internal-scroll-region overflow-x-auto">
           <table className="min-w-[900px] w-full text-left">
             <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
               <tr>
@@ -1107,7 +1107,7 @@ function ManualMarkPaidDialog({
         aria-describedby="manual-mark-paid-description"
         aria-labelledby="manual-mark-paid-title"
         aria-modal="true"
-        className="max-h-[calc(100vh-4rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-[#f3bf26]/35 bg-[#1c1b1b] shadow-[0_0_56px_rgba(243,191,38,0.14)]"
+        className="max-h-[calc(100vh-4rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-[#f3bf26]/35 bg-[#1c1b1b] shadow-2xl shadow-black/35"
         onKeyDown={trapFocus}
         ref={dialogRef}
         role="dialog"
@@ -1126,7 +1126,7 @@ function ManualMarkPaidDialog({
           </div>
           <button
             aria-label={t("admin.dialog.closeAria")}
-            className="flex h-10 w-10 items-center justify-center rounded-md border border-white/10 text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-11 w-11 items-center justify-center rounded-md border border-white/10 text-[#bac9cc] transition hover:border-[#00e5ff]/35 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSubmitting}
             type="button"
             onClick={onClose}
@@ -1465,7 +1465,7 @@ export function AdminPage() {
 
   return (
     <DashboardShell planLabel={t("shell.adminPlan")}>
-      <main className="min-h-screen overflow-x-hidden px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
+      <main className="min-h-screen min-w-0 px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
         <div className="mx-auto w-full max-w-[1440px] space-y-6">
           <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] xl:items-end">
             <div>

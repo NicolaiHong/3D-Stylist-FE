@@ -142,7 +142,7 @@ function SubscriptionCancelDialog({
         aria-describedby="subscription-cancel-description"
         aria-labelledby="subscription-cancel-title"
         aria-modal="true"
-        className="w-full max-w-lg rounded-lg border border-[#f3bf26]/30 bg-[#1c1b1b] p-5 text-[#e5e2e1] shadow-[0_0_42px_rgba(243,191,38,0.12)]"
+        className="w-full max-w-lg rounded-lg border border-[#f3bf26]/30 bg-[#1c1b1b] p-5 text-[#e5e2e1] shadow-2xl shadow-black/35"
         ref={dialogRef}
         role="dialog"
         onKeyDown={trapFocus}
@@ -153,7 +153,7 @@ function SubscriptionCancelDialog({
           </span>
           <button
             aria-label={t("credits.cancel.closeAria")}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-[#bac9cc] transition hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-[#bac9cc] transition hover:bg-white/[0.08] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isSubmitting}
             type="button"
             onClick={onClose}
@@ -507,8 +507,8 @@ export function CreditsPage() {
               </p>
             </div>
 
-            <section className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
+            <section className="grid grid-cols-2 divide-x divide-[#3b494c]/60 overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
+              <div className="min-w-0 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#bac9cc]">
                   {t("credits.summary.currentPlan")}
                 </p>
@@ -516,7 +516,7 @@ export function CreditsPage() {
                   {summary?.plan.name ?? t("credits.summary.free")}
                 </p>
               </div>
-              <div className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
+              <div className="min-w-0 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#bac9cc]">
                   {t("credits.summary.credits")}
                 </p>
@@ -555,7 +555,7 @@ export function CreditsPage() {
           ) : null}
 
           {actionMessage ? (
-            <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-4 text-sm text-[#c3f5ff]">
+            <section className="border-l-2 border-[#2cebcf]/45 py-2 pl-4 text-sm text-[#c9fff6]">
               <div className="flex gap-3">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{actionMessage}</span>
@@ -564,10 +564,10 @@ export function CreditsPage() {
           ) : null}
 
           {selectedProduct ? (
-            <section className="rounded-lg border border-[#00e5ff]/25 bg-[#00e5ff]/10 p-4">
+            <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00e5ff]">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#bac9cc]">
                     {t("credits.cart.eyebrow")}
                   </p>
                   <h2 className="mt-2 font-display text-2xl font-semibold text-white">
@@ -586,7 +586,7 @@ export function CreditsPage() {
                           count: selectedProduct.credits ?? 0,
                         })}
                   </p>
-                  <p className="mt-2 max-w-2xl text-xs font-semibold leading-5 text-[#c3f5ff]">
+                  <p className="mt-2 max-w-2xl text-xs font-semibold leading-5 text-[#849396]">
                     {t("credits.cart.checkoutNote")}
                   </p>
                 </div>
@@ -616,10 +616,10 @@ export function CreditsPage() {
             </section>
           ) : null}
 
-          <section className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
+          <section className="border-y border-[#3b494c]/60 py-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 text-[#00e5ff]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-[#bac9cc]">
                   <CreditCard className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
@@ -654,7 +654,7 @@ export function CreditsPage() {
             <>
               <section className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-[#00e5ff]" />
+                  <ShieldCheck className="h-5 w-5 text-[#bac9cc]" />
                   <h2 className="font-display text-2xl font-semibold text-white">
                     {t("credits.plans.title")}
                   </h2>
@@ -703,17 +703,17 @@ export function CreditsPage() {
                           </p>
                           <ul className="mt-4 space-y-2.5 text-sm text-[#bac9cc]">
                             <li className="flex gap-2">
-                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#849396]" />
                               {t("credits.plan.includedGenerations", {
                                 count: plan.credits ?? 0,
                               })}
                             </li>
                             <li className="flex gap-2">
-                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#849396]" />
                               {t("credits.plan.export")}
                             </li>
                             <li className="flex gap-2">
-                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]" />
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#849396]" />
                               {getPlanBenefit(plan, t)}
                             </li>
                           </ul>
@@ -735,7 +735,7 @@ export function CreditsPage() {
 
               <section className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Database className="h-5 w-5 text-[#00e5ff]" />
+                  <Database className="h-5 w-5 text-[#bac9cc]" />
                   <h2 className="font-display text-2xl font-semibold text-white">
                     {t("credits.packs.title")}
                   </h2>
@@ -761,7 +761,7 @@ export function CreditsPage() {
                               {t("credits.packs.rule")}
                             </p>
                           </div>
-                          <WalletCards className="h-5 w-5 text-[#f3bf26]" />
+                          <WalletCards className="h-5 w-5 text-[#849396]" />
                         </div>
                         <p className="mt-5 font-display text-3xl font-semibold text-white">
                           {formatI18nCurrency(

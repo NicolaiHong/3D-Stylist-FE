@@ -281,10 +281,10 @@ export function ProfilePage() {
     <DashboardShell planLabel={billingSummary?.plan.name}>
       <main className="min-h-screen px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
         <div className="mx-auto w-full max-w-[1180px] space-y-6">
-          <section className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] shadow-[0_0_38px_rgba(0,229,255,0.08)]">
+          <section className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
             <div className="grid gap-5 p-5 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-6 lg:p-6">
               <div className="mx-auto w-full max-w-[180px] lg:mx-0">
-                <div className="relative aspect-square rounded-lg border border-[#00e5ff]/55 bg-[#0e0e0e] p-1 shadow-[0_0_28px_rgba(0,229,255,0.18)]">
+                <div className="relative aspect-square rounded-lg border border-white/10 bg-[#0e0e0e] p-1">
                   {activePreviewUrl ? (
                     <img
                       alt={t("profile.avatarAlt", { name: fallbackName })}
@@ -301,7 +301,7 @@ export function ProfilePage() {
                       </span>
                     </div>
                   )}
-                  <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-md border border-[#1c1b1b] bg-[#00e5ff] text-[#001f24]">
+                  <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-md border border-[#3b494c] bg-[#1c1b1b] text-[#9cf0ff]">
                     {activePreviewUrl ? (
                       <BadgeCheck className="h-4 w-4" />
                     ) : (
@@ -323,7 +323,7 @@ export function ProfilePage() {
                   <h1 className="font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
                     {fallbackName}
                   </h1>
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-[#00e5ff]/30 bg-[#00e5ff]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#9cf0ff]">
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#bac9cc]">
                     {isAdmin ? (
                       <ShieldCheck className="h-3.5 w-3.5" />
                     ) : (
@@ -405,7 +405,7 @@ export function ProfilePage() {
                   </span>
                 </div>
                 <button
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#f3bf26]/35 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f3bf26]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#f3bf26]/35 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f3bf26]"
                   type="button"
                   onClick={() => void loadBillingSummary()}
                 >
@@ -477,9 +477,9 @@ export function ProfilePage() {
                 </div>
               ) : null}
 
-              <section className="mt-6 rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-4">
+              <section className="mt-6 border-t border-[#3b494c]/60 pt-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff]/10 text-[#9cf0ff]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-[#bac9cc]">
                     <UserRound className="h-5 w-5" />
                   </span>
                   <div>
@@ -642,8 +642,8 @@ export function ProfilePage() {
               </button>
             </div>
 
-            <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+            <dl className="mt-6 grid overflow-hidden rounded-lg border border-[#3b494c] sm:grid-cols-2 lg:grid-cols-3">
+              <div className="border-b border-[#3b494c]/60 p-4 sm:border-r lg:border-r">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Mail className="h-3.5 w-3.5" />
                   {t("profile.record.email")}
@@ -652,7 +652,7 @@ export function ProfilePage() {
                   {user.email || t("profile.identity.notProvided")}
                 </dd>
               </div>
-              <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+              <div className="border-b border-[#3b494c]/60 p-4 lg:border-r">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <CreditCard className="h-3.5 w-3.5" />
                   {t("profile.currentPlan")}
@@ -665,7 +665,7 @@ export function ProfilePage() {
                       : planName}
                 </dd>
               </div>
-              <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+              <div className="border-b border-[#3b494c]/60 p-4 sm:border-r lg:border-r-0">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Sparkles className="h-3.5 w-3.5" />
                   {t("profile.credits")}
@@ -678,7 +678,7 @@ export function ProfilePage() {
                       : creditsBalance}
                 </dd>
               </div>
-              <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+              <div className="border-b border-[#3b494c]/60 p-4 lg:border-b-0 lg:border-r">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <BadgeCheck className="h-3.5 w-3.5" />
                   {t("profile.record.planStatus")}
@@ -687,7 +687,7 @@ export function ProfilePage() {
                   {billingStatusLabel}
                 </dd>
               </div>
-              <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+              <div className="border-b border-[#3b494c]/60 p-4 sm:border-b-0 sm:border-r">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Calendar className="h-3.5 w-3.5" />
                   {t("profile.record.joined")}
@@ -700,7 +700,7 @@ export function ProfilePage() {
                   )}
                 </dd>
               </div>
-              <div className="rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+              <div className="p-4">
                 <dt className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   <Camera className="h-3.5 w-3.5" />
                   {t("profile.record.selfie")}
@@ -714,7 +714,7 @@ export function ProfilePage() {
             </dl>
 
             {isAdmin ? (
-              <section className="mt-4 rounded-lg border border-[#3b494c] bg-[#0e0e0e] p-4">
+              <section className="mt-4 border-t border-[#3b494c]/60 pt-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#849396]">
                   {t("profile.record.adminFields")}
                 </p>

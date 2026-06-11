@@ -345,11 +345,9 @@ function mergeFigureIntoList(figures: FigureDto[], figure: FigureDto) {
 function DashboardSkeleton() {
   return (
     <div className="grid gap-5 lg:grid-cols-12">
-      <div className="h-72 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-8" />
-      <div className="h-72 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-4" />
-      <div className="h-52 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-4" />
-      <div className="h-52 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-4" />
-      <div className="h-52 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-4" />
+      <div className="h-[430px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-9" />
+      <div className="h-64 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-3" />
+      <div className="h-36 animate-pulse rounded-lg border border-white/10 bg-white/[0.04] lg:col-span-12" />
     </div>
   );
 }
@@ -426,44 +424,29 @@ function FigureCard({
     downloadingAssetKey === getFigureAssetKey(figure, "model");
 
   return (
-    <article className="overflow-hidden rounded-lg border border-[#3b494c]/70 bg-[#201f1f]">
-      <div className="aspect-square overflow-hidden border-b border-[#3b494c]/70 bg-[#0e0e0e]">
+    <article className="overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#1c1b1b]">
+      <div className="aspect-[4/3] overflow-hidden border-b border-[#3b494c]/50 bg-[#0e0e0e]">
         <FigurePreview figure={figure} />
       </div>
-      <div className="space-y-4 p-4">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="space-y-3 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <FigureStatusBadge status={figure.status} />
+          <span className="text-xs font-semibold text-[#849396]">
+            {createdDate}
+          </span>
         </div>
-        <div>
-          <p className="dashboard-utility-label font-bold text-[#849396]">
-            {t("dashboard.figure.prompt")}
-          </p>
-          <p className="mt-1 min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
+        <div className="border-b border-[#3b494c]/45 pb-3">
+          <p className="min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
             {promptSnippet}
           </p>
         </div>
-        <div>
-          <p className="dashboard-utility-label font-bold text-[#849396]">
-            {t("dashboard.figure.created")}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-[#bac9cc]">
-            {createdDate}
-          </p>
-        </div>
         {assetAvailability.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {assetAvailability.map((label) => (
-              <span
-                className="rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-[#bac9cc]"
-                key={label}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
+          <p className="text-xs font-semibold leading-5 text-[#849396]">
+            {assetAvailability.join(" · ")}
+          </p>
         ) : null}
         {figure.status === "failed" && figure.failureReason ? (
-          <p className="rounded-md border border-[#ffb4ab]/20 bg-[#93000a]/20 p-3 text-xs leading-5 text-[#ffdad6]">
+          <p className="border-l-2 border-[#ffb4ab]/35 pl-3 text-xs leading-5 text-[#ffdad6]">
             {figure.failureReason}
           </p>
         ) : null}
@@ -473,7 +456,7 @@ function FigureCard({
               aria-label={t("dashboard.figure.viewImageAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
               type="button"
               onClick={() => onView(figure)}
             >
@@ -486,7 +469,7 @@ function FigureCard({
               aria-label={t("dashboard.figure.downloadImageAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isImageDownloading}
               type="button"
               onClick={() => onDownload(figure, "image")}
@@ -501,7 +484,7 @@ function FigureCard({
           ) : null}
           {figure.modelUrl ? (
             <a
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               href={figure.modelUrl}
               rel="noreferrer"
               target="_blank"
@@ -515,7 +498,7 @@ function FigureCard({
               aria-label={t("dashboard.figure.downloadModelAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isModelDownloading}
               type="button"
               onClick={() => onDownload(figure, "model")}
@@ -578,7 +561,7 @@ function FigurePreviewDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/78 p-4 backdrop-blur-sm"
       role="dialog"
     >
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-lg border border-[#3b494c] bg-[#141313] shadow-2xl shadow-black/50">
+      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-lg border border-[#3b494c] bg-[#141313] shadow-2xl shadow-black/35">
         <div className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-4 sm:p-5">
           <div>
             <p className="dashboard-utility-label font-bold text-[#00e5ff]">
@@ -593,7 +576,7 @@ function FigurePreviewDialog({
           </div>
           <button
             aria-label={t("dashboard.dialog.closeImagePreview")}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
             type="button"
             onClick={onClose}
           >
@@ -704,7 +687,7 @@ function ActiveFigurePanel({
     downloadingAssetKey === getFigureAssetKey(figure, "model");
 
   return (
-    <div className="grid gap-4 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4 md:grid-cols-[160px_1fr]">
+    <div className="grid gap-4 border-t border-[#3b494c]/60 pt-4 md:grid-cols-[160px_1fr]">
       <div className="aspect-square overflow-hidden rounded-md border border-[#3b494c] bg-[#090909]">
         <FigurePreview figure={figure} />
       </div>
@@ -742,7 +725,7 @@ function ActiveFigurePanel({
               aria-label={t("dashboard.figure.viewImageAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
               type="button"
               onClick={() => onView(figure)}
             >
@@ -755,7 +738,7 @@ function ActiveFigurePanel({
               aria-label={t("dashboard.figure.downloadImageAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               disabled={isImageDownloading}
               type="button"
               onClick={() => onDownload(figure, "image")}
@@ -770,7 +753,7 @@ function ActiveFigurePanel({
           ) : null}
           {figure.modelUrl ? (
             <a
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
               href={figure.modelUrl}
               rel="noreferrer"
               target="_blank"
@@ -784,7 +767,7 @@ function ActiveFigurePanel({
               aria-label={t("dashboard.figure.downloadModelAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isModelDownloading}
               type="button"
               onClick={() => onDownload(figure, "model")}
@@ -854,7 +837,7 @@ function GenerationResultNotice({ figure }: { figure: FigureDto }) {
           </span>
         </span>
       </span>
-      <span className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition group-hover:bg-[#00e5ff]/10">
+      <span className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition group-hover:bg-[#00e5ff]/10">
         {actionLabel}
         <ArrowRight className="h-3.5 w-3.5" />
       </span>
@@ -921,7 +904,7 @@ function GenerationSetupDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
       role="dialog"
     >
-      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-lg border border-[#00e5ff]/30 bg-[#141313] shadow-2xl shadow-[#00e5ff]/10">
+      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-lg border border-[#3b494c] bg-[#141313] shadow-2xl shadow-black/35">
         <header className="flex items-start justify-between gap-4 border-b border-[#3b494c]/70 p-5 sm:p-6">
           <div>
             <p className="dashboard-label font-bold text-[#00e5ff]">
@@ -939,7 +922,7 @@ function GenerationSetupDialog({
           </div>
           <button
             aria-label={t("dashboard.setup.close")}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/[0.12] text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isGenerating}
             ref={closeButtonRef}
             type="button"
@@ -1611,12 +1594,12 @@ export function DashboardPage() {
           </header>
 
           {shouldShowPendingOrderBanner && pendingOrder ? (
-            <section className="rounded-lg border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-4 text-[#ffeac0]">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <section className="rounded-md border border-[#f3bf26]/25 bg-[#f3bf26]/[0.07] px-4 py-3 text-[#ffeac0]">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex min-w-0 gap-3">
-                  <CalendarClock className="mt-0.5 h-5 w-5 shrink-0" />
+                  <CalendarClock className="mt-0.5 h-4 w-4 shrink-0" />
                   <div className="min-w-0">
-                    <h2 className="text-[0.95rem] font-bold leading-6 text-white">
+                    <h2 className="text-sm font-bold leading-6 text-white">
                       {t("dashboard.pending.forProduct", {
                         state: isPendingOrderWaitingForAdminVerification
                           ? t("dashboard.pending.waiting")
@@ -1624,7 +1607,7 @@ export function DashboardPage() {
                         product: getProductName(pendingOrder),
                       })}
                     </h2>
-                    <p className="mt-1 text-[0.95rem] leading-6 text-[#ffeac0]/78">
+                    <p className="mt-0.5 text-sm leading-6 text-[#ffeac0]/75">
                       {isPendingOrderWaitingForAdminVerification
                         ? t("dashboard.pending.waitingBody")
                         : t("dashboard.pending.transferBody")}
@@ -1637,7 +1620,7 @@ export function DashboardPage() {
                     ) : null}
                   </div>
                 </div>
-                <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[360px]">
+                <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[380px]">
                   <Link
                     className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-center text-sm font-bold leading-5 text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                     to={`/credits/checkout/${pendingOrder.id}`}
@@ -1653,7 +1636,7 @@ export function DashboardPage() {
                     {t("dashboard.pending.viewPayments")}
                   </Link>
                   <button
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-xs font-bold text-[#ffeac0] transition hover:border-[#f3bf26]/45 hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#ffeac0]/80 transition hover:bg-[#f3bf26]/10 hover:text-[#ffeac0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                     type="button"
                     onClick={dontShowPendingPaymentBannerAgain}
                   >
@@ -1661,7 +1644,7 @@ export function DashboardPage() {
                   </button>
                   <button
                     aria-label={t("dashboard.pending.dismissAria")}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-xs font-bold text-[#ffeac0] transition hover:border-[#f3bf26]/45 hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#ffeac0]/80 transition hover:bg-[#f3bf26]/10 hover:text-[#ffeac0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                     type="button"
                     onClick={dismissPendingPaymentBanner}
                   >
@@ -1675,10 +1658,10 @@ export function DashboardPage() {
 
           {error ? (
             <section
-              className="rounded-lg border border-[#ffb4ab]/30 bg-[#93000a]/25 p-5 text-[#ffdad6]"
+              className="rounded-md border border-[#ffb4ab]/25 bg-[#93000a]/20 px-4 py-3 text-[#ffdad6]"
               role="alert"
             >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex gap-3">
                   <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                   <div>
@@ -1704,15 +1687,15 @@ export function DashboardPage() {
             <DashboardSkeleton />
           ) : (
             <section className="grid gap-5 lg:grid-cols-12">
-              <article className="relative overflow-hidden rounded-lg border border-[#00e5ff]/20 bg-[#1c1b1b] p-5 shadow-[0_18px_52px_rgba(0,0,0,0.18)] lg:col-span-9 lg:p-6">
-                <div className="absolute inset-x-0 top-0 h-px bg-[#00e5ff]/55" />
+              <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-9 lg:p-6">
+                <div className="absolute inset-x-0 top-0 h-px bg-[#00e5ff]/30" />
                 <form
                   className="flex h-full min-h-[320px] flex-col gap-4 sm:gap-5"
                   onSubmit={(event) => void handleGenerate(event)}
                 >
                   <div className="min-w-0">
-                    <span className="dashboard-label inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 font-bold text-[#9cf0ff]">
-                      <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
+                    <span className="dashboard-label inline-flex items-center gap-2 font-bold text-[#bac9cc]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#00e5ff]/70" />
                       {t("dashboard.generate.eyebrow")}
                     </span>
                     <h2 className="dashboard-generation-title mt-3 max-w-2xl font-display font-semibold text-white">
@@ -1887,9 +1870,9 @@ export function DashboardPage() {
                     </p>
                   </div>
 
-                  <div className="space-y-3">
+                  <div>
                     <button
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-center text-sm font-bold leading-5 text-[#001f24] shadow-[0_14px_30px_rgba(0,229,255,0.16)] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[220px]"
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-center text-sm font-bold leading-5 text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[220px]"
                       disabled={!canGenerate}
                       ref={generateButtonRef}
                       type="submit"
@@ -1902,14 +1885,6 @@ export function DashboardPage() {
                       {isGenerating
                         ? t("dashboard.generate.generating")
                         : t("dashboard.generate.generate")}
-                    </button>
-                    <button
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-2 text-sm font-bold leading-5 text-[#bac9cc] transition hover:bg-[#00e5ff]/10 hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                      type="button"
-                      onClick={() => setIsPaywallOpen(true)}
-                    >
-                      <Download className="h-4 w-4" />
-                      {t("dashboard.generate.checkExportGate")}
                     </button>
                   </div>
 
@@ -1957,87 +1932,105 @@ export function DashboardPage() {
                 </p>
               </article>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 lg:col-span-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-md bg-[#00e5ff]/10 text-[#00e5ff]">
-                    <CreditCard className="h-5 w-5" />
-                  </span>
-                  <span className="dashboard-utility-label rounded-md border border-white/10 px-2.5 py-1 font-bold text-[#bac9cc]">
-                    {getPlanTone(summary, t)}
-                  </span>
-                </div>
-                <h2 className="mt-5 font-display text-[1.7rem] font-semibold leading-[1.16] text-white sm:text-3xl">
-                  {summary?.plan.name ?? t("dashboard.card.free")}
-                </h2>
-                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
-                  {summary?.plan.status === "active"
-                    ? t("dashboard.card.activePlanBody")
-                    : t("dashboard.card.freePlanBody")}
-                </p>
-                {renewalDate ? (
-                  <p className="mt-4 text-sm font-semibold text-[#e5e2e1]">
-                    {t("dashboard.card.activeThrough", { date: renewalDate })}
-                  </p>
-                ) : null}
-                <Link
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
-                  to="/credits"
-                >
-                  {summary?.plan.status === "active"
-                    ? t("dashboard.card.managePlan")
-                    : t("dashboard.card.upgrade")}
-                </Link>
-              </article>
+              <article className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] lg:col-span-12">
+                <div className="grid md:grid-cols-3 md:divide-x md:divide-[#3b494c]/60">
+                  <div className="flex min-w-0 flex-col gap-3 border-b border-[#3b494c]/60 p-5 md:border-b-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-white/[0.06] text-[#bac9cc]">
+                        <CreditCard className="h-5 w-5" />
+                      </span>
+                      <span className="dashboard-utility-label font-bold text-[#849396]">
+                        {getPlanTone(summary, t)}
+                      </span>
+                    </div>
+                    <div>
+                      <h2 className="font-display text-xl font-semibold text-white">
+                        {summary?.plan.name ?? t("dashboard.card.free")}
+                      </h2>
+                      <p className="dashboard-helper-copy mt-1 text-[#bac9cc]">
+                        {summary?.plan.status === "active"
+                          ? t("dashboard.card.activePlanBody")
+                          : t("dashboard.card.freePlanBody")}
+                      </p>
+                      {renewalDate ? (
+                        <p className="mt-2 text-xs font-semibold text-[#e5e2e1]">
+                          {t("dashboard.card.activeThrough", {
+                            date: renewalDate,
+                          })}
+                        </p>
+                      ) : null}
+                    </div>
+                    <Link
+                      className="mt-auto inline-flex min-h-11 items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                      to="/credits"
+                    >
+                      {summary?.plan.status === "active"
+                        ? t("dashboard.card.managePlan")
+                        : t("dashboard.card.upgrade")}
+                    </Link>
+                  </div>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 lg:col-span-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#f3bf26]/12 text-[#f3bf26]">
-                  {summary?.capabilities.canExportModel ? (
-                    <CheckCircle2 className="h-5 w-5" />
-                  ) : (
-                    <LockKeyhole className="h-5 w-5" />
-                  )}
-                </div>
-                <h2 className="mt-5 font-display text-[1.45rem] font-semibold leading-[1.18] text-white sm:text-2xl">
-                  {t("dashboard.card.exportAccess")}
-                </h2>
-                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
-                  {summary?.capabilities.canExportModel
-                    ? t("dashboard.card.exportConfirmed")
-                    : t("dashboard.card.exportBlocked")}
-                </p>
-                <button
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                  type="button"
-                  onClick={() => {
-                    if (!summary?.capabilities.canExportModel) {
-                      setIsPaywallOpen(true);
-                    }
-                  }}
-                >
-                  <Download className="h-4 w-4" />
-                  {t("dashboard.card.downloadExportAccess")}
-                </button>
-              </article>
+                  <div className="flex min-w-0 flex-col gap-3 border-b border-[#3b494c]/60 p-5 md:border-b-0">
+                    <span
+                      className={`flex h-10 w-10 items-center justify-center rounded-md ${
+                        summary?.capabilities.canExportModel
+                          ? "bg-[#2cebcf]/10 text-[#2cebcf]"
+                          : "bg-[#f3bf26]/10 text-[#f3bf26]"
+                      }`}
+                    >
+                      {summary?.capabilities.canExportModel ? (
+                        <CheckCircle2 className="h-5 w-5" />
+                      ) : (
+                        <LockKeyhole className="h-5 w-5" />
+                      )}
+                    </span>
+                    <div>
+                      <h2 className="font-display text-xl font-semibold text-white">
+                        {t("dashboard.card.exportAccess")}
+                      </h2>
+                      <p className="dashboard-helper-copy mt-1 text-[#bac9cc]">
+                        {summary?.capabilities.canExportModel
+                          ? t("dashboard.card.exportConfirmed")
+                          : t("dashboard.card.exportBlocked")}
+                      </p>
+                    </div>
+                    <button
+                      className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                      type="button"
+                      onClick={() => {
+                        if (!summary?.capabilities.canExportModel) {
+                          setIsPaywallOpen(true);
+                        }
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      {t("dashboard.card.downloadExportAccess")}
+                    </button>
+                  </div>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#201f1f] p-5 lg:col-span-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-md bg-white/[0.08] text-[#bac9cc]">
-                  <UserRound className="h-5 w-5" />
+                  <div className="flex min-w-0 flex-col gap-3 p-5">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-md bg-white/[0.06] text-[#bac9cc]">
+                      <UserRound className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="font-display text-xl font-semibold text-white">
+                        {t("dashboard.card.account")}
+                      </h2>
+                      <p className="mt-1 truncate text-sm font-semibold text-[#e5e2e1]">
+                        {user?.email || t("dashboard.card.noEmail")}
+                      </p>
+                      <p className="dashboard-helper-copy mt-1 text-[#bac9cc]">
+                        {t("dashboard.card.accountBody")}
+                      </p>
+                    </div>
+                    <Link
+                      className="mt-auto inline-flex min-h-11 items-center justify-center rounded-md px-4 py-2.5 text-sm font-bold text-[#bac9cc] transition hover:bg-white/[0.05] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                      to="/profile"
+                    >
+                      {t("dashboard.card.viewProfile")}
+                    </Link>
+                  </div>
                 </div>
-                <h2 className="mt-5 font-display text-[1.45rem] font-semibold leading-[1.18] text-white sm:text-2xl">
-                  {t("dashboard.card.account")}
-                </h2>
-                <p className="mt-2 truncate text-sm font-semibold text-[#e5e2e1]">
-                  {user?.email || t("dashboard.card.noEmail")}
-                </p>
-                <p className="dashboard-helper-copy mt-2 text-[#bac9cc]">
-                  {t("dashboard.card.accountBody")}
-                </p>
-                <Link
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                  to="/profile"
-                >
-                  {t("dashboard.card.viewProfile")}
-                </Link>
               </article>
             </section>
           )}
@@ -2065,7 +2058,7 @@ export function DashboardPage() {
                   </p>
                 ) : null}
                 <button
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                   type="button"
                   onClick={() => void loadFigures(false)}
                 >
@@ -2086,7 +2079,7 @@ export function DashboardPage() {
                     <p className="text-sm">{figuresError}</p>
                   </div>
                   <button
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
                     type="button"
                     onClick={() => void loadFigures()}
                   >
@@ -2101,7 +2094,7 @@ export function DashboardPage() {
               <div className="grid gap-4 md:grid-cols-3">
                 {Array.from({ length: 3 }).map((_, index) => (
                   <div
-                    className="h-80 animate-pulse rounded-lg border border-white/10 bg-white/[0.05]"
+                    className="h-72 animate-pulse rounded-lg border border-white/10 bg-white/[0.05]"
                     key={index}
                   />
                 ))}
