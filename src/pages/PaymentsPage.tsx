@@ -122,7 +122,7 @@ function PendingPaymentCard({
   const isPayable = isPayablePendingOrder(order);
 
   return (
-    <article className="rounded-lg border border-[#f3bf26]/30 bg-[#201f1f] p-4">
+    <article className="rounded-lg border border-[#f3bf26]/25 bg-[#1c1b1b] p-4">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -149,8 +149,8 @@ function PendingPaymentCard({
             </p>
           </div>
 
-          <dl className="grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-md border border-[#3b494c]/70 bg-[#0e0e0e] p-3">
+          <dl className="divide-y divide-[#3b494c]/55 border-y border-[#3b494c]/55 text-sm sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="py-3 sm:px-4 sm:first:pl-0">
               <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[#849396]">
                 {t("payments.field.amount")}
               </dt>
@@ -162,7 +162,7 @@ function PendingPaymentCard({
                 )}
               </dd>
             </div>
-            <div className="rounded-md border border-[#3b494c]/70 bg-[#0e0e0e] p-3">
+            <div className="py-3 sm:px-4">
               <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[#849396]">
                 {t("payments.field.expires")}
               </dt>
@@ -174,7 +174,7 @@ function PendingPaymentCard({
                 )}
               </dd>
             </div>
-            <div className="rounded-md border border-[#3b494c]/70 bg-[#0e0e0e] p-3">
+            <div className="py-3 sm:px-4 sm:last:pr-0">
               <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[#849396]">
                 {t("payments.field.status")}
               </dt>
@@ -238,19 +238,19 @@ function OrderHistoryRow({ order }: { order: BillingOrder }) {
 
       {isPayable ? (
         <Link
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
           to={`/credits/checkout/${order.id}`}
         >
           {t("payments.action.resume")}
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       ) : order.status === "paid" ? (
-        <span className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#9cf0ff]">
+        <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#9cf0ff]">
           <CheckCircle2 className="h-4 w-4" />
           {t("payments.history.paid")}
         </span>
       ) : (
-        <span className="inline-flex min-h-10 items-center justify-center rounded-md px-3 py-2 text-xs font-bold text-[#bac9cc]">
+        <span className="inline-flex min-h-11 items-center justify-center rounded-md px-3 py-2 text-xs font-bold text-[#bac9cc]">
           {t("payments.history.noAction")}
         </span>
       )}
@@ -360,7 +360,7 @@ export function PaymentsPage() {
                   </div>
                 </div>
                 <button
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/35 px-3 py-2 text-xs font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
                   type="button"
                   onClick={() => void loadPayments()}
                 >

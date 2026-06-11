@@ -950,13 +950,46 @@ textarea {
 
 .studio-grid {
   background:
-    radial-gradient(circle, rgb(var(--accent-cyan) / 0.09) 1px, transparent 1.4px),
-    radial-gradient(circle at 50% 42%, rgb(var(--accent-cyan) / 0.06), transparent 26rem),
+    radial-gradient(circle, rgb(var(--accent-cyan) / 0.055) 1px, transparent 1.4px),
+    radial-gradient(circle at 50% 42%, rgb(var(--accent-cyan) / 0.035), transparent 26rem),
     #0a0c0e;
   background-size:
     28px 28px,
     auto,
     auto;
+}
+
+.internal-scroll-region {
+  padding-bottom: 0.65rem;
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgb(var(--text-muted) / 0.55)
+    rgb(var(--surface-muted) / 0.7);
+}
+
+.internal-scroll-region::-webkit-scrollbar {
+  height: 0.45rem;
+}
+
+.internal-scroll-region::-webkit-scrollbar-track {
+  border-radius: 9999px;
+  background: rgb(var(--surface-muted) / 0.7);
+}
+
+.internal-scroll-region::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(var(--text-muted) / 0.55);
+}
+
+.studio-asset-rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0.65rem;
+  width: 2.5rem;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(var(--canvas) / 0.92));
 }
 
 @keyframes generation-result-arrow {

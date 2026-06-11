@@ -174,8 +174,8 @@ function StudioPreview({
 
   return (
     <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
-      <span className="flex h-20 w-20 items-center justify-center rounded-lg border border-[#00e5ff]/45 bg-[#00e5ff]/10 text-[#00e5ff] shadow-lg shadow-[#00e5ff]/10">
-        <Box className="h-10 w-10" />
+      <span className="flex h-16 w-16 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-[#bac9cc]">
+        <Box className="h-8 w-8" />
       </span>
       <h3 className="mt-5 font-display text-2xl font-semibold text-white">
         {t("studio.glbReady")}
@@ -496,14 +496,8 @@ export function StudioPage() {
             <>
               <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <section className="min-w-0 max-w-full space-y-4">
-                  <div className="studio-grid relative mx-auto h-[clamp(400px,56vw,640px)] w-full min-w-0 max-w-[960px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-2xl shadow-black/40">
-                    <div className="absolute left-4 top-4 z-10">
-                      <span className="block h-0.5 w-14 bg-[#00e5ff]" />
-                      <span className="mt-2 block font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[#00e5ff]/75">
-                        LOC: ST-04 // PREVIEW_ACTIVE
-                      </span>
-                    </div>
-                    <div className="absolute right-4 top-4 z-10 rounded-sm bg-[#00e5ff] px-2 py-1 text-[0.65rem] font-black text-[#001f24]">
+                  <div className="studio-grid relative mx-auto h-[clamp(400px,56vw,640px)] w-full min-w-0 max-w-[960px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-[0_18px_42px_rgba(0,0,0,0.2)]">
+                    <div className="absolute right-4 top-4 z-10 rounded-sm border border-white/10 bg-[#0a0a0a]/75 px-2 py-1 text-[0.65rem] font-bold text-[#bac9cc] backdrop-blur">
                       {viewMode === "3d" ? "GLB" : "IMG"}
                     </div>
                     <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
@@ -518,107 +512,87 @@ export function StudioPage() {
                         viewMode={viewMode}
                       />
                     </div>
-                    <div className="absolute inset-x-3 bottom-3 z-10 grid min-w-0 gap-3 rounded-md border border-[#3b494c]/70 bg-[#0a0a0a]/90 p-3 backdrop-blur sm:inset-x-4 sm:bottom-4 sm:grid-cols-2 sm:p-4">
-                      <div className="min-w-0">
-                        <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#849396]">
-                          {t("studio.currentPrompt")}
-                        </p>
-                        <p className="mt-1 truncate text-sm font-semibold italic text-[#e5e2e1]">
-                          {getBasePrompt(
-                            selectedFigure.prompt,
-                            t("dashboard.figure.untitled"),
-                          )}
-                        </p>
-                      </div>
-                      <div className="min-w-0 border-[#3b494c]/70 sm:border-l sm:pl-4">
-                        <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[#849396]">
-                          {t("studio.styleDirection")}
-                        </p>
-                        <p className="mt-1 truncate text-sm font-semibold text-[#e5e2e1]">
-                          {getStyleDirection(selectedFigure.prompt) ??
-                            t("studio.notSpecified")}
-                        </p>
-                      </div>
-                    </div>
                   </div>
 
                   <section className="min-w-0 max-w-full">
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
                       {t("studio.recentAssets")}
                     </h2>
-                    <div className="mt-3 flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pb-2">
-                      {figures.map((figure) => {
-                        const previewUrl = getPreviewUrl(figure);
-                        const isSelected = figure.id === selectedFigure.id;
+                    <div className="studio-asset-rail relative mt-3">
+                      <div className="internal-scroll-region flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pr-8">
+                        {figures.map((figure) => {
+                          const previewUrl = getPreviewUrl(figure);
+                          const isSelected = figure.id === selectedFigure.id;
 
-                        return (
-                          <button
-                            aria-pressed={isSelected}
-                            className={`min-h-11 w-44 shrink-0 overflow-hidden rounded-md border bg-[#1c1b1b] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
-                              isSelected
-                                ? "border-[#00e5ff]/70"
-                                : "border-[#3b494c] hover:border-[#00e5ff]/45"
-                            }`}
-                            key={figure.id}
-                            type="button"
-                            onClick={() => handleSelectFigure(figure.id)}
-                          >
-                            <span className="block h-24 bg-[#0e0e0e]">
-                              {previewUrl ? (
-                                <img
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                  src={previewUrl}
-                                />
-                              ) : (
-                                <span className="flex h-full items-center justify-center">
-                                  <ImageIcon className="h-6 w-6 text-[#3b494c]" />
-                                </span>
-                              )}
-                            </span>
-                            <span className="block space-y-2 p-3">
-                              <span className="block truncate text-xs font-bold text-white">
-                                {getPromptSnippet(
-                                  figure.prompt,
-                                  36,
-                                  t("dashboard.figure.untitled"),
+                          return (
+                            <button
+                              aria-pressed={isSelected}
+                              className={`min-h-11 w-44 shrink-0 overflow-hidden rounded-md border bg-[#1c1b1b] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                                isSelected
+                                  ? "border-[#00e5ff]/55"
+                                  : "border-[#3b494c] hover:border-[#00e5ff]/35"
+                              }`}
+                              key={figure.id}
+                              type="button"
+                              onClick={() => handleSelectFigure(figure.id)}
+                            >
+                              <span className="block h-24 bg-[#0e0e0e]">
+                                {previewUrl ? (
+                                  <img
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                    src={previewUrl}
+                                  />
+                                ) : (
+                                  <span className="flex h-full items-center justify-center">
+                                    <ImageIcon className="h-6 w-6 text-[#3b494c]" />
+                                  </span>
                                 )}
                               </span>
-                              <span className="flex flex-wrap gap-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                                {previewUrl ? <span>2D</span> : null}
-                                {figure.modelUrl ? (
-                                  <span className="text-[#00e5ff]">3D</span>
-                                ) : null}
-                                <span>
-                                  {getDisplayLabel(
-                                    "figureStatus",
-                                    figure.status,
+                              <span className="block space-y-2 p-3">
+                                <span className="block truncate text-xs font-bold text-white">
+                                  {getPromptSnippet(
+                                    figure.prompt,
+                                    36,
+                                    t("dashboard.figure.untitled"),
+                                  )}
+                                </span>
+                                <span className="flex flex-wrap gap-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+                                  {previewUrl ? <span>2D</span> : null}
+                                  {figure.modelUrl ? (
+                                    <span className="text-[#9cf0ff]">3D</span>
+                                  ) : null}
+                                  <span>
+                                    {getDisplayLabel(
+                                      "figureStatus",
+                                      figure.status,
+                                      language,
+                                    )}
+                                  </span>
+                                </span>
+                                <span className="block text-[0.65rem] text-[#849396]">
+                                  {formatI18nDateTime(
+                                    figure.createdAt,
                                     language,
+                                    t("common.unknown"),
                                   )}
                                 </span>
                               </span>
-                              <span className="block text-[0.65rem] text-[#849396]">
-                                {formatI18nDateTime(
-                                  figure.createdAt,
-                                  language,
-                                  t("common.unknown"),
-                                )}
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </section>
                 </section>
 
-                <aside className="min-w-0 max-w-full space-y-6 rounded-lg border border-[#3b494c] bg-[#121212] p-5">
+                <aside className="min-w-0 max-w-full rounded-lg border border-[#3b494c] bg-[#121212] p-5">
                   <section>
-                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
+                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
                       {t("studio.metadata")}
                     </h2>
-                    <dl className="mt-4 space-y-3 text-sm">
-                      <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
+                    <dl className="mt-3 divide-y divide-[#3b494c]/55 text-sm">
+                      <div className="py-4 first:pt-2">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                           {t("dashboard.figure.prompt")}
                         </dt>
@@ -629,7 +603,7 @@ export function StudioPage() {
                           )}
                         </dd>
                       </div>
-                      <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
+                      <div className="py-4">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                           {t("studio.styleDirection")}
                         </dt>
@@ -638,8 +612,8 @@ export function StudioPage() {
                             t("studio.notSpecified")}
                         </dd>
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                        <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
+                      <div className="grid gap-4 py-4 sm:grid-cols-2 xl:grid-cols-1">
+                        <div>
                           <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                             {t("studio.status")}
                           </dt>
@@ -649,7 +623,7 @@ export function StudioPage() {
                             />
                           </dd>
                         </div>
-                        <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
+                        <div>
                           <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                             {t("studio.provider")}
                           </dt>
@@ -658,7 +632,7 @@ export function StudioPage() {
                           </dd>
                         </div>
                       </div>
-                      <div className="rounded-md border border-[#3b494c]/70 bg-[#1c1b1b] p-3">
+                      <div className="py-4">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                           {t("dashboard.figure.created")}
                         </dt>
@@ -673,8 +647,8 @@ export function StudioPage() {
                     </dl>
                   </section>
 
-                  <section>
-                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
+                  <section className="border-t border-[#3b494c]/60 pt-5">
+                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
                       {t("studio.assetManifest")}
                     </h2>
                     <div className="mt-3 divide-y divide-[#3b494c]/50 text-sm">
@@ -701,18 +675,12 @@ export function StudioPage() {
                     </div>
                   </section>
 
-                  <section
-                    className={`rounded-lg border p-4 ${
-                      summary?.capabilities.canExportModel
-                        ? "border-[#2cebcf]/30 bg-[#2cebcf]/10"
-                        : "border-[#f3bf26]/35 bg-[#f3bf26]/10"
-                    }`}
-                  >
+                  <section className="mt-2 border-t border-[#3b494c]/60 pt-5">
                     <div className="flex gap-3">
                       {summary?.capabilities.canExportModel ? (
-                        <CheckCircle2 className="h-5 w-5 shrink-0 text-[#2cebcf]" />
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-[#2cebcf]/80" />
                       ) : (
-                        <LockKeyhole className="h-5 w-5 shrink-0 text-[#f3bf26]" />
+                        <LockKeyhole className="h-5 w-5 shrink-0 text-[#f3bf26]/80" />
                       )}
                       <div>
                         <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
