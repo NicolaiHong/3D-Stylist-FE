@@ -293,20 +293,20 @@ export function LandingPage() {
             )}
           </div>
 
-          <dl className="mt-9 grid max-w-2xl min-w-0 gap-3 sm:mt-10 sm:grid-cols-3">
+          <dl className="landing-metrics-row mt-9 max-w-2xl min-w-0 divide-y divide-border-subtle rounded-lg border border-border-subtle bg-surface-muted/70 sm:mt-10 sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
               [t("landing.metric.prompt"), t("landing.metric.promptDetail")],
               [t("landing.metric.credits"), t("landing.metric.creditsDetail")],
               [t("landing.metric.preview"), t("landing.metric.previewDetail")],
             ].map(([label, detail]) => (
               <div
-                className="landing-metric-card min-w-0 rounded-lg border border-white/[0.08] bg-[#121212]/90 p-4"
+                className="landing-metric-item min-w-0 px-4 py-4 sm:px-5"
                 key={label}
               >
-                <dt className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
+                <dt className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">
                   {label}
                 </dt>
-                <dd className="mt-2 text-sm font-semibold text-[#e5e2e1]">
+                <dd className="mt-2 text-sm font-semibold text-text-primary">
                   {detail}
                 </dd>
               </div>
@@ -352,24 +352,26 @@ export function LandingPage() {
             {t("landing.features.title")}
           </h2>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="landing-feature-list mt-8 grid min-w-0 border-y border-border-subtle md:grid-cols-2">
           {valueCards.map((item) => {
             const Icon = item.icon;
 
             return (
               <article
-                className="rounded-lg border border-white/[0.08] bg-[#121212]/90 p-5 transition hover:border-[#00e5ff]/30 hover:bg-[#151515]"
+                className="landing-feature-row flex min-w-0 gap-4 py-6 md:px-6"
                 key={item.titleKey}
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-md border border-[#12dff3]/40 bg-[#12dff3]/14 text-[#c3f5ff]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-accent-cyan-soft bg-accent-cyan/10 text-focus-ring">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-5 font-display text-xl font-semibold text-white">
-                  {t(item.titleKey)}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                  {t(item.descriptionKey)}
-                </p>
+                <div className="min-w-0">
+                  <h3 className="font-display text-xl font-semibold text-text-primary">
+                    {t(item.titleKey)}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-text-secondary">
+                    {t(item.descriptionKey)}
+                  </p>
+                </div>
               </article>
             );
           })}
@@ -378,7 +380,7 @@ export function LandingPage() {
 
       <section
         id="workflow"
-        className="relative z-10 border-y border-white/[0.08] bg-[#0e0e0e]/90"
+        className="relative z-10 border-y border-border-subtle bg-surface-muted/80"
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
@@ -395,21 +397,23 @@ export function LandingPage() {
             </p>
           </div>
 
-          <ol className="mt-10 grid gap-3 md:grid-cols-4">
+          <ol className="landing-workflow-list mt-10 min-w-0 border-y border-border-subtle lg:ml-auto lg:max-w-5xl">
             {workflowSteps.map((step, index) => (
               <li
-                className="landing-step-card rounded-lg border border-white/[0.08] bg-[#121212]/90 p-5"
+                className="landing-workflow-step grid min-w-0 gap-4 py-6 md:grid-cols-[5rem_minmax(0,1fr)] md:gap-6"
                 key={step.titleKey}
               >
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 text-sm font-bold text-[#c3f5ff]">
+                <span className="landing-workflow-index inline-flex h-10 w-10 items-center justify-center rounded-md border border-accent-cyan-soft bg-accent-cyan/10 text-sm font-bold text-focus-ring">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-5 font-display text-xl font-semibold text-white">
-                  {t(step.titleKey)}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                  {t(step.descriptionKey)}
-                </p>
+                <div className="min-w-0">
+                  <h3 className="font-display text-xl font-semibold text-text-primary">
+                    {t(step.titleKey)}
+                  </h3>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-text-secondary">
+                    {t(step.descriptionKey)}
+                  </p>
+                </div>
               </li>
             ))}
           </ol>
