@@ -1704,54 +1704,23 @@ export function DashboardPage() {
             <DashboardSkeleton />
           ) : (
             <section className="grid gap-5 lg:grid-cols-12">
-              <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-8 lg:p-6">
+              <article className="relative overflow-hidden rounded-lg border border-[#00e5ff]/20 bg-[#1c1b1b] p-5 shadow-[0_18px_52px_rgba(0,0,0,0.18)] lg:col-span-9 lg:p-6">
                 <div className="absolute inset-x-0 top-0 h-px bg-[#00e5ff]/55" />
                 <form
-                  className="flex h-full min-h-[320px] flex-col gap-5"
+                  className="flex h-full min-h-[320px] flex-col gap-4 sm:gap-5"
                   onSubmit={(event) => void handleGenerate(event)}
                 >
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="min-w-0">
-                      <span className="dashboard-label inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 font-bold text-[#9cf0ff]">
-                        <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
-                        {t("dashboard.generate.eyebrow")}
-                      </span>
-                      <h2 className="dashboard-generation-title mt-4 max-w-lg font-display font-semibold text-white">
-                        {t("dashboard.generate.title")}
-                      </h2>
-                      <p className="dashboard-copy mt-3 max-w-[38rem] text-[#bac9cc]">
-                        {t("dashboard.generate.body")}
-                      </p>
-                    </div>
-                    <div className="grid w-full gap-2.5 rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-3 text-[0.9375rem] leading-6 text-[#bac9cc] sm:w-auto sm:min-w-[220px] xl:w-[248px] xl:shrink-0">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="min-w-0">{t("dashboard.generate.cost")}</span>
-                        <span className="text-right font-bold text-white">
-                          {t("dashboard.generate.oneCredit")}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="min-w-0">{t("dashboard.generate.balance")}</span>
-                        <span className="text-right font-bold text-[#9cf0ff]">
-                          {t("dashboard.generate.credits", {
-                            count: creditBalance,
-                          })}
-                        </span>
-                      </div>
-                      {summary && creditBalance > 0 ? (
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="min-w-0">{t("dashboard.generate.balanceAfter")}</span>
-                          <span className="text-right font-bold text-[#c9fff6]">
-                            {t("dashboard.generate.credits", {
-                              count: estimatedBalanceAfterSubmit,
-                            })}
-                          </span>
-                        </div>
-                      ) : null}
-                      <p className="border-t border-[#3b494c]/70 pt-2 text-xs leading-5 text-[#849396]">
-                        {t("dashboard.generate.estimate")}
-                      </p>
-                    </div>
+                  <div className="min-w-0">
+                    <span className="dashboard-label inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/10 px-3 py-1.5 font-bold text-[#9cf0ff]">
+                      <span className="h-2 w-2 rounded-full bg-[#00e5ff]" />
+                      {t("dashboard.generate.eyebrow")}
+                    </span>
+                    <h2 className="dashboard-generation-title mt-3 max-w-2xl font-display font-semibold text-white">
+                      {t("dashboard.generate.title")}
+                    </h2>
+                    <p className="dashboard-copy mt-2 max-w-3xl text-[#bac9cc]">
+                      {t("dashboard.generate.body")}
+                    </p>
                   </div>
 
                   <div>
@@ -1820,7 +1789,7 @@ export function DashboardPage() {
                         return (
                           <button
                             aria-pressed={isSelected}
-                            className={`dashboard-chip inline-flex min-h-10 max-w-full items-center justify-center rounded-md border px-3 py-2 text-left font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
+                            className={`dashboard-chip inline-flex min-h-11 max-w-full items-center justify-center rounded-md border px-3.5 py-2.5 text-left font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60 ${
                               isSelected
                                 ? "border-[#00e5ff]/70 bg-[#00e5ff]/15 text-[#c3f5ff]"
                                 : "border-white/[0.12] bg-white/[0.03] text-[#bac9cc] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 hover:text-[#c3f5ff]"
@@ -1849,7 +1818,7 @@ export function DashboardPage() {
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <p>{insufficientCreditsMessage}</p>
                         <Link
-                          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[#f3bf26] px-4 py-2.5 text-sm font-bold text-[#251a00] transition hover:bg-[#ffdf96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                           to="/credits"
                         >
                           {t("dashboard.generate.buyCredits")}
@@ -1870,7 +1839,7 @@ export function DashboardPage() {
                         </div>
                         {generationError === insufficientCreditsMessage ? (
                           <Link
-                            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+                            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
                             to="/credits"
                           >
                             {t("dashboard.generate.buyCredits")}
@@ -1880,9 +1849,47 @@ export function DashboardPage() {
                     </div>
                   ) : null}
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <div className="rounded-md border-y border-[#3b494c]/70 py-3">
+                    <dl className="grid gap-3 text-sm leading-6 text-[#bac9cc] sm:grid-cols-3">
+                      <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
+                        <dt className="dashboard-utility-label font-bold text-[#849396]">
+                          {t("dashboard.generate.cost")}
+                        </dt>
+                        <dd className="text-right font-bold text-white sm:mt-1 sm:text-left">
+                          {t("dashboard.generate.oneCredit")}
+                        </dd>
+                      </div>
+                      <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
+                        <dt className="dashboard-utility-label font-bold text-[#849396]">
+                          {t("dashboard.generate.balance")}
+                        </dt>
+                        <dd className="text-right font-bold text-[#9cf0ff] sm:mt-1 sm:text-left">
+                          {t("dashboard.generate.credits", {
+                            count: creditBalance,
+                          })}
+                        </dd>
+                      </div>
+                      {summary && creditBalance > 0 ? (
+                        <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
+                          <dt className="dashboard-utility-label font-bold text-[#849396]">
+                            {t("dashboard.generate.balanceAfter")}
+                          </dt>
+                          <dd className="text-right font-bold text-[#c9fff6] sm:mt-1 sm:text-left">
+                            {t("dashboard.generate.credits", {
+                              count: estimatedBalanceAfterSubmit,
+                            })}
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                    <p className="mt-2 text-xs leading-5 text-[#849396]">
+                      {t("dashboard.generate.estimate")}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-center text-sm font-bold leading-5 text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-5 py-3 text-center text-sm font-bold leading-5 text-[#001f24] shadow-[0_14px_30px_rgba(0,229,255,0.16)] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[220px]"
                       disabled={!canGenerate}
                       ref={generateButtonRef}
                       type="submit"
@@ -1897,7 +1904,7 @@ export function DashboardPage() {
                         : t("dashboard.generate.generate")}
                     </button>
                     <button
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-center text-sm font-bold leading-5 text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-2 text-sm font-bold leading-5 text-[#bac9cc] transition hover:bg-[#00e5ff]/10 hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                       type="button"
                       onClick={() => setIsPaywallOpen(true)}
                     >
@@ -1923,7 +1930,7 @@ export function DashboardPage() {
                 </form>
               </article>
 
-              <article className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-4 lg:p-6">
+              <article className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-3 lg:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <Database className="h-6 w-6 text-[#bac9cc]" />
                   <Link
