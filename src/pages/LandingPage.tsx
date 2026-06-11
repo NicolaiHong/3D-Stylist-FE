@@ -293,20 +293,20 @@ export function LandingPage() {
             )}
           </div>
 
-          <dl className="mt-9 grid max-w-2xl min-w-0 gap-3 sm:mt-10 sm:grid-cols-3">
+          <dl className="landing-metrics-row mt-9 max-w-2xl min-w-0 divide-y divide-border-subtle rounded-lg border border-border-subtle bg-surface-muted/70 sm:mt-10 sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
               [t("landing.metric.prompt"), t("landing.metric.promptDetail")],
               [t("landing.metric.credits"), t("landing.metric.creditsDetail")],
               [t("landing.metric.preview"), t("landing.metric.previewDetail")],
             ].map(([label, detail]) => (
               <div
-                className="landing-metric-card min-w-0 rounded-lg border border-white/[0.08] bg-[#121212]/90 p-4"
+                className="landing-metric-item min-w-0 px-4 py-4 sm:px-5"
                 key={label}
               >
-                <dt className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
+                <dt className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">
                   {label}
                 </dt>
-                <dd className="mt-2 text-sm font-semibold text-[#e5e2e1]">
+                <dd className="mt-2 text-sm font-semibold text-text-primary">
                   {detail}
                 </dd>
               </div>
@@ -352,24 +352,26 @@ export function LandingPage() {
             {t("landing.features.title")}
           </h2>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="landing-feature-list mt-8 grid min-w-0 border-y border-border-subtle md:grid-cols-2">
           {valueCards.map((item) => {
             const Icon = item.icon;
 
             return (
               <article
-                className="rounded-lg border border-white/[0.08] bg-[#121212]/90 p-5 transition hover:border-[#00e5ff]/30 hover:bg-[#151515]"
+                className="landing-feature-row flex min-w-0 gap-4 py-6 md:px-6"
                 key={item.titleKey}
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-md border border-[#12dff3]/40 bg-[#12dff3]/14 text-[#c3f5ff]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-accent-cyan-soft bg-accent-cyan/10 text-focus-ring">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-5 font-display text-xl font-semibold text-white">
-                  {t(item.titleKey)}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                  {t(item.descriptionKey)}
-                </p>
+                <div className="min-w-0">
+                  <h3 className="font-display text-xl font-semibold text-text-primary">
+                    {t(item.titleKey)}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-text-secondary">
+                    {t(item.descriptionKey)}
+                  </p>
+                </div>
               </article>
             );
           })}
@@ -378,7 +380,7 @@ export function LandingPage() {
 
       <section
         id="workflow"
-        className="relative z-10 border-y border-white/[0.08] bg-[#0e0e0e]/90"
+        className="relative z-10 border-y border-border-subtle bg-surface-muted/80"
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
@@ -395,21 +397,23 @@ export function LandingPage() {
             </p>
           </div>
 
-          <ol className="mt-10 grid gap-3 md:grid-cols-4">
+          <ol className="landing-workflow-list mt-10 min-w-0 border-y border-border-subtle lg:ml-auto lg:max-w-5xl">
             {workflowSteps.map((step, index) => (
               <li
-                className="landing-step-card rounded-lg border border-white/[0.08] bg-[#121212]/90 p-5"
+                className="landing-workflow-step grid min-w-0 gap-4 py-6 md:grid-cols-[5rem_minmax(0,1fr)] md:gap-6"
                 key={step.titleKey}
               >
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 text-sm font-bold text-[#c3f5ff]">
+                <span className="landing-workflow-index inline-flex h-10 w-10 items-center justify-center rounded-md border border-accent-cyan-soft bg-accent-cyan/10 text-sm font-bold text-focus-ring">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-5 font-display text-xl font-semibold text-white">
-                  {t(step.titleKey)}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-[#bac9cc]">
-                  {t(step.descriptionKey)}
-                </p>
+                <div className="min-w-0">
+                  <h3 className="font-display text-xl font-semibold text-text-primary">
+                    {t(step.titleKey)}
+                  </h3>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-text-secondary">
+                    {t(step.descriptionKey)}
+                  </p>
+                </div>
               </li>
             ))}
           </ol>
@@ -432,27 +436,25 @@ export function LandingPage() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid min-w-0 gap-4 lg:grid-cols-3">
           {subscriptionPlans.map((plan) => (
             <article
-              className={`relative flex min-h-full flex-col rounded-lg border p-5 transition ${
-                plan.isFeatured
-                  ? "border-[#12dff3]/70 bg-[#132326] shadow-[0_0_44px_rgba(0,229,255,0.18)]"
-                  : "border-white/[0.08] bg-[#121212]/92 hover:border-[#12dff3]/40"
+              className={`landing-pricing-plan relative flex min-h-full min-w-0 flex-col rounded-lg border p-5 ${
+                plan.isFeatured ? "landing-pricing-plan--featured" : ""
               }`}
               key={plan.name}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
                     {t(plan.badgeKey)}
                   </p>
-                  <h3 className="mt-3 font-display text-2xl font-semibold text-white">
+                  <h3 className="mt-3 break-words font-display text-2xl font-semibold text-white">
                     {plan.name}
                   </h3>
                 </div>
                 {plan.isFeatured ? (
-                  <span className="rounded-md border border-[#12dff3]/50 bg-[#12dff3]/15 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#c3f5ff]">
+                  <span className="rounded-md border border-accent-cyan-soft bg-accent-cyan/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-focus-ring">
                     {t("landing.plan.popular")}
                   </span>
                 ) : null}
@@ -474,20 +476,20 @@ export function LandingPage() {
               <ul className="mt-6 space-y-3">
                 {plan.features.map((feature) => (
                   <li
-                    className="flex gap-3 text-sm font-semibold leading-6 text-[#e5e2e1]"
+                    className="flex min-w-0 gap-3 text-sm font-semibold leading-6 text-[#e5e2e1]"
                     key={feature}
                   >
                     <Check className="mt-1 h-4 w-4 shrink-0 text-[#12dff3]" />
-                    <span>{t(feature)}</span>
+                    <span className="min-w-0 break-words">{t(feature)}</span>
                   </li>
                 ))}
               </ul>
 
               <Link
-                className={`mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff] ${
+                className={`landing-plan-cta mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold ${
                   plan.isFeatured
-                    ? "bg-[#12dff3] text-[#001f24] shadow-[0_16px_48px_rgba(0,229,255,0.28)] hover:bg-[#c3f5ff]"
-                    : "border border-white/[0.12] text-[#e5e2e1] hover:border-[#12dff3]/55 hover:bg-[#12dff3]/10"
+                    ? "landing-plan-cta--featured"
+                    : "landing-plan-cta--secondary"
                 }`}
                 to={pricingHref}
               >
@@ -498,46 +500,36 @@ export function LandingPage() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="landing-credit-pack-strip mt-6 grid min-w-0 gap-2 md:grid-cols-3">
           {creditPacks.map((pack) => (
             <Link
-              className="group rounded-lg border border-[#2a3f42] bg-[#0f1617]/92 p-4 transition hover:border-[#12dff3]/65 hover:bg-[#132326] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12dff3]"
+              className="landing-credit-pack-link group"
               key={pack.nameKey}
               to={pricingHref}
             >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#849396]">
-                    {t("landing.creditPack")}
-                  </p>
-                  <h3 className="mt-2 font-display text-xl font-semibold text-white">
-                    {t(pack.nameKey)}
-                  </h3>
-                </div>
-                <CreditCard className="h-5 w-5 text-[#12dff3] transition group-hover:text-[#c3f5ff]" />
-              </div>
-              <p className="mt-4 font-display text-2xl font-semibold text-[#c3f5ff]">
-                {pack.price}
-              </p>
+              <span className="landing-credit-pack-marker" aria-hidden="true">
+                <CreditCard className="h-4 w-4" />
+              </span>
+              <span className="landing-credit-pack-copy">
+                <span className="landing-credit-pack-label">
+                  {t("landing.creditPack")}
+                </span>
+                <span className="landing-credit-pack-title">
+                  {t(pack.nameKey)}
+                </span>
+              </span>
+              <span className="landing-credit-pack-price">{pack.price}</span>
             </Link>
           ))}
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#12dff3] px-5 py-3 text-sm font-bold text-[#001f24] shadow-[0_18px_56px_rgba(0,229,255,0.28)] transition hover:bg-[#c3f5ff] hover:shadow-[0_22px_64px_rgba(0,229,255,0.38)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff] sm:w-auto"
-            to={pricingHref}
-          >
-            {isAuthenticated
-              ? t("landing.openCredits")
-              : t("landing.startGenerating")}
-            <ArrowRight className="h-4 w-4" />
+        <div className="landing-pricing-quiet-cta mt-7 flex flex-col items-center justify-center gap-2 text-center sm:flex-row">
+          <Link className="landing-pricing-text-link" to={pricingHref}>
+            {pricingCtaLabel}
+            <ChevronRight className="h-4 w-4" />
           </Link>
           {!isAuthenticated ? (
-            <Link
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#12dff3]/55 hover:bg-[#12dff3]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12dff3] sm:w-auto"
-              to="/login"
-            >
+            <Link className="landing-pricing-muted-link" to="/login">
               {t("landing.signIn")}
               <ChevronRight className="h-4 w-4" />
             </Link>
@@ -545,9 +537,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="relative z-10 border-y border-white/[0.08] bg-[#0e0e0e]/90">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 text-center sm:px-6 lg:px-8">
-          <Download className="mx-auto h-8 w-8 text-[#9cf0ff]" />
+      <section className="landing-final-section relative z-10">
+        <div className="mx-auto grid max-w-7xl gap-7 px-4 py-16 text-center sm:px-6 lg:px-8">
+          <Download className="landing-final-icon mx-auto h-8 w-8" />
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#849396]">
               {t("landing.final.eyebrow")}
@@ -557,17 +549,11 @@ export function LandingPage() {
             </h2>
           </div>
           <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
-            <Link
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#12dff3] px-5 py-3 text-sm font-bold text-[#001f24] shadow-[0_18px_56px_rgba(0,229,255,0.24)] transition hover:bg-[#c3f5ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c3f5ff]"
-              to={primaryHref}
-            >
+            <Link className="landing-final-primary" to={primaryHref}>
               {primaryLabel}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <a
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-5 py-3 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
-              href="#features"
-            >
+            <a className="landing-final-secondary" href="#features">
               {t("landing.viewFeatures")}
               <ChevronRight className="h-4 w-4" />
             </a>
