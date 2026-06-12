@@ -15,6 +15,8 @@ export interface FigureDto {
   provider?: FigureProvider | null;
   providerTaskId?: string | null;
   previewUrl?: string | null;
+  modelAssetReady?: boolean;
+  modelViewerUrl?: string | null;
   modelUrl?: string | null;
   thumbnailUrl?: string | null;
   creditCost?: number;

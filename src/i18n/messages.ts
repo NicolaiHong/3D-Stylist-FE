@@ -457,16 +457,28 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.preview2dPending": "2D preview pending",
     "studio.preview2dPendingBody":
       "The preview image is not ready yet.",
-    "studio.modelPending": "3D model pending or not available.",
+    "studio.modelPending": "3D model is still processing.",
     "studio.modelPendingBody":
-      "This figure does not currently expose a GLB result. Refresh later or continue with the 2D preview.",
-    "studio.glbReady": "GLB link available",
-    "studio.glbReadyBody":
-      "A temporary model link is available when the generation result includes GLB access.",
+      "Geometry has not finished yet. Refresh later or continue with the 2D preview.",
+    "studio.modelUnavailable": "3D model unavailable",
+    "studio.modelUnavailableBody":
+      "This generation finished without a stored 3D model. The 2D preview remains available.",
+    "studio.viewer.aria": "Interactive generated 3D model viewer",
+    "studio.viewer.loading": "Loading the interactive 3D model...",
+    "studio.viewer.ready": "3D viewer ready",
+    "studio.viewer.interaction": "Drag to rotate. Scroll or pinch to zoom.",
+    "studio.viewer.error": "The 3D model could not be loaded",
+    "studio.viewer.errorBody":
+      "Retry the viewer or return to the 2D preview. Export access is not used as a fallback.",
+    "studio.viewer.webglUnavailable":
+      "Interactive 3D is unavailable on this device",
+    "studio.viewer.unavailable": "In-app 3D viewer unavailable",
+    "studio.viewer.unavailableBody":
+      "The model is stored, but an app-owned viewer URL is not available. Refresh the figure or continue in 2D.",
     "studio.openGlb": "Open model link",
     "studio.downloadGlb": "Download GLB when allowed",
     "studio.glbRestricted":
-      "Direct GLB access is limited by your billing state.",
+      "In-app preview only. Export and download require a paid plan.",
     "studio.currentPrompt": "Current design brief",
     "studio.styleDirection": "Style direction",
     "studio.notSpecified": "Not specified",
@@ -1436,16 +1448,29 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.preview2dPending": "Đang chờ bản xem trước 2D",
     "studio.preview2dPendingBody":
       "Ảnh xem trước chưa sẵn sàng.",
-    "studio.modelPending": "Mô hình 3D đang chờ hoặc không khả dụng.",
+    "studio.modelPending": "Mô hình 3D vẫn đang được xử lý.",
     "studio.modelPendingBody":
-      "Mẫu này hiện chưa có kết quả GLB. Làm mới sau hoặc tiếp tục với bản xem trước 2D.",
-    "studio.glbReady": "Có liên kết GLB",
-    "studio.glbReadyBody":
-      "Liên kết mô hình tạm thời chỉ hiển thị khi kết quả tạo có GLB.",
+      "Hình học chưa hoàn tất. Hãy làm mới sau hoặc tiếp tục với bản xem trước 2D.",
+    "studio.modelUnavailable": "Mô hình 3D không khả dụng",
+    "studio.modelUnavailableBody":
+      "Bản tạo này đã hoàn tất nhưng không có mô hình 3D được lưu. Bản xem trước 2D vẫn khả dụng.",
+    "studio.viewer.aria": "Trình xem mô hình 3D đã tạo có thể tương tác",
+    "studio.viewer.loading": "Đang tải mô hình 3D tương tác...",
+    "studio.viewer.ready": "Trình xem 3D đã sẵn sàng",
+    "studio.viewer.interaction":
+      "Kéo để xoay. Cuộn hoặc chụm để thu phóng.",
+    "studio.viewer.error": "Không thể tải mô hình 3D",
+    "studio.viewer.errorBody":
+      "Hãy thử tải lại trình xem hoặc quay về bản xem trước 2D. Quyền xuất không được dùng làm phương án dự phòng.",
+    "studio.viewer.webglUnavailable":
+      "3D tương tác không khả dụng trên thiết bị này",
+    "studio.viewer.unavailable": "Trình xem 3D trong ứng dụng không khả dụng",
+    "studio.viewer.unavailableBody":
+      "Mô hình đã được lưu nhưng chưa có URL xem thuộc ứng dụng. Hãy làm mới bản tạo hoặc tiếp tục ở chế độ 2D.",
     "studio.openGlb": "Mở liên kết mô hình",
     "studio.downloadGlb": "Tải GLB khi được phép",
     "studio.glbRestricted":
-      "Quyền truy cập GLB trực tiếp bị giới hạn bởi trạng thái thanh toán của bạn.",
+      "Chỉ xem trong ứng dụng. Cần gói trả phí để xuất và tải xuống.",
     "studio.currentPrompt": "Mô tả thiết kế hiện tại",
     "studio.styleDirection": "Định hướng phong cách",
     "studio.notSpecified": "Chưa chỉ định",

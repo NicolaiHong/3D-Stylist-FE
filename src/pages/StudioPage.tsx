@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -34,6 +36,10 @@ import { useI18n } from "../i18n/useI18n";
 
 const STUDIO_POLL_INTERVAL_MS = 3000;
 type StudioViewMode = "2d" | "3d";
+
+const StudioModelViewer = lazy(
+  () => import("../components/studio/StudioModelViewer"),
+);
 
 function isPollingStatus(status: FigureStatus) {
   return status === "queued" || status === "processing";
@@ -124,14 +130,17 @@ function StudioPreview({
   viewMode,
   canOpenModel,
   canDownloadModel,
+  onShow2d,
 }: {
   figure: FigureDto;
   viewMode: StudioViewMode;
   canOpenModel: boolean;
   canDownloadModel: boolean;
+  onShow2d: () => void;
 }) {
   const { t } = useI18n();
   const previewUrl = getPreviewUrl(figure);
+  const modelAssetReady = figure.modelAssetReady === true;
   const promptSnippet = getPromptSnippet(
     figure.prompt,
     62,
@@ -158,37 +167,70 @@ function StudioPreview({
     );
   }
 
-  if (!figure.modelUrl) {
+  if (!modelAssetReady) {
+    const isPending = isPollingStatus(figure.status);
+
     return (
       <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
-          {t("studio.modelPending")}
+          {isPending
+            ? t("studio.modelPending")
+            : t("studio.modelUnavailable")}
         </h3>
         <p className="mt-2 max-w-md text-sm leading-6 text-[#bac9cc]">
-          {t("studio.modelPendingBody")}
+          {isPending
+            ? t("studio.modelPendingBody")
+            : t("studio.modelUnavailableBody")}
         </p>
       </div>
     );
   }
 
+  if (!figure.modelViewerUrl) {
+    return (
+      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+        <Box className="h-12 w-12 text-[#3b494c]" />
+        <h3 className="mt-4 font-display text-2xl font-semibold text-white">
+          {t("studio.viewer.unavailable")}
+        </h3>
+        <p className="mt-2 max-w-md text-sm leading-6 text-[#bac9cc]">
+          {t("studio.viewer.unavailableBody")}
+        </p>
+      </div>
+    );
+  }
+
+  const modelUrl = figure.modelUrl;
+  const canOpenExport = canOpenModel && Boolean(modelUrl);
+  const canDownloadExport = canDownloadModel && Boolean(modelUrl);
+
   return (
-    <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
-      <span className="flex h-16 w-16 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-[#bac9cc]">
-        <Box className="h-8 w-8" />
-      </span>
-      <h3 className="mt-5 font-display text-2xl font-semibold text-white">
-        {t("studio.glbReady")}
-      </h3>
-      <p className="mt-2 max-w-lg text-sm leading-6 text-[#bac9cc]">
-        {t("studio.glbReadyBody")}
-      </p>
-      {canOpenModel || canDownloadModel ? (
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          {canOpenModel ? (
+    <div className="relative h-full min-h-[440px] w-full">
+      <Suspense
+        fallback={
+          <div
+            aria-live="polite"
+            className="flex h-full min-h-[440px] items-center justify-center p-8 text-center text-sm font-semibold text-[#c3f5ff]"
+            role="status"
+          >
+            {t("studio.viewer.loading")}
+          </div>
+        }
+      >
+        <StudioModelViewer
+          isExportRestricted={!canOpenModel && !canDownloadModel}
+          modelUrl={figure.modelViewerUrl}
+          onShow2d={onShow2d}
+        />
+      </Suspense>
+
+      {modelUrl && (canOpenExport || canDownloadExport) ? (
+        <div className="absolute right-4 top-4 z-20 flex flex-col gap-2 sm:flex-row">
+          {canOpenExport ? (
             <a
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
-              href={figure.modelUrl}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] shadow-lg transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              href={modelUrl}
               rel="noreferrer"
               target="_blank"
             >
@@ -196,22 +238,18 @@ function StudioPreview({
               <ExternalLink className="h-4 w-4" />
             </a>
           ) : null}
-          {canDownloadModel ? (
+          {canDownloadExport ? (
             <a
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#0a0a0a]/85 px-3 py-2 text-xs font-bold text-[#9cf0ff] shadow-lg backdrop-blur transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
               download
-              href={figure.modelUrl}
+              href={modelUrl}
             >
               {t("studio.downloadGlb")}
               <Download className="h-4 w-4" />
             </a>
           ) : null}
         </div>
-      ) : (
-        <p className="mt-4 max-w-lg text-xs font-semibold leading-5 text-[#ffdf96]">
-          {t("studio.glbRestricted")}
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -509,6 +547,7 @@ export function StudioPage() {
                           summary?.capabilities.canExportModel === true
                         }
                         figure={selectedFigure}
+                        onShow2d={() => setViewMode("2d")}
                         viewMode={viewMode}
                       />
                     </div>
@@ -559,7 +598,7 @@ export function StudioPage() {
                                 </span>
                                 <span className="flex flex-wrap gap-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                                   {previewUrl ? <span>2D</span> : null}
-                                  {figure.modelUrl ? (
+                                  {figure.modelAssetReady ? (
                                     <span className="text-[#9cf0ff]">3D</span>
                                   ) : null}
                                   <span>
@@ -667,9 +706,11 @@ export function StudioPage() {
                           {t("studio.geometry")}
                         </span>
                         <span className="text-xs font-bold uppercase tracking-wide text-[#c9fff6]">
-                          {selectedFigure.modelUrl
+                          {selectedFigure.modelAssetReady
                             ? t("common.ready")
-                            : t("common.pending")}
+                            : isPollingStatus(selectedFigure.status)
+                              ? t("common.pending")
+                              : t("common.unavailable")}
                         </span>
                       </div>
                     </div>
