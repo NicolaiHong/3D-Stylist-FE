@@ -25,6 +25,7 @@ function normalizeFigure(figure: FigureDto): FigureDto {
     ...figure,
     prompt: figure.prompt ?? "",
     previewUrl: resolveApiAssetUrl(figure.previewUrl),
+    modelViewerUrl: resolveApiAssetUrl(figure.modelViewerUrl),
     modelUrl: resolveApiAssetUrl(figure.modelUrl),
     thumbnailUrl: resolveApiAssetUrl(figure.thumbnailUrl),
   };
