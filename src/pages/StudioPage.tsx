@@ -3,22 +3,27 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
   Box,
+  Check,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   Download,
   ExternalLink,
   ImageIcon,
   LockKeyhole,
   RefreshCw,
+  Rotate3D,
   Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
@@ -36,6 +41,7 @@ import { useI18n } from "../i18n/useI18n";
 
 const STUDIO_POLL_INTERVAL_MS = 3000;
 type StudioViewMode = "2d" | "3d";
+type ReadinessState = "ready" | "pending" | "unavailable";
 
 const StudioModelViewer = lazy(
   () => import("../components/studio/StudioModelViewer"),
@@ -102,6 +108,491 @@ function FigureStatusBadge({ status }: { status: FigureStatus }) {
   );
 }
 
+function getPreviewReadinessState(figure: FigureDto): ReadinessState {
+  return getPreviewUrl(figure) ? "ready" : "pending";
+}
+
+function getModelReadinessState(figure: FigureDto): ReadinessState {
+  if (figure.modelAssetReady) {
+    return "ready";
+  }
+
+  return isPollingStatus(figure.status) ? "pending" : "unavailable";
+}
+
+function ReadinessPill({
+  label,
+  state,
+  compact = false,
+}: {
+  label: string;
+  state: ReadinessState;
+  compact?: boolean;
+}) {
+  const { t } = useI18n();
+  const stateLabel =
+    state === "ready"
+      ? t("common.ready")
+      : state === "pending"
+        ? t("common.pending")
+        : t("common.unavailable");
+  const tone =
+    state === "ready"
+      ? "border-[#2cebcf]/25 bg-[#2cebcf]/10 text-[#c9fff6]"
+      : state === "pending"
+        ? "border-[#f3bf26]/25 bg-[#f3bf26]/10 text-[#ffeac0]"
+        : "border-white/10 bg-white/[0.035] text-[#849396]";
+
+  return (
+    <span
+      className={`inline-flex min-h-7 items-center gap-1.5 rounded-md border px-2 py-1 font-bold uppercase tracking-[0.1em] ${
+        compact ? "text-[0.64rem]" : "text-[0.68rem]"
+      } ${tone}`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          state === "ready"
+            ? "bg-[#2cebcf]"
+            : state === "pending"
+              ? "bg-[#f3bf26]"
+              : "bg-[#849396]"
+        }`}
+      />
+      <span>{label}</span>
+      <span className="text-current/70">{stateLabel}</span>
+    </span>
+  );
+}
+
+function StudioViewModeControl({
+  viewMode,
+  onChange,
+}: {
+  viewMode: StudioViewMode;
+  onChange: (mode: StudioViewMode) => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div
+      aria-label={t("studio.viewModeAria")}
+      className="grid shrink-0 grid-cols-2 rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 p-1"
+      role="group"
+    >
+      <button
+        aria-pressed={viewMode === "2d"}
+        className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+          viewMode === "2d"
+            ? "bg-[#00e5ff] text-[#001f24]"
+            : "text-[#bac9cc] hover:text-white"
+        }`}
+        type="button"
+        onClick={() => onChange("2d")}
+      >
+        {t("studio.view.2d")}
+      </button>
+      <button
+        aria-pressed={viewMode === "3d"}
+        className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+          viewMode === "3d"
+            ? "bg-[#00e5ff] text-[#001f24]"
+            : "text-[#bac9cc] hover:text-white"
+        }`}
+        type="button"
+        onClick={() => onChange("3d")}
+      >
+        {t("studio.view.3d")}
+      </button>
+    </div>
+  );
+}
+
+function FigureSelector({
+  figures,
+  selectedFigure,
+  onSelect,
+}: {
+  figures: FigureDto[];
+  selectedFigure: FigureDto | null;
+  onSelect: (figureId: string) => void;
+}) {
+  const { language, t } = useI18n();
+  const listboxId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeFigureId, setActiveFigureId] = useState<string | null>(
+    selectedFigure?.id ?? null,
+  );
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const isDisabled = figures.length === 0;
+
+  const openListbox = useCallback(() => {
+    if (isDisabled) {
+      return;
+    }
+
+    setActiveFigureId(selectedFigure?.id ?? figures[0].id);
+    setIsOpen(true);
+  }, [figures, isDisabled, selectedFigure]);
+
+  const closeListbox = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const focusFigure = useCallback((figureId: string | null) => {
+    if (!figureId) {
+      return;
+    }
+
+    setActiveFigureId(figureId);
+  }, []);
+
+  const moveActiveFigure = useCallback(
+    (offset: number) => {
+      if (figures.length === 0) {
+        return;
+      }
+
+      const currentIndex = Math.max(
+        0,
+        figures.findIndex((figure) => figure.id === activeFigureId),
+      );
+      const nextIndex =
+        (currentIndex + offset + figures.length) % figures.length;
+
+      focusFigure(figures[nextIndex].id);
+    },
+    [activeFigureId, figures, focusFigure],
+  );
+
+  const selectFigure = useCallback(
+    (figureId: string) => {
+      onSelect(figureId);
+      closeListbox();
+      window.requestAnimationFrame(() => buttonRef.current?.focus());
+    },
+    [closeListbox, onSelect],
+  );
+
+  useEffect(() => {
+    if (!isOpen || !activeFigureId) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      optionRefs.current[activeFigureId]?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [activeFigureId, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        closeListbox();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [closeListbox, isOpen]);
+
+  function handleButtonKeyDown(
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+  ) {
+    if (
+      event.key === "ArrowDown" ||
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+      openListbox();
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveFigureId(figures[figures.length - 1]?.id ?? null);
+      setIsOpen(true);
+    }
+
+    if (event.key === "Escape") {
+      closeListbox();
+    }
+  }
+
+  function handleListboxKeyDown(
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeListbox();
+      buttonRef.current?.focus();
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveActiveFigure(1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveActiveFigure(-1);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusFigure(figures[0]?.id ?? null);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      focusFigure(figures[figures.length - 1]?.id ?? null);
+      return;
+    }
+
+    if ((event.key === "Enter" || event.key === " ") && activeFigureId) {
+      event.preventDefault();
+      selectFigure(activeFigureId);
+    }
+  }
+
+  return (
+    <div
+      className="relative min-w-0 flex-1 lg:min-w-[20rem]"
+      ref={wrapperRef}
+      onBlur={(event) => {
+        const nextTarget = event.relatedTarget as Node | null;
+
+        if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
+          closeListbox();
+        }
+      }}
+    >
+      <button
+        aria-controls={listboxId}
+        aria-disabled={isDisabled}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-label={t("studio.selector.open")}
+        className="flex min-h-16 w-full min-w-0 items-center justify-between gap-3 rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 px-3 py-2 text-left transition hover:border-[#00e5ff]/35 hover:bg-[#121719] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={isDisabled}
+        ref={buttonRef}
+        type="button"
+        onClick={() => (isOpen ? closeListbox() : openListbox())}
+        onKeyDown={handleButtonKeyDown}
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#849396]">
+            {t("studio.selector.current")}
+          </span>
+          <span className="mt-1 block truncate text-sm font-semibold text-[#e5e2e1]">
+            {selectedFigure
+              ? getPromptSnippet(
+                  selectedFigure.prompt,
+                  86,
+                  t("dashboard.figure.untitled"),
+                )
+              : t("studio.noGenerationsOption")}
+          </span>
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-[#9cf0ff] transition ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen ? (
+        <div
+          aria-label={t("studio.selector.list")}
+          className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 max-h-[min(22rem,62vh)] overflow-y-auto rounded-lg border border-[#00e5ff]/20 bg-[#111719] p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.42),0_0_0_1px_rgba(0,229,255,0.06)]"
+          id={listboxId}
+          role="listbox"
+          tabIndex={-1}
+          onKeyDown={handleListboxKeyDown}
+        >
+          {figures.map((figure) => {
+            const previewUrl = getPreviewUrl(figure);
+            const isSelected = figure.id === selectedFigure?.id;
+            const isActive = figure.id === activeFigureId;
+
+            return (
+              <button
+                aria-selected={isSelected}
+                className={`flex min-h-20 w-full min-w-0 items-center gap-3 rounded-md px-2.5 py-2 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+                  isActive
+                    ? "bg-[#00e5ff]/10"
+                    : "hover:bg-white/[0.045]"
+                }`}
+                key={figure.id}
+                ref={(node) => {
+                  optionRefs.current[figure.id] = node;
+                }}
+                role="option"
+                tabIndex={isActive ? 0 : -1}
+                type="button"
+                onClick={() => selectFigure(figure.id)}
+                onMouseEnter={() => setActiveFigureId(figure.id)}
+              >
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-[#0a0a0a]">
+                  {previewUrl ? (
+                    <img
+                      alt=""
+                      className="h-full w-full object-cover"
+                      src={previewUrl}
+                    />
+                  ) : (
+                    <ImageIcon className="h-5 w-5 text-[#3b494c]" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold text-white">
+                    {getPromptSnippet(
+                      figure.prompt,
+                      74,
+                      t("dashboard.figure.untitled"),
+                    )}
+                  </span>
+                  <span className="mt-1 block truncate text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-[#849396]">
+                    {formatI18nDateTime(
+                      figure.createdAt,
+                      language,
+                      t("common.unknown"),
+                    )}
+                  </span>
+                  <span className="mt-2 flex flex-wrap gap-1.5">
+                    <ReadinessPill
+                      compact
+                      label="IMG"
+                      state={getPreviewReadinessState(figure)}
+                    />
+                    <ReadinessPill
+                      compact
+                      label="GLB"
+                      state={getModelReadinessState(figure)}
+                    />
+                  </span>
+                </span>
+                {isSelected ? (
+                  <Check className="h-4 w-4 shrink-0 text-[#00e5ff]" />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function StudioCommandSurface({
+  figures,
+  selectedFigure,
+  viewMode,
+  canExportModel,
+  canDownloadModel,
+  onSelectFigure,
+  onViewModeChange,
+}: {
+  figures: FigureDto[];
+  selectedFigure: FigureDto;
+  viewMode: StudioViewMode;
+  canExportModel: boolean;
+  canDownloadModel: boolean;
+  onSelectFigure: (figureId: string) => void;
+  onViewModeChange: (mode: StudioViewMode) => void;
+}) {
+  const { t } = useI18n();
+  const exportModelUrl = selectedFigure.modelUrl ?? null;
+  const canOpenExport = canExportModel && Boolean(exportModelUrl);
+  const canDownloadExport = canDownloadModel && Boolean(exportModelUrl);
+  const isExportRestricted = !canExportModel && !canDownloadModel;
+
+  return (
+    <section className="relative z-20 rounded-lg border border-[#3b494c] bg-[#121212]/95 p-3 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+      <div className="flex min-w-0 flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
+        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
+          <StudioViewModeControl
+            viewMode={viewMode}
+            onChange={onViewModeChange}
+          />
+          <FigureSelector
+            figures={figures}
+            selectedFigure={selectedFigure}
+            onSelect={onSelectFigure}
+          />
+        </div>
+
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="inline-flex min-h-8 items-center rounded-md border border-white/10 bg-[#0a0a0a]/70 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#bac9cc]">
+            {viewMode === "3d" ? "GLB" : "IMG"}
+          </span>
+          <FigureStatusBadge status={selectedFigure.status} />
+          <div
+            aria-label={t("studio.assetReadiness")}
+            className="flex flex-wrap gap-1.5"
+          >
+            <ReadinessPill
+              compact
+              label="2D"
+              state={getPreviewReadinessState(selectedFigure)}
+            />
+            <ReadinessPill
+              compact
+              label="3D"
+              state={getModelReadinessState(selectedFigure)}
+            />
+          </div>
+          {viewMode === "3d" ? (
+            <span className="inline-flex min-h-8 items-center gap-2 rounded-md border border-white/10 bg-[#0a0a0a]/70 px-2.5 py-1 text-[0.68rem] font-semibold text-[#bac9cc]">
+              <Rotate3D className="h-3.5 w-3.5 text-[#00e5ff]" />
+              {t("studio.viewer.interaction")}
+            </span>
+          ) : null}
+
+          {canOpenExport && exportModelUrl ? (
+            <a
+              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              href={exportModelUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {t("studio.openGlb")}
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : null}
+          {canDownloadExport && exportModelUrl ? (
+            <a
+              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#0a0a0a]/80 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              download
+              href={exportModelUrl}
+            >
+              {t("studio.downloadGlb")}
+              <Download className="h-4 w-4" />
+            </a>
+          ) : null}
+          {viewMode === "3d" && isExportRestricted ? (
+            <span className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#f3bf26]/25 bg-[#f3bf26]/10 px-2.5 py-1 text-[0.68rem] font-semibold text-[#ffeac0]">
+              <LockKeyhole className="h-3.5 w-3.5" />
+              {t("studio.glbRestricted")}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StudioEmptyState() {
   const { t } = useI18n();
 
@@ -128,14 +619,10 @@ function StudioEmptyState() {
 function StudioPreview({
   figure,
   viewMode,
-  canOpenModel,
-  canDownloadModel,
   onShow2d,
 }: {
   figure: FigureDto;
   viewMode: StudioViewMode;
-  canOpenModel: boolean;
-  canDownloadModel: boolean;
   onShow2d: () => void;
 }) {
   const { t } = useI18n();
@@ -201,10 +688,6 @@ function StudioPreview({
     );
   }
 
-  const modelUrl = figure.modelUrl;
-  const canOpenExport = canOpenModel && Boolean(modelUrl);
-  const canDownloadExport = canDownloadModel && Boolean(modelUrl);
-
   return (
     <div className="relative h-full min-h-[440px] w-full">
       <Suspense
@@ -219,37 +702,10 @@ function StudioPreview({
         }
       >
         <StudioModelViewer
-          isExportRestricted={!canOpenModel && !canDownloadModel}
           modelUrl={figure.modelViewerUrl}
           onShow2d={onShow2d}
         />
       </Suspense>
-
-      {modelUrl && (canOpenExport || canDownloadExport) ? (
-        <div className="absolute right-4 top-4 z-20 flex flex-col gap-2 sm:flex-row">
-          {canOpenExport ? (
-            <a
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] shadow-lg transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
-              href={modelUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("studio.openGlb")}
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          ) : null}
-          {canDownloadExport ? (
-            <a
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#0a0a0a]/85 px-3 py-2 text-xs font-bold text-[#9cf0ff] shadow-lg backdrop-blur transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-              download
-              href={modelUrl}
-            >
-              {t("studio.downloadGlb")}
-              <Download className="h-4 w-4" />
-            </a>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -426,66 +882,6 @@ export function StudioPage() {
             </div>
 
             <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
-              <div
-                aria-label={t("studio.viewModeAria")}
-                className="grid grid-cols-2 rounded-md border border-[#3b494c] bg-[#1c1b1b] p-1"
-                role="group"
-              >
-                <button
-                  aria-pressed={viewMode === "2d"}
-                  className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
-                    viewMode === "2d"
-                      ? "bg-[#00e5ff] text-[#001f24]"
-                      : "text-[#bac9cc] hover:text-white"
-                  }`}
-                  type="button"
-                  onClick={() => setViewMode("2d")}
-                >
-                  {t("studio.view.2d")}
-                </button>
-                <button
-                  aria-pressed={viewMode === "3d"}
-                  className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
-                    viewMode === "3d"
-                      ? "bg-[#00e5ff] text-[#001f24]"
-                      : "text-[#bac9cc] hover:text-white"
-                  }`}
-                  type="button"
-                  onClick={() => setViewMode("3d")}
-                >
-                  {t("studio.view.3d")}
-                </button>
-              </div>
-
-              <label className="sr-only" htmlFor="studio-generation-selector">
-                {t("studio.selectGeneration")}
-              </label>
-              <select
-                className="min-h-11 min-w-0 rounded-md border border-[#3b494c] bg-[#1c1b1b] px-3 py-2 text-sm font-semibold text-[#e5e2e1] focus:border-[#00e5ff] focus:outline-none focus:ring-1 focus:ring-[#00e5ff] lg:w-64"
-                disabled={figures.length === 0}
-                id="studio-generation-selector"
-                value={selectedFigureId ?? ""}
-                onChange={(event) => handleSelectFigure(event.target.value)}
-              >
-                {figures.length === 0 ? (
-                  <option value="">{t("studio.noGenerationsOption")}</option>
-                ) : (
-                  figures.map((figure) => (
-                    <option key={figure.id} value={figure.id}>
-                      {getPromptSnippet(
-                        figure.prompt,
-                        62,
-                        t("dashboard.figure.untitled"),
-                      )}
-                    </option>
-                  ))
-                )}
-              </select>
-
-              {selectedFigure ? (
-                <FigureStatusBadge status={selectedFigure.status} />
-              ) : null}
-
               <button
                 aria-label={t("studio.refreshAssets")}
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#3b494c] px-3 py-2 text-sm font-bold text-[#bac9cc] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
@@ -534,18 +930,23 @@ export function StudioPage() {
             <>
               <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <section className="min-w-0 max-w-full space-y-4">
-                  <div className="studio-grid relative mx-auto h-[clamp(400px,56vw,640px)] w-full min-w-0 max-w-[960px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-[0_18px_42px_rgba(0,0,0,0.2)]">
-                    <div className="absolute right-4 top-4 z-10 rounded-sm border border-white/10 bg-[#0a0a0a]/75 px-2 py-1 text-[0.65rem] font-bold text-[#bac9cc] backdrop-blur">
-                      {viewMode === "3d" ? "GLB" : "IMG"}
-                    </div>
+                  <StudioCommandSurface
+                    canDownloadModel={
+                      summary?.capabilities.canDownloadModel === true
+                    }
+                    canExportModel={
+                      summary?.capabilities.canExportModel === true
+                    }
+                    figures={figures}
+                    selectedFigure={selectedFigure}
+                    viewMode={viewMode}
+                    onSelectFigure={handleSelectFigure}
+                    onViewModeChange={setViewMode}
+                  />
+
+                  <div className="studio-grid relative mx-auto h-[clamp(420px,55vw,660px)] w-full min-w-0 max-w-[980px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-[0_18px_42px_rgba(0,0,0,0.2)]">
                     <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
                       <StudioPreview
-                        canDownloadModel={
-                          summary?.capabilities.canDownloadModel === true
-                        }
-                        canOpenModel={
-                          summary?.capabilities.canExportModel === true
-                        }
                         figure={selectedFigure}
                         onShow2d={() => setViewMode("2d")}
                         viewMode={viewMode}
@@ -596,12 +997,18 @@ export function StudioPage() {
                                     t("dashboard.figure.untitled"),
                                   )}
                                 </span>
-                                <span className="flex flex-wrap gap-1.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                                  {previewUrl ? <span>2D</span> : null}
-                                  {figure.modelAssetReady ? (
-                                    <span className="text-[#9cf0ff]">3D</span>
-                                  ) : null}
-                                  <span>
+                                <span className="flex flex-wrap gap-1.5">
+                                  <ReadinessPill
+                                    compact
+                                    label="2D"
+                                    state={getPreviewReadinessState(figure)}
+                                  />
+                                  <ReadinessPill
+                                    compact
+                                    label="3D"
+                                    state={getModelReadinessState(figure)}
+                                  />
+                                  <span className="inline-flex min-h-7 items-center rounded-md border border-white/10 bg-white/[0.035] px-2 py-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#849396]">
                                     {getDisplayLabel(
                                       "figureStatus",
                                       figure.status,
@@ -625,105 +1032,91 @@ export function StudioPage() {
                   </section>
                 </section>
 
-                <aside className="min-w-0 max-w-full rounded-lg border border-[#3b494c] bg-[#121212] p-5">
-                  <section>
+                <aside className="min-w-0 max-w-full rounded-lg border border-[#3b494c] bg-[#111417]/95 p-5">
+                  <section className="min-w-0">
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
                       {t("studio.metadata")}
                     </h2>
-                    <dl className="mt-3 divide-y divide-[#3b494c]/55 text-sm">
-                      <div className="py-4 first:pt-2">
+                    <dl className="mt-3 text-sm">
+                      <div className="pb-4">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                           {t("dashboard.figure.prompt")}
                         </dt>
-                        <dd className="mt-1 break-words leading-6 text-[#e5e2e1]">
+                        <dd className="mt-1 break-words text-sm leading-6 text-[#e5e2e1]">
                           {getBasePrompt(
                             selectedFigure.prompt,
                             t("dashboard.figure.untitled"),
                           )}
                         </dd>
                       </div>
-                      <div className="py-4">
+                      <div className="border-t border-[#3b494c]/45 py-4">
                         <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                           {t("studio.styleDirection")}
                         </dt>
-                        <dd className="mt-1 break-words leading-6 text-[#e5e2e1]">
+                        <dd className="mt-1 break-words text-sm leading-6 text-[#e5e2e1]">
                           {getStyleDirection(selectedFigure.prompt) ??
                             t("studio.notSpecified")}
                         </dd>
                       </div>
-                      <div className="grid gap-4 py-4 sm:grid-cols-2 xl:grid-cols-1">
-                        <div>
+                      <div className="border-t border-[#3b494c]/45 py-3">
+                        <div className="flex items-center justify-between gap-3 py-2">
                           <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                             {t("studio.status")}
                           </dt>
-                          <dd className="mt-2">
+                          <dd className="min-w-0 text-right">
                             <FigureStatusBadge
                               status={selectedFigure.status}
                             />
                           </dd>
                         </div>
-                        <div>
+                        <div className="flex items-center justify-between gap-3 py-2">
                           <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
                             {t("studio.provider")}
                           </dt>
-                          <dd className="mt-1 font-mono text-[#e5e2e1]">
+                          <dd className="min-w-0 truncate text-right font-mono text-xs text-[#e5e2e1]">
                             {selectedFigure.provider ?? t("studio.notReported")}
                           </dd>
                         </div>
-                      </div>
-                      <div className="py-4">
-                        <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                          {t("dashboard.figure.created")}
-                        </dt>
-                        <dd className="mt-1 text-[#e5e2e1]">
-                          {formatI18nDateTime(
-                            selectedFigure.createdAt,
-                            language,
-                            t("common.unknown"),
-                          )}
-                        </dd>
+                        <div className="flex items-center justify-between gap-3 py-2">
+                          <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+                            {t("dashboard.figure.created")}
+                          </dt>
+                          <dd className="min-w-0 truncate text-right text-xs text-[#e5e2e1]">
+                            {formatI18nDateTime(
+                              selectedFigure.createdAt,
+                              language,
+                              t("common.unknown"),
+                            )}
+                          </dd>
+                        </div>
                       </div>
                     </dl>
                   </section>
 
-                  <section className="border-t border-[#3b494c]/60 pt-5">
+                  <section className="border-t border-[#3b494c]/50 pt-5">
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
                       {t("studio.assetManifest")}
                     </h2>
-                    <div className="mt-3 divide-y divide-[#3b494c]/50 text-sm">
-                      <div className="flex items-center justify-between gap-3 py-3">
-                        <span className="text-[#bac9cc]">
-                          {t("studio.masterImage")}
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wide text-[#c9fff6]">
-                          {getPreviewUrl(selectedFigure)
-                            ? t("common.ready")
-                            : t("common.pending")}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3 py-3">
-                        <span className="text-[#bac9cc]">
-                          {t("studio.geometry")}
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wide text-[#c9fff6]">
-                          {selectedFigure.modelAssetReady
-                            ? t("common.ready")
-                            : isPollingStatus(selectedFigure.status)
-                              ? t("common.pending")
-                              : t("common.unavailable")}
-                        </span>
-                      </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <ReadinessPill
+                        label={t("studio.masterImage")}
+                        state={getPreviewReadinessState(selectedFigure)}
+                      />
+                      <ReadinessPill
+                        label={t("studio.geometry")}
+                        state={getModelReadinessState(selectedFigure)}
+                      />
                     </div>
                   </section>
 
-                  <section className="mt-2 border-t border-[#3b494c]/60 pt-5">
-                    <div className="flex gap-3">
+                  <section className="mt-5 border-t border-[#3b494c]/50 pt-5">
+                    <div className="flex gap-3 text-xs leading-5">
                       {summary?.capabilities.canExportModel ? (
-                        <CheckCircle2 className="h-5 w-5 shrink-0 text-[#2cebcf]/80" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2cebcf]/80" />
                       ) : (
-                        <LockKeyhole className="h-5 w-5 shrink-0 text-[#f3bf26]/80" />
+                        <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#f3bf26]/80" />
                       )}
-                      <div>
+                      <div className="min-w-0">
                         <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
                           {summary?.capabilities.canExportModel
                             ? t("studio.exportAvailable")
@@ -736,7 +1129,7 @@ export function StudioPage() {
                         </p>
                         {!summary?.capabilities.canExportModel ? (
                           <Link
-                            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md border border-[#f3bf26]/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                            className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-[#f3bf26]/35 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
                             to="/credits"
                           >
                             {t("landing.viewPlans")}
