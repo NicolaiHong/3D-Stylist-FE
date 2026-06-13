@@ -992,10 +992,6 @@ textarea {
   outline: none;
 }
 
-.studio-asset-rail .internal-scroll-region {
-  padding-bottom: 0.35rem;
-}
-
 .internal-scroll-region {
   padding-bottom: 0.65rem;
   scrollbar-width: thin;
@@ -1016,17 +1012,6 @@ textarea {
 .internal-scroll-region::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background: rgb(var(--text-muted) / 0.55);
-}
-
-.studio-asset-rail::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0.35rem;
-  width: 2.5rem;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgb(var(--canvas) / 0.92));
 }
 
 @keyframes generation-result-arrow {

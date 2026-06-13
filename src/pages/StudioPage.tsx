@@ -729,105 +729,6 @@ function StudioMetadataPanel({
   );
 }
 
-function StudioRecentAssetsRail({
-  figures,
-  selectedFigure,
-  onSelectFigure,
-}: {
-  figures: FigureDto[];
-  selectedFigure: FigureDto;
-  onSelectFigure: (figureId: string) => void;
-}) {
-  const { language, t } = useI18n();
-
-  return (
-    <section className="min-w-0 max-w-full border-t border-[#3b494c]/35 bg-[#0f1316]/58 px-3 py-2 sm:px-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-[#849396]">
-          {t("studio.recentAssets")}
-        </h2>
-        <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#849396]">
-          {figures.length}
-        </span>
-      </div>
-      <div className="studio-asset-rail relative mt-2">
-        <div className="internal-scroll-region flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pr-8">
-          {figures.map((figure) => {
-            const previewUrl = getPreviewUrl(figure);
-            const isSelected = figure.id === selectedFigure.id;
-            const previewState = getPreviewReadinessState(figure);
-            const isMuted = !previewUrl && !isSelected;
-
-            return (
-              <button
-                aria-pressed={isSelected}
-                className={`flex h-[4.75rem] w-44 shrink-0 items-center gap-2 overflow-hidden rounded-md border px-2 py-2 text-left ring-1 ring-transparent transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] sm:w-48 ${
-                  isSelected
-                    ? "border-[#00e5ff]/36 bg-[#102126]/86 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                    : "border-white/[0.07] bg-[#121719]/56 hover:border-[#00e5ff]/24 hover:bg-[#151c20]/72"
-                } ${isMuted ? "opacity-72" : ""}`}
-                key={figure.id}
-                type="button"
-                onClick={() => onSelectFigure(figure.id)}
-              >
-                <span
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded border ${
-                    previewUrl
-                      ? "border-white/10 bg-[#0a0a0a]"
-                      : "border-dashed border-white/[0.08] bg-[#0a0f11]/70"
-                  }`}
-                >
-                  {previewUrl ? (
-                    <img
-                      alt=""
-                      className="h-full w-full object-cover"
-                      src={previewUrl}
-                    />
-                  ) : (
-                    <ImageIcon className="h-4 w-4 text-[#3b494c]" />
-                  )}
-                </span>
-                <span className="block min-w-0 flex-1 space-y-1">
-                  <span
-                    className={`block truncate text-xs font-bold ${
-                      isMuted ? "text-[#bac9cc]" : "text-white"
-                    }`}
-                  >
-                    {getPromptSnippet(
-                      figure.prompt,
-                      42,
-                      t("dashboard.figure.untitled"),
-                    )}
-                  </span>
-                  <span className="flex min-w-0 flex-wrap gap-1 overflow-hidden">
-                    <ReadinessPill
-                      compact
-                      label="2D"
-                      state={previewState}
-                    />
-                    <ReadinessPill
-                      compact
-                      label="3D"
-                      state={getModelReadinessState(figure)}
-                    />
-                  </span>
-                  <span className="block truncate text-[0.62rem] text-[#6f7e81]">
-                    {formatI18nDateTime(
-                      figure.createdAt,
-                      language,
-                      t("common.unknown"),
-                    )}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function StudioEmptyState() {
   const { t } = useI18n();
 
@@ -1155,7 +1056,6 @@ export function StudioPage() {
                 <div className="h-[clamp(450px,58vw,760px)] animate-pulse bg-white/[0.035]" />
                 <div className="h-72 animate-pulse border-t border-white/10 bg-white/[0.04] xl:h-auto xl:border-l xl:border-t-0" />
               </div>
-              <div className="h-24 animate-pulse border-t border-white/10 bg-white/[0.035]" />
             </div>
           ) : figures.length === 0 ? (
             <StudioEmptyState />
@@ -1194,11 +1094,6 @@ export function StudioPage() {
                 />
               </div>
 
-              <StudioRecentAssetsRail
-                figures={figures}
-                selectedFigure={selectedFigure}
-                onSelectFigure={handleSelectFigure}
-              />
             </div>
           ) : null}
         </div>
