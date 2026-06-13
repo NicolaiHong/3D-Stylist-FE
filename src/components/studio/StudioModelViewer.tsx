@@ -13,11 +13,12 @@ import { Box3, Group, Mesh, PerspectiveCamera, Vector3 } from "three";
 import { OrbitControls as OrbitControlsImpl } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { AlertTriangle, Box, Rotate3D } from "lucide-react";
+import { AlertTriangle, Box } from "lucide-react";
 import { useI18n } from "../../i18n/useI18n";
 
-const MODEL_HEIGHT = 2.8;
-const MODEL_TARGET: [number, number, number] = [0, 0.04, 0];
+const MODEL_HEIGHT = 3.08;
+const VIEWER_FOV = 35;
+const MODEL_TARGET: [number, number, number] = [0, 0.2, 0];
 
 interface ModelFrame {
   depth: number;
@@ -135,15 +136,15 @@ function ModelLoadingMesh() {
 
 function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const aspect = width / Math.max(height, 1);
-  const verticalFov = (38 * Math.PI) / 180;
+  const verticalFov = (VIEWER_FOV * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const margin = width < 640 ? 1.24 : width < 1024 ? 1.16 : 1.1;
+  const margin = width < 640 ? 1.18 : width < 1024 ? 1.12 : 1.06;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
   const distanceForWidth =
     (frame.width * margin * 0.5) / Math.tan(horizontalFov / 2);
 
-  return Math.max(distanceForHeight, distanceForWidth, 3.2);
+  return Math.max(distanceForHeight, distanceForWidth, 3.05);
 }
 
 function CameraControls({ frame }: { frame: ModelFrame }) {
@@ -167,10 +168,10 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
     const perspectiveCamera = camera as PerspectiveCamera;
     const distance = getCameraDistance(frame, size.width, size.height);
 
-    perspectiveCamera.fov = 38;
+    perspectiveCamera.fov = VIEWER_FOV;
     perspectiveCamera.position.set(
-      size.width >= 1024 ? -0.12 : 0,
-      size.width < 640 ? 0.08 : 0.12,
+      size.width >= 1024 ? -0.16 : 0,
+      size.width < 640 ? 0.18 : 0.24,
       distance,
     );
     perspectiveCamera.near = 0.1;
@@ -197,33 +198,41 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
 
 function ViewerEnvironment({ frame }: { frame: ModelFrame }) {
   const floorRadius = Math.max(frame.width, frame.depth, 1.5);
+  const runwayDepth = Math.max(frame.depth * 1.7, 2.6);
 
   return (
     <>
-      <mesh position={[0, 0.06, -1.2]}>
+      <mesh position={[0, 0.18, -1.22]}>
         <planeGeometry
           args={[
-            Math.max(frame.width * 1.9, 2.7),
-            Math.max(frame.height * 1.12, 3.2),
+            Math.max(frame.width * 2.05, 2.9),
+            Math.max(frame.height * 1.18, 3.55),
           ]}
         />
-        <meshBasicMaterial color="#12343a" opacity={0.28} transparent />
+        <meshBasicMaterial color="#15363c" opacity={0.24} transparent />
       </mesh>
       <mesh
-        position={[0, frame.floorY - 0.03, 0]}
+        position={[0, frame.floorY - 0.048, -0.08]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <circleGeometry args={[floorRadius * 0.8, 72]} />
-        <meshBasicMaterial color="#111f20" opacity={0.72} transparent />
+        <planeGeometry args={[floorRadius * 1.38, runwayDepth]} />
+        <meshBasicMaterial color="#132024" opacity={0.58} transparent />
       </mesh>
       <mesh
-        position={[0, frame.floorY - 0.022, 0]}
+        position={[0, frame.floorY - 0.035, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[floorRadius * 0.74, 72]} />
+        <meshBasicMaterial color="#0f1d1f" opacity={0.68} transparent />
+      </mesh>
+      <mesh
+        position={[0, frame.floorY - 0.025, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <ringGeometry
-          args={[floorRadius * 0.78, floorRadius * 0.82, 96]}
+          args={[floorRadius * 0.72, floorRadius * 0.76, 96]}
         />
-        <meshBasicMaterial color="#00e5ff" opacity={0.28} transparent />
+        <meshBasicMaterial color="#00e5ff" opacity={0.24} transparent />
       </mesh>
     </>
   );
@@ -247,25 +256,25 @@ function ViewerScene({ modelUrl, onReady }: ViewerSceneProps) {
   return (
     <>
       <color args={["#101314"]} attach="background" />
-      <ambientLight intensity={1.5} />
+      <ambientLight intensity={1.16} />
       <hemisphereLight
         color="#c3f5ff"
         groundColor="#161616"
-        intensity={0.72}
+        intensity={0.82}
       />
       <directionalLight
         castShadow
         color="#ffffff"
-        intensity={3}
-        position={[3.4, 4.8, 4.2]}
+        intensity={3.2}
+        position={[3.2, 5.4, 4.6]}
       />
       <directionalLight
         color="#12dff3"
-        intensity={1.9}
-        position={[-3.4, 2.4, -2.4]}
+        intensity={1.65}
+        position={[-3.6, 2.8, -2.6]}
       />
-      <pointLight color="#12dff3" intensity={2.6} position={[-2.8, 1.8, 2.2]} />
-      <pointLight color="#ffeac0" intensity={1.2} position={[2.4, 1.4, 1.8]} />
+      <pointLight color="#12dff3" intensity={2.1} position={[-2.8, 1.9, 2.4]} />
+      <pointLight color="#ffeac0" intensity={1.05} position={[2.3, 1.5, 2]} />
 
       <Suspense fallback={<ModelLoadingMesh />}>
         <ViewerEnvironment frame={frame} />
@@ -374,13 +383,11 @@ function CanvasUnavailable({
 }
 
 interface StudioModelViewerProps {
-  isExportRestricted: boolean;
   modelUrl: string;
   onShow2d: () => void;
 }
 
 export default function StudioModelViewer({
-  isExportRestricted,
   modelUrl,
   onShow2d,
 }: StudioModelViewerProps) {
@@ -414,7 +421,7 @@ export default function StudioModelViewer({
       >
         <Canvas
           aria-label={t("studio.viewer.aria")}
-          camera={{ position: [0, 0.12, 5], fov: 38 }}
+          camera={{ position: [0, 0.2, 5], fov: VIEWER_FOV }}
           className="h-full w-full cursor-grab touch-none active:cursor-grabbing"
           dpr={[1, 1.5]}
           fallback={
@@ -441,25 +448,7 @@ export default function StudioModelViewer({
             {t("studio.viewer.loading")}
           </span>
         </div>
-      ) : (
-        <>
-          <div className="pointer-events-none absolute left-4 top-4 inline-flex items-center gap-2 rounded-md border border-[#00e5ff]/30 bg-[#0a0a0a]/75 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#9cf0ff] backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00e5ff]" />
-            {t("studio.viewer.ready")}
-          </div>
-          <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <span className="inline-flex items-center gap-2 self-start rounded-md border border-white/10 bg-[#0a0a0a]/75 px-3 py-2 text-[0.68rem] font-semibold text-[#bac9cc] backdrop-blur">
-              <Rotate3D className="h-3.5 w-3.5 text-[#00e5ff]" />
-              {t("studio.viewer.interaction")}
-            </span>
-            {isExportRestricted ? (
-              <span className="self-start rounded-md border border-[#f3bf26]/30 bg-[#0a0a0a]/75 px-3 py-2 text-[0.68rem] font-semibold text-[#ffeac0] backdrop-blur sm:self-auto">
-                {t("studio.glbRestricted")}
-              </span>
-            ) : null}
-          </div>
-        </>
-      )}
+      ) : null}
     </div>
   );
 }
