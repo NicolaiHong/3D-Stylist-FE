@@ -950,13 +950,50 @@ textarea {
 
 .studio-grid {
   background:
-    radial-gradient(circle, rgb(var(--accent-cyan) / 0.055) 1px, transparent 1.4px),
-    radial-gradient(circle at 50% 42%, rgb(var(--accent-cyan) / 0.035), transparent 26rem),
-    #0a0c0e;
-  background-size:
-    28px 28px,
-    auto,
-    auto;
+    radial-gradient(ellipse at 50% 32%, rgb(var(--accent-cyan) / 0.065), transparent 34rem),
+    linear-gradient(180deg, #10171a 0%, #0a0f12 58%, #080b0d 100%);
+}
+
+.studio-model-viewer {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 28%, rgb(var(--accent-cyan) / 0.085), transparent 33rem),
+    radial-gradient(ellipse at 50% 86%, rgb(0 0 0 / 0.34), transparent 21rem),
+    linear-gradient(180deg, #11191c 0%, #0b1013 54%, #07090b 100%);
+}
+
+.studio-model-viewer::before,
+.studio-model-viewer::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.studio-model-viewer::before {
+  inset: 7% 14% 18%;
+  background:
+    linear-gradient(90deg, transparent, rgb(var(--accent-cyan) / 0.055), transparent),
+    radial-gradient(ellipse at 50% 44%, rgb(255 255 255 / 0.035), transparent 68%);
+  opacity: 0.82;
+}
+
+.studio-model-viewer::after {
+  left: 19%;
+  right: 19%;
+  bottom: 8%;
+  height: 18%;
+  background: radial-gradient(ellipse at center, rgb(0 0 0 / 0.38), transparent 72%);
+  filter: blur(0.35rem);
+  opacity: 0.9;
+}
+
+.studio-model-viewer canvas {
+  outline: none;
+}
+
+.studio-asset-rail .internal-scroll-region {
+  padding-bottom: 0.35rem;
 }
 
 .internal-scroll-region {
@@ -986,7 +1023,7 @@ textarea {
   position: absolute;
   top: 0;
   right: 0;
-  bottom: 0.65rem;
+  bottom: 0.35rem;
   width: 2.5rem;
   pointer-events: none;
   background: linear-gradient(90deg, transparent, rgb(var(--canvas) / 0.92));

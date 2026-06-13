@@ -18,19 +18,22 @@ import { useI18n } from "../../i18n/useI18n";
 
 const MODEL_HEIGHT = 2.95;
 const VIEWER_FOV = 36;
-const MODEL_TARGET: [number, number, number] = [0, 0.08, 0];
 
 interface ModelFrame {
+  center: [number, number, number];
   depth: number;
   floorY: number;
   height: number;
+  target: [number, number, number];
   width: number;
 }
 
 const DEFAULT_FRAME: ModelFrame = {
+  center: [0, 0, 0],
   depth: 1.4,
   floorY: -MODEL_HEIGHT / 2,
   height: MODEL_HEIGHT,
+  target: [0, 0.06, 0],
   width: 1.4,
 };
 
@@ -72,7 +75,11 @@ function GeneratedModel({
     const visualBox = new Box3().setFromObject(measuringGroup);
     const visualSize = visualBox.getSize(new Vector3());
     const visualCenter = visualBox.getCenter(new Vector3());
-    const scale = MODEL_HEIGHT / (visualSize.y || 1);
+    const safeVisualHeight = visualSize.y || 1;
+    const scale = MODEL_HEIGHT / safeVisualHeight;
+    const centeredMinY = (visualBox.min.y - visualCenter.y) * scale;
+    const centeredHeight = safeVisualHeight * scale;
+    const targetY = centeredMinY + centeredHeight * 0.52;
 
     renderScene.traverse((object) => {
       const mesh = object as Mesh;
@@ -85,9 +92,11 @@ function GeneratedModel({
 
     return {
       frame: {
+        center: [0, 0, 0] as [number, number, number],
         depth: visualSize.z * scale,
-        floorY: (visualBox.min.y - visualCenter.y) * scale,
-        height: visualSize.y * scale,
+        floorY: centeredMinY,
+        height: centeredHeight,
+        target: [0, targetY, 0] as [number, number, number],
         width: visualSize.x * scale,
       },
       groupPosition: [
@@ -138,13 +147,17 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const aspect = width / Math.max(height, 1);
   const verticalFov = (VIEWER_FOV * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const margin = width < 640 ? 1.34 : width < 1024 ? 1.24 : 1.18;
+  const shortViewportPadding = height < 500 ? 0.18 : 0;
+  const margin =
+    (width < 640 ? 1.66 : width < 1024 ? 1.58 : 1.5) +
+    shortViewportPadding;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
   const distanceForWidth =
     (frame.width * margin * 0.5) / Math.tan(horizontalFov / 2);
+  const depthAllowance = Math.max(frame.depth * 0.28, 0.18);
 
-  return Math.max(distanceForHeight, distanceForWidth, 3.35);
+  return Math.max(distanceForHeight, distanceForWidth, 3.35) + depthAllowance;
 }
 
 function CameraControls({ frame }: { frame: ModelFrame }) {
@@ -167,24 +180,25 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
   useEffect(() => {
     const perspectiveCamera = camera as PerspectiveCamera;
     const distance = getCameraDistance(frame, size.width, size.height);
+    const target = new Vector3(...frame.target);
 
     perspectiveCamera.fov = VIEWER_FOV;
     perspectiveCamera.position.set(
-      size.width >= 1024 ? -0.12 : 0,
-      size.width < 640 ? 0.1 : 0.16,
+      target.x,
+      target.y + (size.width >= 1024 ? 0.08 : 0.04),
       distance,
     );
     perspectiveCamera.near = 0.1;
     perspectiveCamera.far = 100;
-    perspectiveCamera.lookAt(...MODEL_TARGET);
+    perspectiveCamera.lookAt(target);
     perspectiveCamera.updateProjectionMatrix();
 
     const controls = controlsRef.current;
 
     if (controls) {
-      controls.minDistance = distance * 0.68;
-      controls.maxDistance = distance * 1.72;
-      controls.target.set(...MODEL_TARGET);
+      controls.minDistance = Math.max(distance * 0.38, 1.65);
+      controls.maxDistance = distance * 2.65;
+      controls.target.copy(target);
       controls.update();
     }
   }, [camera, frame, size.height, size.width]);
@@ -197,42 +211,31 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
 }
 
 function ViewerEnvironment({ frame }: { frame: ModelFrame }) {
-  const floorRadius = Math.max(frame.width, frame.depth, 1.5);
-  const runwayDepth = Math.max(frame.depth * 1.7, 2.6);
+  const shadowWidth = Math.max(frame.width * 0.82, 1.05);
+  const shadowDepth = Math.max(frame.depth * 0.44, 0.52);
 
   return (
     <>
-      <mesh position={[0, 0.18, -1.22]}>
-        <planeGeometry
-          args={[
-            Math.max(frame.width * 2.05, 2.9),
-            Math.max(frame.height * 1.18, 3.55),
-          ]}
+      <mesh
+        position={[frame.center[0], frame.floorY - 0.028, frame.center[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[shadowWidth, shadowDepth, 1]}
+      >
+        <circleGeometry args={[1, 80]} />
+        <meshBasicMaterial
+          color="#02090b"
+          depthWrite={false}
+          opacity={0.34}
+          transparent
         />
-        <meshBasicMaterial color="#15363c" opacity={0.24} transparent />
       </mesh>
       <mesh
-        position={[0, frame.floorY - 0.048, -0.08]}
+        receiveShadow
+        position={[frame.center[0], frame.floorY - 0.045, frame.center[2]]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[floorRadius * 1.38, runwayDepth]} />
-        <meshBasicMaterial color="#132024" opacity={0.58} transparent />
-      </mesh>
-      <mesh
-        position={[0, frame.floorY - 0.035, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <circleGeometry args={[floorRadius * 0.74, 72]} />
-        <meshBasicMaterial color="#0f1d1f" opacity={0.68} transparent />
-      </mesh>
-      <mesh
-        position={[0, frame.floorY - 0.025, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <ringGeometry
-          args={[floorRadius * 0.72, floorRadius * 0.76, 96]}
-        />
-        <meshBasicMaterial color="#00e5ff" opacity={0.24} transparent />
+        <planeGeometry args={[Math.max(frame.width * 2.2, 3.8), 4.6]} />
+        <shadowMaterial opacity={0.16} transparent />
       </mesh>
     </>
   );
@@ -253,28 +256,31 @@ function ViewerScene({ modelUrl, onReady }: ViewerSceneProps) {
     [onReady],
   );
 
+  useEffect(() => {
+    setFrame(DEFAULT_FRAME);
+  }, [modelUrl]);
+
   return (
     <>
-      <color args={["#101314"]} attach="background" />
-      <ambientLight intensity={1.16} />
+      <ambientLight intensity={1.08} />
       <hemisphereLight
         color="#c3f5ff"
         groundColor="#161616"
-        intensity={0.82}
+        intensity={0.72}
       />
       <directionalLight
         castShadow
         color="#ffffff"
-        intensity={3.2}
+        intensity={3}
         position={[3.2, 5.4, 4.6]}
       />
       <directionalLight
         color="#12dff3"
-        intensity={1.65}
+        intensity={1.12}
         position={[-3.6, 2.8, -2.6]}
       />
-      <pointLight color="#12dff3" intensity={2.1} position={[-2.8, 1.9, 2.4]} />
-      <pointLight color="#ffeac0" intensity={1.05} position={[2.3, 1.5, 2]} />
+      <pointLight color="#12dff3" intensity={1.45} position={[-2.8, 1.9, 2.4]} />
+      <pointLight color="#ffeac0" intensity={0.9} position={[2.3, 1.5, 2]} />
 
       <Suspense fallback={<ModelLoadingMesh />}>
         <ViewerEnvironment frame={frame} />
@@ -411,7 +417,7 @@ export default function StudioModelViewer({
   }, [modelUrl]);
 
   return (
-    <div className="relative h-full min-h-[360px] w-full overflow-hidden">
+    <div className="studio-model-viewer relative h-full min-h-[380px] w-full overflow-hidden">
       <ViewerErrorBoundary
         fallback={
           <ViewerFallback onRetry={handleRetry} onShow2d={onShow2d} />
@@ -422,7 +428,7 @@ export default function StudioModelViewer({
         <Canvas
           aria-label={t("studio.viewer.aria")}
           camera={{ position: [0, 0.2, 5], fov: VIEWER_FOV }}
-          className="h-full w-full cursor-grab touch-none active:cursor-grabbing"
+          className="relative z-10 h-full w-full cursor-grab touch-none active:cursor-grabbing"
           dpr={[1, 1.5]}
           fallback={
             <CanvasUnavailable
@@ -430,7 +436,7 @@ export default function StudioModelViewer({
               onUnavailable={() => setIsUnavailable(true)}
             />
           }
-          gl={{ antialias: true, powerPreference: "high-performance" }}
+          gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
           shadows
         >
           <ViewerScene modelUrl={modelUrl} onReady={() => setIsReady(true)} />
@@ -440,7 +446,7 @@ export default function StudioModelViewer({
       {!isReady && !hasError && !isUnavailable ? (
         <div
           aria-live="polite"
-          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#101314]/75 px-6 text-center"
+          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-[#101314]/72 px-6 text-center"
           role="status"
         >
           <span className="flex flex-col items-center gap-3 text-sm font-semibold text-[#c3f5ff]">
