@@ -16,9 +16,9 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.j
 import { AlertTriangle, Box } from "lucide-react";
 import { useI18n } from "../../i18n/useI18n";
 
-const MODEL_HEIGHT = 3.08;
-const VIEWER_FOV = 35;
-const MODEL_TARGET: [number, number, number] = [0, 0.2, 0];
+const MODEL_HEIGHT = 2.95;
+const VIEWER_FOV = 36;
+const MODEL_TARGET: [number, number, number] = [0, 0.08, 0];
 
 interface ModelFrame {
   depth: number;
@@ -138,13 +138,13 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const aspect = width / Math.max(height, 1);
   const verticalFov = (VIEWER_FOV * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const margin = width < 640 ? 1.18 : width < 1024 ? 1.12 : 1.06;
+  const margin = width < 640 ? 1.34 : width < 1024 ? 1.24 : 1.18;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
   const distanceForWidth =
     (frame.width * margin * 0.5) / Math.tan(horizontalFov / 2);
 
-  return Math.max(distanceForHeight, distanceForWidth, 3.05);
+  return Math.max(distanceForHeight, distanceForWidth, 3.35);
 }
 
 function CameraControls({ frame }: { frame: ModelFrame }) {
@@ -170,8 +170,8 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
 
     perspectiveCamera.fov = VIEWER_FOV;
     perspectiveCamera.position.set(
-      size.width >= 1024 ? -0.16 : 0,
-      size.width < 640 ? 0.18 : 0.24,
+      size.width >= 1024 ? -0.12 : 0,
+      size.width < 640 ? 0.1 : 0.16,
       distance,
     );
     perspectiveCamera.near = 0.1;
