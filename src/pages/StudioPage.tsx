@@ -159,7 +159,15 @@ function ReadinessPill({
         }`}
       />
       <span>{label}</span>
-      <span className="text-current/70">{stateLabel}</span>
+      <span
+        className={
+          compact
+            ? "sr-only sm:not-sr-only sm:text-current/70"
+            : "text-current/70"
+        }
+      >
+        {stateLabel}
+      </span>
     </span>
   );
 }
@@ -176,12 +184,12 @@ function StudioViewModeControl({
   return (
     <div
       aria-label={t("studio.viewModeAria")}
-      className="grid shrink-0 grid-cols-2 rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 p-1"
+      className="grid shrink-0 grid-cols-2 rounded-md bg-[#0a0a0a]/80 p-1 ring-1 ring-white/10"
       role="group"
     >
       <button
         aria-pressed={viewMode === "2d"}
-        className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "2d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -193,7 +201,7 @@ function StudioViewModeControl({
       </button>
       <button
         aria-pressed={viewMode === "3d"}
-        className={`min-h-11 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "3d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -368,7 +376,7 @@ function FigureSelector({
 
   return (
     <div
-      className="relative min-w-0 flex-1 lg:min-w-[20rem]"
+      className="relative min-w-0 flex-1 lg:min-w-[18rem]"
       ref={wrapperRef}
       onBlur={(event) => {
         const nextTarget = event.relatedTarget as Node | null;
@@ -384,7 +392,7 @@ function FigureSelector({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={t("studio.selector.open")}
-        className="flex min-h-16 w-full min-w-0 items-center justify-between gap-3 rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 px-3 py-2 text-left transition hover:border-[#00e5ff]/35 hover:bg-[#121719] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex min-h-12 w-full min-w-0 items-center justify-between gap-3 rounded-md bg-[#0a0a0a]/70 px-3 py-2 text-left ring-1 ring-white/10 transition hover:bg-[#121719] hover:ring-[#00e5ff]/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isDisabled}
         ref={buttonRef}
         type="button"
@@ -395,7 +403,7 @@ function FigureSelector({
           <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#849396]">
             {t("studio.selector.current")}
           </span>
-          <span className="mt-1 block truncate text-sm font-semibold text-[#e5e2e1]">
+          <span className="block truncate text-sm font-semibold text-[#e5e2e1]">
             {selectedFigure
               ? getPromptSnippet(
                   selectedFigure.prompt,
@@ -513,14 +521,11 @@ function StudioCommandSurface({
   onViewModeChange: (mode: StudioViewMode) => void;
 }) {
   const { t } = useI18n();
-  const exportModelUrl = selectedFigure.modelUrl ?? null;
-  const canOpenExport = canExportModel && Boolean(exportModelUrl);
-  const canDownloadExport = canDownloadModel && Boolean(exportModelUrl);
   const isExportRestricted = !canExportModel && !canDownloadModel;
 
   return (
-    <section className="relative z-20 rounded-lg border border-[#3b494c] bg-[#121212]/95 p-3 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-      <div className="flex min-w-0 flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
+    <section className="relative z-30 border-b border-[#3b494c]/45 bg-[#121719]/95 px-3 py-3 sm:px-4">
+      <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
           <StudioViewModeControl
             viewMode={viewMode}
@@ -534,9 +539,6 @@ function StudioCommandSurface({
         </div>
 
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="inline-flex min-h-8 items-center rounded-md border border-white/10 bg-[#0a0a0a]/70 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#bac9cc]">
-            {viewMode === "3d" ? "GLB" : "IMG"}
-          </span>
           <FigureStatusBadge status={selectedFigure.status} />
           <div
             aria-label={t("studio.assetReadiness")}
@@ -554,39 +556,258 @@ function StudioCommandSurface({
             />
           </div>
           {viewMode === "3d" ? (
-            <span className="inline-flex min-h-8 items-center gap-2 rounded-md border border-white/10 bg-[#0a0a0a]/70 px-2.5 py-1 text-[0.68rem] font-semibold text-[#bac9cc]">
+            <span className="inline-flex min-h-8 items-center gap-2 rounded-md bg-[#0a0a0a]/55 px-2.5 py-1 text-[0.68rem] font-semibold text-[#bac9cc] ring-1 ring-white/10">
               <Rotate3D className="h-3.5 w-3.5 text-[#00e5ff]" />
               {t("studio.viewer.interaction")}
             </span>
           ) : null}
 
-          {canOpenExport && exportModelUrl ? (
-            <a
-              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
-              href={exportModelUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("studio.openGlb")}
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          ) : null}
-          {canDownloadExport && exportModelUrl ? (
-            <a
-              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#0a0a0a]/80 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-              download
-              href={exportModelUrl}
-            >
-              {t("studio.downloadGlb")}
-              <Download className="h-4 w-4" />
-            </a>
-          ) : null}
           {viewMode === "3d" && isExportRestricted ? (
-            <span className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#f3bf26]/25 bg-[#f3bf26]/10 px-2.5 py-1 text-[0.68rem] font-semibold text-[#ffeac0]">
+            <span className="inline-flex min-h-8 items-center gap-2 rounded-md bg-[#f3bf26]/10 px-2.5 py-1 text-[0.68rem] font-semibold text-[#ffeac0] ring-1 ring-[#f3bf26]/25">
               <LockKeyhole className="h-3.5 w-3.5" />
-              {t("studio.glbRestricted")}
+              {t("studio.exportRestricted")}
             </span>
           ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StudioMetadataPanel({
+  selectedFigure,
+  summary,
+}: {
+  selectedFigure: FigureDto;
+  summary: BillingSummary | null;
+}) {
+  const { language, t } = useI18n();
+  const hasModelAccess =
+    summary?.capabilities.canExportModel === true ||
+    summary?.capabilities.canDownloadModel === true;
+  const exportModelUrl = selectedFigure.modelUrl ?? null;
+  const canOpenExport =
+    summary?.capabilities.canExportModel === true && Boolean(exportModelUrl);
+  const canDownloadExport =
+    summary?.capabilities.canDownloadModel === true && Boolean(exportModelUrl);
+
+  return (
+    <aside className="min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
+      <section className="min-w-0">
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
+          {t("studio.metadata")}
+        </h2>
+        <dl className="mt-3 text-sm">
+          <div className="pb-4">
+            <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+              {t("dashboard.figure.prompt")}
+            </dt>
+            <dd className="mt-1 break-words text-sm leading-6 text-[#e5e2e1]">
+              {getBasePrompt(
+                selectedFigure.prompt,
+                t("dashboard.figure.untitled"),
+              )}
+            </dd>
+          </div>
+          <div className="border-t border-[#3b494c]/35 py-4">
+            <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+              {t("studio.styleDirection")}
+            </dt>
+            <dd className="mt-1 break-words text-sm leading-6 text-[#e5e2e1]">
+              {getStyleDirection(selectedFigure.prompt) ??
+                t("studio.notSpecified")}
+            </dd>
+          </div>
+          <div className="border-t border-[#3b494c]/35 py-3">
+            <div className="flex items-center justify-between gap-3 py-2">
+              <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+                {t("studio.status")}
+              </dt>
+              <dd className="min-w-0 text-right">
+                <FigureStatusBadge status={selectedFigure.status} />
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2">
+              <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+                {t("studio.provider")}
+              </dt>
+              <dd className="min-w-0 truncate text-right font-mono text-xs text-[#e5e2e1]">
+                {selectedFigure.provider ?? t("studio.notReported")}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2">
+              <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
+                {t("dashboard.figure.created")}
+              </dt>
+              <dd className="min-w-0 truncate text-right text-xs text-[#e5e2e1]">
+                {formatI18nDateTime(
+                  selectedFigure.createdAt,
+                  language,
+                  t("common.unknown"),
+                )}
+              </dd>
+            </div>
+          </div>
+        </dl>
+      </section>
+
+      <section className="border-t border-[#3b494c]/35 pt-4">
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
+          {t("studio.assetManifest")}
+        </h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <ReadinessPill
+            label={t("studio.masterImage")}
+            state={getPreviewReadinessState(selectedFigure)}
+          />
+          <ReadinessPill
+            label={t("studio.geometry")}
+            state={getModelReadinessState(selectedFigure)}
+          />
+        </div>
+      </section>
+
+      <section className="mt-4 border-t border-[#3b494c]/35 pt-4">
+        <div className="flex gap-3 text-xs leading-5">
+          {hasModelAccess ? (
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2cebcf]/80" />
+          ) : (
+            <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#f3bf26]/80" />
+          )}
+          <div className="min-w-0">
+            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
+              {hasModelAccess
+                ? t("studio.exportAvailable")
+                : t("studio.exportRestricted")}
+            </h2>
+            <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
+              {hasModelAccess
+                ? t("studio.exportAvailableBody")
+                : t("studio.exportRestrictedBody")}
+            </p>
+            {!hasModelAccess ? (
+              <Link
+                className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-[#f3bf26]/35 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
+                to="/credits"
+              >
+                {t("landing.viewPlans")}
+              </Link>
+            ) : null}
+            {canOpenExport || canDownloadExport ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {canOpenExport && exportModelUrl ? (
+                  <a
+                    className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+                    href={exportModelUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {t("studio.openGlb")}
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                ) : null}
+                {canDownloadExport && exportModelUrl ? (
+                  <a
+                    className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#0a0a0a]/70 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                    download
+                    href={exportModelUrl}
+                  >
+                    {t("studio.downloadGlb")}
+                    <Download className="h-4 w-4" />
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    </aside>
+  );
+}
+
+function StudioRecentAssetsRail({
+  figures,
+  selectedFigure,
+  onSelectFigure,
+}: {
+  figures: FigureDto[];
+  selectedFigure: FigureDto;
+  onSelectFigure: (figureId: string) => void;
+}) {
+  const { language, t } = useI18n();
+
+  return (
+    <section className="min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#0f1316]/72 px-3 py-2.5 sm:px-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
+          {t("studio.recentAssets")}
+        </h2>
+        <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#849396]">
+          {figures.length}
+        </span>
+      </div>
+      <div className="studio-asset-rail relative mt-3">
+        <div className="internal-scroll-region flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 pr-8">
+          {figures.map((figure) => {
+            const previewUrl = getPreviewUrl(figure);
+            const isSelected = figure.id === selectedFigure.id;
+
+            return (
+              <button
+                aria-pressed={isSelected}
+                className={`min-h-11 w-32 shrink-0 overflow-hidden rounded-md bg-[#191d1f]/86 text-left ring-1 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] sm:w-36 ${
+                  isSelected
+                    ? "ring-[#00e5ff]/55"
+                    : "ring-white/10 hover:ring-[#00e5ff]/35"
+                }`}
+                key={figure.id}
+                type="button"
+                onClick={() => onSelectFigure(figure.id)}
+              >
+                <span className="block h-12 bg-[#0a0a0a] sm:h-14">
+                  {previewUrl ? (
+                    <img
+                      alt=""
+                      className="h-full w-full object-cover"
+                      src={previewUrl}
+                    />
+                  ) : (
+                    <span className="flex h-full items-center justify-center">
+                      <ImageIcon className="h-5 w-5 text-[#3b494c]" />
+                    </span>
+                  )}
+                </span>
+                <span className="block space-y-1.5 p-2">
+                  <span className="block truncate text-xs font-bold text-white">
+                    {getPromptSnippet(
+                      figure.prompt,
+                      34,
+                      t("dashboard.figure.untitled"),
+                    )}
+                  </span>
+                  <span className="flex flex-wrap gap-1.5">
+                    <ReadinessPill
+                      compact
+                      label="2D"
+                      state={getPreviewReadinessState(figure)}
+                    />
+                    <ReadinessPill
+                      compact
+                      label="3D"
+                      state={getModelReadinessState(figure)}
+                    />
+                  </span>
+                  <span className="block truncate text-[0.65rem] text-[#849396]">
+                    {formatI18nDateTime(
+                      figure.createdAt,
+                      language,
+                      t("common.unknown"),
+                    )}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -711,7 +932,7 @@ function StudioPreview({
 }
 
 export function StudioPage() {
-  const { language, t } = useI18n();
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedFigureId = searchParams.get("figureId");
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -867,18 +1088,12 @@ export function StudioPage() {
   return (
     <DashboardShell planLabel={summary?.plan.name}>
       <main className="min-h-screen min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="mx-auto w-full min-w-0 max-w-[1560px] space-y-6">
-          <header className="flex flex-col gap-5 border-b border-[#3b494c]/70 pb-6 xl:flex-row xl:items-end xl:justify-between">
+        <div className="mx-auto w-full min-w-0 max-w-[1560px] space-y-4">
+          <header className="flex flex-col gap-3 border-b border-[#3b494c]/55 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e5ff]">
-                {t("studio.header.eyebrow")}
-              </p>
-              <h1 className="mt-3 font-display text-3xl font-semibold text-white sm:text-4xl">
+              <h1 className="font-display text-2xl font-semibold text-white sm:text-3xl">
                 {t("studio.header.title")}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                {t("studio.header.body")}
-              </p>
             </div>
 
             <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
@@ -920,16 +1135,20 @@ export function StudioPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="h-[620px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
-              <div className="h-[620px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05]" />
+            <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
+              <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
+              <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px]">
+                <div className="h-[clamp(430px,58vw,740px)] animate-pulse bg-white/[0.035]" />
+                <div className="h-72 animate-pulse border-t border-white/10 bg-white/[0.04] xl:h-auto xl:border-l xl:border-t-0" />
+              </div>
+              <div className="h-32 animate-pulse border-t border-white/10 bg-white/[0.035]" />
             </div>
           ) : figures.length === 0 ? (
             <StudioEmptyState />
           ) : selectedFigure ? (
-            <>
-              <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section className="min-w-0 max-w-full space-y-4">
+            <div className="min-w-0 max-w-full overflow-visible rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
+              <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
+                <section className="min-w-0 max-w-full">
                   <StudioCommandSurface
                     canDownloadModel={
                       summary?.capabilities.canDownloadModel === true
@@ -944,7 +1163,7 @@ export function StudioPage() {
                     onViewModeChange={setViewMode}
                   />
 
-                  <div className="studio-grid relative mx-auto h-[clamp(420px,55vw,660px)] w-full min-w-0 max-w-[980px] overflow-hidden rounded-lg border border-[#3b494c] bg-[#121212] shadow-[0_18px_42px_rgba(0,0,0,0.2)]">
+                  <div className="studio-grid relative h-[clamp(430px,58vw,740px)] w-full min-w-0 overflow-hidden bg-[#0a0c0e]">
                     <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
                       <StudioPreview
                         figure={selectedFigure}
@@ -953,194 +1172,20 @@ export function StudioPage() {
                       />
                     </div>
                   </div>
-
-                  <section className="min-w-0 max-w-full">
-                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
-                      {t("studio.recentAssets")}
-                    </h2>
-                    <div className="studio-asset-rail relative mt-3">
-                      <div className="internal-scroll-region flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pr-8">
-                        {figures.map((figure) => {
-                          const previewUrl = getPreviewUrl(figure);
-                          const isSelected = figure.id === selectedFigure.id;
-
-                          return (
-                            <button
-                              aria-pressed={isSelected}
-                              className={`min-h-11 w-44 shrink-0 overflow-hidden rounded-md border bg-[#1c1b1b] text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
-                                isSelected
-                                  ? "border-[#00e5ff]/55"
-                                  : "border-[#3b494c] hover:border-[#00e5ff]/35"
-                              }`}
-                              key={figure.id}
-                              type="button"
-                              onClick={() => handleSelectFigure(figure.id)}
-                            >
-                              <span className="block h-24 bg-[#0e0e0e]">
-                                {previewUrl ? (
-                                  <img
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                    src={previewUrl}
-                                  />
-                                ) : (
-                                  <span className="flex h-full items-center justify-center">
-                                    <ImageIcon className="h-6 w-6 text-[#3b494c]" />
-                                  </span>
-                                )}
-                              </span>
-                              <span className="block space-y-2 p-3">
-                                <span className="block truncate text-xs font-bold text-white">
-                                  {getPromptSnippet(
-                                    figure.prompt,
-                                    36,
-                                    t("dashboard.figure.untitled"),
-                                  )}
-                                </span>
-                                <span className="flex flex-wrap gap-1.5">
-                                  <ReadinessPill
-                                    compact
-                                    label="2D"
-                                    state={getPreviewReadinessState(figure)}
-                                  />
-                                  <ReadinessPill
-                                    compact
-                                    label="3D"
-                                    state={getModelReadinessState(figure)}
-                                  />
-                                  <span className="inline-flex min-h-7 items-center rounded-md border border-white/10 bg-white/[0.035] px-2 py-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-[#849396]">
-                                    {getDisplayLabel(
-                                      "figureStatus",
-                                      figure.status,
-                                      language,
-                                    )}
-                                  </span>
-                                </span>
-                                <span className="block text-[0.65rem] text-[#849396]">
-                                  {formatI18nDateTime(
-                                    figure.createdAt,
-                                    language,
-                                    t("common.unknown"),
-                                  )}
-                                </span>
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </section>
                 </section>
 
-                <aside className="min-w-0 max-w-full rounded-lg border border-[#3b494c] bg-[#111417]/95 p-5">
-                  <section className="min-w-0">
-                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
-                      {t("studio.metadata")}
-                    </h2>
-                    <dl className="mt-3 text-sm">
-                      <div className="pb-4">
-                        <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                          {t("dashboard.figure.prompt")}
-                        </dt>
-                        <dd className="mt-1 break-words text-sm leading-6 text-[#e5e2e1]">
-                          {getBasePrompt(
-                            selectedFigure.prompt,
-                            t("dashboard.figure.untitled"),
-                          )}
-                        </dd>
-                      </div>
-                      <div className="border-t border-[#3b494c]/45 py-4">
-                        <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                          {t("studio.styleDirection")}
-                        </dt>
-                        <dd className="mt-1 break-words text-sm leading-6 text-[#e5e2e1]">
-                          {getStyleDirection(selectedFigure.prompt) ??
-                            t("studio.notSpecified")}
-                        </dd>
-                      </div>
-                      <div className="border-t border-[#3b494c]/45 py-3">
-                        <div className="flex items-center justify-between gap-3 py-2">
-                          <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                            {t("studio.status")}
-                          </dt>
-                          <dd className="min-w-0 text-right">
-                            <FigureStatusBadge
-                              status={selectedFigure.status}
-                            />
-                          </dd>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 py-2">
-                          <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                            {t("studio.provider")}
-                          </dt>
-                          <dd className="min-w-0 truncate text-right font-mono text-xs text-[#e5e2e1]">
-                            {selectedFigure.provider ?? t("studio.notReported")}
-                          </dd>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 py-2">
-                          <dt className="text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]">
-                            {t("dashboard.figure.created")}
-                          </dt>
-                          <dd className="min-w-0 truncate text-right text-xs text-[#e5e2e1]">
-                            {formatI18nDateTime(
-                              selectedFigure.createdAt,
-                              language,
-                              t("common.unknown"),
-                            )}
-                          </dd>
-                        </div>
-                      </div>
-                    </dl>
-                  </section>
-
-                  <section className="border-t border-[#3b494c]/50 pt-5">
-                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
-                      {t("studio.assetManifest")}
-                    </h2>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <ReadinessPill
-                        label={t("studio.masterImage")}
-                        state={getPreviewReadinessState(selectedFigure)}
-                      />
-                      <ReadinessPill
-                        label={t("studio.geometry")}
-                        state={getModelReadinessState(selectedFigure)}
-                      />
-                    </div>
-                  </section>
-
-                  <section className="mt-5 border-t border-[#3b494c]/50 pt-5">
-                    <div className="flex gap-3 text-xs leading-5">
-                      {summary?.capabilities.canExportModel ? (
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2cebcf]/80" />
-                      ) : (
-                        <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#f3bf26]/80" />
-                      )}
-                      <div className="min-w-0">
-                        <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
-                          {summary?.capabilities.canExportModel
-                            ? t("studio.exportAvailable")
-                            : t("studio.exportRestricted")}
-                        </h2>
-                        <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
-                          {summary?.capabilities.canExportModel
-                            ? t("studio.exportAvailableBody")
-                            : t("studio.exportRestrictedBody")}
-                        </p>
-                        {!summary?.capabilities.canExportModel ? (
-                          <Link
-                            className="mt-3 inline-flex min-h-9 items-center justify-center rounded-md border border-[#f3bf26]/35 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-wide text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffdf96]"
-                            to="/credits"
-                          >
-                            {t("landing.viewPlans")}
-                          </Link>
-                        ) : null}
-                      </div>
-                    </div>
-                  </section>
-                </aside>
+                <StudioMetadataPanel
+                  selectedFigure={selectedFigure}
+                  summary={summary}
+                />
               </div>
-            </>
+
+              <StudioRecentAssetsRail
+                figures={figures}
+                selectedFigure={selectedFigure}
+                onSelectFigure={handleSelectFigure}
+              />
+            </div>
           ) : null}
         </div>
       </main>
