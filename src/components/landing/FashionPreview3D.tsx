@@ -6,7 +6,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const MODEL_PATH = "/models/fashionboy.glb";
 const MODEL_HEIGHT = 2.86;
-const MODEL_TARGET: [number, number, number] = [0, 0.03, 0];
+const MODEL_TARGET: [number, number, number] = [0, 0.02, 0];
 
 interface ModelFrame {
   depth: number;
@@ -100,9 +100,9 @@ function AvatarModel({ onFrameChange }: AvatarModelProps) {
 
 function ModelLoadingMesh() {
   return (
-    <mesh rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[0.72, 0.008, 12, 96]} />
-      <meshBasicMaterial color="#00e5ff" transparent opacity={0.72} />
+    <mesh position={[0, 0.24, 0]} rotation={[0.4, 0.6, 0]}>
+      <octahedronGeometry args={[0.13, 0]} />
+      <meshBasicMaterial color="#9cf0ff" transparent opacity={0.74} />
     </mesh>
   );
 }
@@ -112,13 +112,13 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const verticalFov = (36 * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
   const isMobile = width < 640;
-  const margin = isMobile ? 1.22 : width < 1024 ? 1.16 : 1.08;
+  const margin = isMobile ? 1.38 : width < 1024 ? 1.32 : 1.26;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
   const distanceForWidth =
     (frame.width * margin * 0.5) / Math.tan(horizontalFov / 2);
 
-  return Math.max(distanceForHeight, distanceForWidth, 3.25);
+  return Math.max(distanceForHeight, distanceForWidth, 3.8);
 }
 
 interface CameraControlsProps {
@@ -152,8 +152,8 @@ function CameraControls({ frame }: CameraControlsProps) {
 
     perspectiveCamera.fov = 36;
     perspectiveCamera.position.set(
-      isWide ? -0.12 : 0,
-      isMobile ? 0.08 : 0.12,
+      isWide ? -0.1 : 0,
+      isMobile ? 0.06 : 0.1,
       distance,
     );
     perspectiveCamera.near = 0.1;
@@ -163,8 +163,8 @@ function CameraControls({ frame }: CameraControlsProps) {
 
     const controls = controlsRef.current;
     if (controls) {
-      controls.minDistance = distance * 0.68;
-      controls.maxDistance = distance * 1.72;
+      controls.minDistance = distance * 0.76;
+      controls.maxDistance = distance * 1.78;
       controls.target.set(...MODEL_TARGET);
       controls.update();
     }
@@ -177,50 +177,22 @@ function CameraControls({ frame }: CameraControlsProps) {
   return null;
 }
 
-interface StudioFloorProps {
+interface ContactFloorProps {
   frame: ModelFrame;
 }
 
-function StudioFloor({ frame }: StudioFloorProps) {
-  const floorRadius = Math.max(frame.width, frame.depth, 1.45);
+function ContactShadowFloor({ frame }: ContactFloorProps) {
+  const floorSize = Math.max(frame.width, frame.depth, 1.6) * 2.5;
 
   return (
-    <group>
-      <mesh
-        position={[0, frame.floorY - 0.03, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <circleGeometry args={[floorRadius * 0.78, 72]} />
-        <meshBasicMaterial color="#111f20" transparent opacity={0.72} />
-      </mesh>
-      <mesh
-        position={[0, frame.floorY - 0.022, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <ringGeometry args={[floorRadius * 0.76, floorRadius * 0.8, 96]} />
-        <meshBasicMaterial color="#00e5ff" transparent opacity={0.3} />
-      </mesh>
-    </group>
-  );
-}
-
-function ShowroomBacklight({ frame }: StudioFloorProps) {
-  return (
-    <group>
-      <mesh position={[0, 0.06, -1.18]}>
-        <planeGeometry
-          args={[
-            Math.max(frame.width * 1.9, 2.55),
-            Math.max(frame.height * 1.12, 3.2),
-          ]}
-        />
-        <meshBasicMaterial color="#12343a" transparent opacity={0.34} />
-      </mesh>
-      <mesh position={[0, 0.12, -1.14]}>
-        <ringGeometry args={[1.08, 1.1, 96]} />
-        <meshBasicMaterial color="#00e5ff" transparent opacity={0.28} />
-      </mesh>
-    </group>
+    <mesh
+      receiveShadow
+      position={[0, frame.floorY - 0.025, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
+    >
+      <planeGeometry args={[floorSize, floorSize]} />
+      <shadowMaterial color="#000000" transparent opacity={0.24} />
+    </mesh>
   );
 }
 
@@ -230,7 +202,7 @@ export default function FashionPreview3D() {
   return (
     <Canvas
       aria-label="Interactive 3D fashion preview"
-      camera={{ position: [0, 0.14, 5], fov: 36 }}
+      camera={{ position: [0, 0.1, 5.8], fov: 36 }}
       className="h-full w-full cursor-grab active:cursor-grabbing"
       dpr={[1, 1.5]}
       fallback={
@@ -238,42 +210,56 @@ export default function FashionPreview3D() {
           3D preview is not available on this device.
         </div>
       }
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      gl={{
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      }}
       shadows
     >
-      <color attach="background" args={["#101314"]} />
-      <ambientLight intensity={1.65} />
+      <ambientLight intensity={1.35} />
       <hemisphereLight
         color="#c3f5ff"
         groundColor="#161616"
-        intensity={0.75}
+        intensity={0.7}
       />
       <directionalLight
         castShadow
         color="#ffffff"
-        intensity={3.2}
+        intensity={2.7}
         position={[3.4, 4.8, 4.2]}
       />
       <directionalLight
         color="#12dff3"
-        intensity={2.1}
+        intensity={1.4}
         position={[-3.4, 2.4, -2.4]}
       />
       <spotLight
         angle={0.42}
         color="#c3f5ff"
-        intensity={2.8}
+        intensity={2.1}
         penumbra={0.55}
         position={[-2.8, 3.2, 3.4]}
       />
-      <pointLight color="#12dff3" intensity={3.1} position={[-2.8, 1.8, 2.2]} />
-      <pointLight color="#ffeac0" intensity={1.4} position={[2.4, 1.4, 1.8]} />
-      <pointLight color="#00e5ff" intensity={2.4} position={[0.6, 1.7, -2.2]} />
+      <pointLight
+        color="#12dff3"
+        intensity={1.8}
+        position={[-2.8, 1.8, 2.2]}
+      />
+      <pointLight
+        color="#ffeac0"
+        intensity={1.0}
+        position={[2.4, 1.4, 1.8]}
+      />
+      <pointLight
+        color="#00e5ff"
+        intensity={1.4}
+        position={[0.6, 1.7, -2.2]}
+      />
 
       <Suspense fallback={<ModelLoadingMesh />}>
-        <ShowroomBacklight frame={frame} />
         <AvatarModel onFrameChange={setFrame} />
-        <StudioFloor frame={frame} />
+        <ContactShadowFloor frame={frame} />
       </Suspense>
 
       <CameraControls frame={frame} />
