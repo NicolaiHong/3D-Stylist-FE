@@ -314,7 +314,7 @@ export function LandingPage() {
           </dl>
         </div>
 
-        <div className="landing-preview-stage mx-auto w-full max-w-4xl min-w-0 xl:max-w-none">
+        <div className="landing-preview-stage mx-auto w-full max-w-4xl min-w-0 xl:max-w-none xl:justify-self-end">
           <div className="landing-preview-card">
             <div className="landing-preview-toolbar">
               <span className="flex min-w-0 items-center gap-1.5">
