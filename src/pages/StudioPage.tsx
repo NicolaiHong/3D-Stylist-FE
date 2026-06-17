@@ -1053,7 +1053,7 @@ export function StudioPage() {
             <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
               <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
               <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px]">
-                <div className="h-[clamp(450px,58vw,760px)] animate-pulse bg-white/[0.035]" />
+                <div className="studio-preview-stage animate-pulse bg-white/[0.035]" />
                 <div className="h-72 animate-pulse border-t border-white/10 bg-white/[0.04] xl:h-auto xl:border-l xl:border-t-0" />
               </div>
             </div>
@@ -1077,7 +1077,7 @@ export function StudioPage() {
                     onViewModeChange={setViewMode}
                   />
 
-                  <div className="studio-grid relative h-[clamp(450px,58vw,760px)] w-full min-w-0 overflow-hidden bg-[#0a0c0e]">
+                  <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
                     <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
                       <StudioPreview
                         figure={selectedFigure}

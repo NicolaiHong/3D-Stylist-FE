@@ -17,7 +17,7 @@ import { AlertTriangle, Box } from "lucide-react";
 import { useI18n } from "../../i18n/useI18n";
 
 const MODEL_HEIGHT = 2.95;
-const VIEWER_FOV = 36;
+const VIEWER_FOV = 37;
 
 interface ModelFrame {
   center: [number, number, number];
@@ -33,7 +33,7 @@ const DEFAULT_FRAME: ModelFrame = {
   depth: 1.4,
   floorY: -MODEL_HEIGHT / 2,
   height: MODEL_HEIGHT,
-  target: [0, 0.06, 0],
+  target: [0, 0.16, 0],
   width: 1.4,
 };
 
@@ -79,7 +79,7 @@ function GeneratedModel({
     const scale = MODEL_HEIGHT / safeVisualHeight;
     const centeredMinY = (visualBox.min.y - visualCenter.y) * scale;
     const centeredHeight = safeVisualHeight * scale;
-    const targetY = centeredMinY + centeredHeight * 0.52;
+    const targetY = centeredMinY + centeredHeight * 0.56;
 
     renderScene.traverse((object) => {
       const mesh = object as Mesh;
@@ -147,9 +147,9 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const aspect = width / Math.max(height, 1);
   const verticalFov = (VIEWER_FOV * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const shortViewportPadding = height < 500 ? 0.18 : 0;
+  const shortViewportPadding = height < 500 ? 0.14 : 0;
   const margin =
-    (width < 640 ? 1.66 : width < 1024 ? 1.58 : 1.5) +
+    (width < 640 ? 1.6 : width < 1024 ? 1.52 : 1.42) +
     shortViewportPadding;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
@@ -185,7 +185,7 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
     perspectiveCamera.fov = VIEWER_FOV;
     perspectiveCamera.position.set(
       target.x,
-      target.y + (size.width >= 1024 ? 0.08 : 0.04),
+      target.y + (size.width >= 1024 ? 0.04 : 0.02),
       distance,
     );
     perspectiveCamera.near = 0.1;
@@ -211,13 +211,41 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
 }
 
 function ViewerEnvironment({ frame }: { frame: ModelFrame }) {
-  const shadowWidth = Math.max(frame.width * 0.82, 1.05);
-  const shadowDepth = Math.max(frame.depth * 0.44, 0.52);
+  const floorWidth = Math.max(frame.width * 1.28, 1.5);
+  const floorDepth = Math.max(frame.depth * 0.64, 0.72);
+  const shadowWidth = Math.max(frame.width * 0.76, 0.98);
+  const shadowDepth = Math.max(frame.depth * 0.38, 0.44);
 
   return (
     <>
       <mesh
-        position={[frame.center[0], frame.floorY - 0.028, frame.center[2]]}
+        position={[frame.center[0], frame.floorY - 0.06, frame.center[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[floorWidth, floorDepth, 1]}
+      >
+        <circleGeometry args={[1, 80]} />
+        <meshBasicMaterial
+          color="#0f191b"
+          depthWrite={false}
+          opacity={0.62}
+          transparent
+        />
+      </mesh>
+      <mesh
+        position={[frame.center[0], frame.floorY - 0.055, frame.center[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[floorWidth * 1.04, floorDepth * 1.04, 1]}
+      >
+        <ringGeometry args={[0.82, 0.84, 96]} />
+        <meshBasicMaterial
+          color="#00e5ff"
+          depthWrite={false}
+          opacity={0.11}
+          transparent
+        />
+      </mesh>
+      <mesh
+        position={[frame.center[0], frame.floorY - 0.038, frame.center[2]]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[shadowWidth, shadowDepth, 1]}
       >
@@ -225,17 +253,17 @@ function ViewerEnvironment({ frame }: { frame: ModelFrame }) {
         <meshBasicMaterial
           color="#02090b"
           depthWrite={false}
-          opacity={0.34}
+          opacity={0.2}
           transparent
         />
       </mesh>
       <mesh
         receiveShadow
-        position={[frame.center[0], frame.floorY - 0.045, frame.center[2]]}
+        position={[frame.center[0], frame.floorY - 0.075, frame.center[2] - 0.05]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[Math.max(frame.width * 2.2, 3.8), 4.6]} />
-        <shadowMaterial opacity={0.16} transparent />
+        <planeGeometry args={[Math.max(frame.width * 2.8, 4.6), 5.4]} />
+        <shadowMaterial opacity={0.08} transparent />
       </mesh>
     </>
   );
@@ -262,25 +290,25 @@ function ViewerScene({ modelUrl, onReady }: ViewerSceneProps) {
 
   return (
     <>
-      <ambientLight intensity={1.08} />
+      <ambientLight intensity={1} />
       <hemisphereLight
         color="#c3f5ff"
-        groundColor="#161616"
-        intensity={0.72}
+        groundColor="#121819"
+        intensity={0.64}
       />
       <directionalLight
         castShadow
         color="#ffffff"
-        intensity={3}
+        intensity={2.55}
         position={[3.2, 5.4, 4.6]}
       />
       <directionalLight
         color="#12dff3"
-        intensity={1.12}
+        intensity={0.62}
         position={[-3.6, 2.8, -2.6]}
       />
-      <pointLight color="#12dff3" intensity={1.45} position={[-2.8, 1.9, 2.4]} />
-      <pointLight color="#ffeac0" intensity={0.9} position={[2.3, 1.5, 2]} />
+      <pointLight color="#12dff3" intensity={0.78} position={[-2.8, 1.9, 2.4]} />
+      <pointLight color="#ffeac0" intensity={0.55} position={[2.3, 1.5, 2]} />
 
       <Suspense fallback={<ModelLoadingMesh />}>
         <ViewerEnvironment frame={frame} />

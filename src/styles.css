@@ -958,18 +958,23 @@ textarea {
   animation: generation-result-arrow 1.4s ease-in-out infinite;
 }
 
+.studio-preview-stage {
+  height: clamp(440px, 52vw, 680px);
+}
+
 .studio-grid {
   background:
-    radial-gradient(ellipse at 50% 32%, rgb(var(--accent-cyan) / 0.065), transparent 34rem),
-    linear-gradient(180deg, #10171a 0%, #0a0f12 58%, #080b0d 100%);
+    linear-gradient(180deg, rgb(255 255 255 / 0.022), transparent 27%),
+    radial-gradient(ellipse at 50% 34%, rgb(var(--accent-cyan) / 0.07), transparent 30rem),
+    linear-gradient(180deg, #11181b 0%, #0d1417 52%, #0d1112 100%);
 }
 
 .studio-model-viewer {
   isolation: isolate;
   background:
-    radial-gradient(ellipse at 50% 28%, rgb(var(--accent-cyan) / 0.085), transparent 33rem),
-    radial-gradient(ellipse at 50% 86%, rgb(0 0 0 / 0.34), transparent 21rem),
-    linear-gradient(180deg, #11191c 0%, #0b1013 54%, #07090b 100%);
+    radial-gradient(ellipse at 50% 33%, rgb(var(--accent-cyan) / 0.075), transparent 30rem),
+    linear-gradient(180deg, rgb(255 255 255 / 0.028), transparent 30%),
+    linear-gradient(180deg, #11191c 0%, #0d1417 55%, #0d1112 100%);
 }
 
 .studio-model-viewer::before,
@@ -981,25 +986,40 @@ textarea {
 }
 
 .studio-model-viewer::before {
-  inset: 7% 14% 18%;
+  inset: 0;
   background:
-    linear-gradient(90deg, transparent, rgb(var(--accent-cyan) / 0.055), transparent),
-    radial-gradient(ellipse at 50% 44%, rgb(255 255 255 / 0.035), transparent 68%);
-  opacity: 0.82;
+    linear-gradient(90deg, rgb(0 0 0 / 0.18), transparent 28%, transparent 72%, rgb(0 0 0 / 0.16)),
+    linear-gradient(180deg, transparent 0 63%, rgb(255 255 255 / 0.028) 63.5%, transparent 64%),
+    radial-gradient(ellipse at 50% 76%, rgb(var(--accent-cyan) / 0.07), transparent 42%);
+  opacity: 0.72;
 }
 
 .studio-model-viewer::after {
-  left: 19%;
-  right: 19%;
-  bottom: 8%;
-  height: 18%;
-  background: radial-gradient(ellipse at center, rgb(0 0 0 / 0.38), transparent 72%);
-  filter: blur(0.35rem);
-  opacity: 0.9;
+  left: 13%;
+  right: 13%;
+  bottom: -1%;
+  height: 38%;
+  background:
+    linear-gradient(180deg, transparent, rgb(255 255 255 / 0.018)),
+    radial-gradient(ellipse at center, rgb(0 229 255 / 0.09), transparent 68%);
+  filter: blur(0.15rem);
+  opacity: 0.72;
 }
 
 .studio-model-viewer canvas {
   outline: none;
+}
+
+@media (max-width: 639px) {
+  .studio-preview-stage {
+    height: clamp(440px, 118vw, 540px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .studio-preview-stage {
+    height: clamp(520px, calc(100vh - 14.5rem), 680px);
+  }
 }
 
 .internal-scroll-region {
