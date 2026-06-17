@@ -194,7 +194,7 @@ function StudioViewModeControl({
     >
       <button
         aria-pressed={viewMode === "2d"}
-        className={`min-h-10 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-11 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "2d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -206,7 +206,7 @@ function StudioViewModeControl({
       </button>
       <button
         aria-pressed={viewMode === "3d"}
-        className={`min-h-10 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-11 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "3d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -612,7 +612,7 @@ function StudioMetadataPanel({
     regenerationPrompt.length > MAX_REGENERATION_PROMPT_LENGTH;
 
   return (
-    <aside className="min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
+    <aside className="studio-metadata-panel internal-scroll-region min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
       <section className="min-w-0">
         <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
           {t("studio.metadata")}
@@ -870,7 +870,7 @@ function StudioPreview({
         src={previewUrl}
       />
     ) : (
-      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <ImageIcon className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
           {t("studio.preview2dPending")}
@@ -886,7 +886,7 @@ function StudioPreview({
     const isPending = isPollingStatus(figure.status);
 
     return (
-      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
           {isPending
@@ -904,7 +904,7 @@ function StudioPreview({
 
   if (!figure.modelViewerUrl) {
     return (
-      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
           {t("studio.viewer.unavailable")}
@@ -917,12 +917,12 @@ function StudioPreview({
   }
 
   return (
-    <div className="relative h-full min-h-[440px] w-full">
+    <div className="relative h-full min-h-0 w-full">
       <Suspense
         fallback={
           <div
             aria-live="polite"
-            className="flex h-full min-h-[440px] items-center justify-center p-8 text-center text-sm font-semibold text-[#c3f5ff]"
+            className="flex h-full min-h-0 items-center justify-center p-8 text-center text-sm font-semibold text-[#c3f5ff]"
             role="status"
           >
             {t("studio.viewer.loading")}
@@ -1211,8 +1211,8 @@ export function StudioPage() {
           ) : figures.length === 0 ? (
             <StudioEmptyState />
           ) : selectedFigure ? (
-            <div className="min-w-0 max-w-full overflow-visible rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
-              <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="studio-workspace min-w-0 max-w-full overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
+              <div className="grid min-w-0 items-start xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
                 <section className="min-w-0 max-w-full">
                   <StudioCommandSurface
                     canDownloadModel={

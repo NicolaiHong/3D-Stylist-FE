@@ -79,7 +79,7 @@ function GeneratedModel({
     const scale = MODEL_HEIGHT / safeVisualHeight;
     const centeredMinY = (visualBox.min.y - visualCenter.y) * scale;
     const centeredHeight = safeVisualHeight * scale;
-    const targetY = centeredMinY + centeredHeight * 0.45;
+    const targetY = centeredMinY + centeredHeight * 0.5;
 
     renderScene.traverse((object) => {
       const mesh = object as Mesh;
@@ -149,7 +149,7 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
   const shortViewportPadding = height < 500 ? 0.06 : 0;
   const margin =
-    (width < 640 ? 1.18 : width < 1024 ? 1.14 : 1.08) +
+    (width < 640 ? 1.22 : width < 1024 ? 1.18 : 1.12) +
     shortViewportPadding;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
