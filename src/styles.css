@@ -989,7 +989,7 @@ textarea {
   inset: 0;
   background:
     linear-gradient(90deg, rgb(0 0 0 / 0.18), transparent 28%, transparent 72%, rgb(0 0 0 / 0.16)),
-    linear-gradient(180deg, transparent 0 63%, rgb(255 255 255 / 0.028) 63.5%, transparent 64%),
+    linear-gradient(180deg, transparent 0 72%, rgb(255 255 255 / 0.028) 72.5%, transparent 73%),
     radial-gradient(ellipse at 50% 76%, rgb(var(--accent-cyan) / 0.07), transparent 42%);
   opacity: 0.72;
 }

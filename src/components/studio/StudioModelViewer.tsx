@@ -79,7 +79,7 @@ function GeneratedModel({
     const scale = MODEL_HEIGHT / safeVisualHeight;
     const centeredMinY = (visualBox.min.y - visualCenter.y) * scale;
     const centeredHeight = safeVisualHeight * scale;
-    const targetY = centeredMinY + centeredHeight * 0.56;
+    const targetY = centeredMinY + centeredHeight * 0.48;
 
     renderScene.traverse((object) => {
       const mesh = object as Mesh;
@@ -147,17 +147,17 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const aspect = width / Math.max(height, 1);
   const verticalFov = (VIEWER_FOV * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const shortViewportPadding = height < 500 ? 0.14 : 0;
+  const shortViewportPadding = height < 500 ? 0.08 : 0;
   const margin =
-    (width < 640 ? 1.6 : width < 1024 ? 1.52 : 1.42) +
+    (width < 640 ? 1.28 : width < 1024 ? 1.22 : 1.14) +
     shortViewportPadding;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
   const distanceForWidth =
     (frame.width * margin * 0.5) / Math.tan(horizontalFov / 2);
-  const depthAllowance = Math.max(frame.depth * 0.28, 0.18);
+  const depthAllowance = Math.max(frame.depth * 0.22, 0.14);
 
-  return Math.max(distanceForHeight, distanceForWidth, 3.35) + depthAllowance;
+  return Math.max(distanceForHeight, distanceForWidth, 2.8) + depthAllowance;
 }
 
 function CameraControls({ frame }: { frame: ModelFrame }) {
@@ -185,7 +185,7 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
     perspectiveCamera.fov = VIEWER_FOV;
     perspectiveCamera.position.set(
       target.x,
-      target.y + (size.width >= 1024 ? 0.04 : 0.02),
+      target.y + (size.width >= 1024 ? 0.01 : 0.005),
       distance,
     );
     perspectiveCamera.near = 0.1;
