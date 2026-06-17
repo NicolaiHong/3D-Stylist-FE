@@ -959,7 +959,7 @@ textarea {
 }
 
 .studio-layout {
-  --studio-preview-stage-height: clamp(400px, 48vw, 520px);
+  --studio-preview-stage-height: clamp(380px, 44vw, 500px);
 }
 
 .studio-workspace {
@@ -967,7 +967,7 @@ textarea {
 }
 
 .studio-preview-stage {
-  height: var(--studio-preview-stage-height, clamp(400px, 48vw, 520px));
+  height: var(--studio-preview-stage-height, clamp(380px, 44vw, 500px));
   min-height: 0;
 }
 
@@ -1027,15 +1027,13 @@ textarea {
 
 @media (min-width: 1280px) {
   .studio-layout {
-    --studio-preview-stage-height: clamp(420px, calc(100vh - 18rem), 540px);
+    --studio-preview-stage-height: clamp(390px, calc(100vh - 22rem), 500px);
   }
 
   .studio-metadata-panel {
-    max-height: calc(
-      var(--studio-preview-stage-height, clamp(420px, calc(100vh - 18rem), 540px)) + 6rem
-    );
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    align-self: start;
+    max-height: none;
+    overflow: visible;
   }
 }
 
