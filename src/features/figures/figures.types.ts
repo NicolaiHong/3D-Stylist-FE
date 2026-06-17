@@ -13,6 +13,12 @@ export type FigureGenerationMode =
   | "text_regeneration"
   | string;
 
+export type ReferenceImageKind =
+  | "face"
+  | "full_body"
+  | "clothing_style"
+  | "generic_reference";
+
 export interface FigureDto {
   id: string;
   prompt: string | null;
@@ -40,6 +46,26 @@ export interface GenerateFigurePayload {
 
 export interface RegenerateFigurePayload {
   promptOverride?: string;
+}
+
+export interface ReferenceImageAssetDto {
+  assetId: string;
+  previewUrl: string | null;
+  contentType: string | null;
+  sizeBytes: number | null;
+  dimensions?: {
+    width: number;
+    height: number;
+  } | null;
+  referenceKind: ReferenceImageKind;
+  createdAt: string;
+}
+
+export interface UploadReferenceImageOptions {
+  file: File;
+  referenceKind: ReferenceImageKind;
+  consentAccepted: boolean;
+  onUploadProgress?: (progressPercent: number) => void;
 }
 
 export interface ListFiguresParams {

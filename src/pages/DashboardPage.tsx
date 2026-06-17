@@ -1,5 +1,7 @@
 import {
-  FormEvent,
+  type ChangeEvent,
+  type FormEvent,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -25,6 +27,8 @@ import {
   LockKeyhole,
   RefreshCw,
   Sparkles,
+  Trash2,
+  Upload,
   UserRound,
   X,
 } from "lucide-react";
@@ -40,6 +44,8 @@ import { figuresApi } from "../features/figures/figures.api";
 import type {
   FigureDto,
   FigureStatus,
+  ReferenceImageAssetDto,
+  ReferenceImageKind,
 } from "../features/figures/figures.types";
 import { getApiErrorCode, getApiErrorMessage } from "../services/apiClient";
 import { getDisplayLabel } from "../i18n/displayMaps";
@@ -49,6 +55,7 @@ import { useI18n } from "../i18n/useI18n";
 const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_GENERATION_PROMPT_LENGTH = 600;
+const MAX_REFERENCE_IMAGE_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const PENDING_PAYMENT_BANNER_DISMISSED_PREFIX =
   "pendingPaymentBannerDismissed";
 const PENDING_PAYMENT_BANNER_DONT_SHOW_PREFIX =
@@ -118,6 +125,18 @@ const GENERATION_OUTPUT_TYPES: Array<{
     id: "3d",
     labelKey: "dashboard.setup.output.3d",
     helperKey: "dashboard.setup.output.3dHelper",
+  },
+];
+const REFERENCE_IMAGE_KINDS: Array<{
+  id: ReferenceImageKind;
+  labelKey: string;
+}> = [
+  { id: "face", labelKey: "dashboard.reference.kind.face" },
+  { id: "full_body", labelKey: "dashboard.reference.kind.fullBody" },
+  { id: "clothing_style", labelKey: "dashboard.reference.kind.clothingStyle" },
+  {
+    id: "generic_reference",
+    labelKey: "dashboard.reference.kind.genericReference",
   },
 ];
 
@@ -340,6 +359,25 @@ function mergeFigureIntoList(figures: FigureDto[], figure: FigureDto) {
   }
 
   return [figure, ...figures].slice(0, 6);
+}
+
+function getReferenceImageValidationError(file: File, t: Translate) {
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const isJpeg = file.type === "image/jpeg";
+  const isPng = file.type === "image/png";
+  const isExtensionValid = isJpeg
+    ? extension === "jpg" || extension === "jpeg"
+    : extension === "png";
+
+  if ((!isJpeg && !isPng) || !isExtensionValid) {
+    return t("dashboard.reference.error.unsupportedType");
+  }
+
+  if (file.size > MAX_REFERENCE_IMAGE_FILE_SIZE_BYTES) {
+    return t("dashboard.reference.error.fileTooLarge");
+  }
+
+  return null;
 }
 
 function DashboardSkeleton() {
@@ -802,6 +840,192 @@ function FigureEmptyState() {
   );
 }
 
+function ReferenceImagePanel({
+  consentAccepted,
+  fileInputRef,
+  isUploading,
+  previewUrl,
+  referenceKind,
+  selectedReferenceImage,
+  uploadError,
+  uploadProgress,
+  onConsentChange,
+  onFileChange,
+  onReferenceKindChange,
+  onRemove,
+}: {
+  consentAccepted: boolean;
+  fileInputRef: RefObject<HTMLInputElement>;
+  isUploading: boolean;
+  previewUrl: string | null;
+  referenceKind: ReferenceImageKind;
+  selectedReferenceImage: ReferenceImageAssetDto | null;
+  uploadError: string | null;
+  uploadProgress: number | null;
+  onConsentChange: (accepted: boolean) => void;
+  onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onReferenceKindChange: (kind: ReferenceImageKind) => void;
+  onRemove: () => void;
+}) {
+  const { t } = useI18n();
+  const selectedKind = selectedReferenceImage?.referenceKind ?? referenceKind;
+  const selectedKindLabel =
+    REFERENCE_IMAGE_KINDS.find((kind) => kind.id === selectedKind)?.labelKey ??
+    "dashboard.reference.kind.genericReference";
+  const dimensions = selectedReferenceImage?.dimensions;
+  const canChooseFile = consentAccepted && !isUploading;
+
+  return (
+    <section className="rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold text-white">
+            {t("dashboard.reference.title")}
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-[#bac9cc]">
+            {t("dashboard.reference.body")}
+          </p>
+        </div>
+        <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-2.5 py-1 font-bold text-[#ffeac0]">
+          {t("dashboard.reference.deferredBadge")}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[180px_1fr]">
+        <div className="aspect-[4/3] overflow-hidden rounded-md border border-[#3b494c] bg-[#090909]">
+          {previewUrl ? (
+            <img
+              alt={t("dashboard.reference.previewAlt")}
+              className="h-full w-full object-contain"
+              src={previewUrl}
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
+              <ImageIcon className="h-7 w-7 text-[#3b494c]" />
+              <p className="mt-2 text-xs font-semibold leading-5 text-[#849396]">
+                {t("dashboard.reference.emptyPreview")}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="min-w-0 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <label className="block text-xs font-bold leading-5 text-[#bac9cc]">
+              {t("dashboard.reference.kindLabel")}
+              <select
+                className="mt-2 min-h-11 w-full rounded-md border border-white/[0.12] bg-[#141313] px-3 py-2 text-sm font-bold text-white outline-none transition focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={Boolean(selectedReferenceImage) || isUploading}
+                value={referenceKind}
+                onChange={(event) =>
+                  onReferenceKindChange(event.target.value as ReferenceImageKind)
+                }
+              >
+                {REFERENCE_IMAGE_KINDS.map((kind) => (
+                  <option key={kind.id} value={kind.id}>
+                    {t(kind.labelKey)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex min-h-11 items-start gap-3 rounded-md border border-white/[0.12] bg-white/[0.03] p-3 text-xs leading-5 text-[#bac9cc]">
+              <input
+                checked={consentAccepted}
+                className="mt-1 h-4 w-4 accent-[#00e5ff]"
+                disabled={Boolean(selectedReferenceImage) || isUploading}
+                type="checkbox"
+                onChange={(event) => onConsentChange(event.target.checked)}
+              />
+              <span>{t("dashboard.reference.consent")}</span>
+            </label>
+          </div>
+
+          <div className="rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-3 text-xs leading-5 text-[#ffeac0]">
+            <p>{t("dashboard.reference.identityNotice")}</p>
+            <p className="mt-1 text-[#ffefcf]">
+              {t("dashboard.reference.retentionNotice")}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input
+              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+              className="sr-only"
+              disabled={!canChooseFile}
+              ref={fileInputRef}
+              type="file"
+              onChange={onFileChange}
+            />
+            <button
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={!canChooseFile}
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              {selectedReferenceImage
+                ? t("dashboard.reference.replace")
+                : t("dashboard.reference.upload")}
+            </button>
+            {previewUrl ? (
+              <button
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#ffb4ab]/45 hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isUploading}
+                type="button"
+                onClick={onRemove}
+              >
+                <Trash2 className="h-4 w-4" />
+                {t("dashboard.reference.remove")}
+              </button>
+            ) : null}
+          </div>
+
+          {isUploading ? (
+            <div>
+              <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
+                <div
+                  className="h-full rounded-full bg-[#00e5ff] transition-[width]"
+                  style={{ width: `${uploadProgress ?? 5}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs font-semibold text-[#9cf0ff]">
+                {t("dashboard.reference.uploading", {
+                  progress: uploadProgress ?? 0,
+                })}
+              </p>
+            </div>
+          ) : null}
+
+          {selectedReferenceImage ? (
+            <p className="text-xs font-semibold leading-5 text-[#c9fff6]">
+              {t("dashboard.reference.uploaded", {
+                kind: t(selectedKindLabel),
+                dimensions: dimensions
+                  ? `${dimensions.width}x${dimensions.height}`
+                  : t("common.unknown"),
+              })}
+            </p>
+          ) : null}
+
+          {uploadError ? (
+            <p
+              className="rounded-md border border-[#ffb4ab]/30 bg-[#93000a]/25 p-3 text-xs font-semibold leading-5 text-[#ffdad6]"
+              role="alert"
+            >
+              {uploadError}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function GenerationResultNotice({ figure }: { figure: FigureDto }) {
   const { t } = useI18n();
   const isFailed = figure.status === "failed" || figure.status === "canceled";
@@ -851,30 +1075,54 @@ function GenerationSetupDialog({
   estimatedBalanceAfterSubmit,
   isGenerating,
   isPromptTooLong,
+  isReferenceImageUploading,
   modelGender,
   modelSource,
   outputType,
   promptCharacterCount,
+  referenceImageConsentAccepted,
+  referenceImageError,
+  referenceImageFileInputRef,
+  referenceImagePreviewUrl,
+  referenceImageUploadProgress,
+  referenceKind,
   selectedStyleIntent,
+  selectedReferenceImage,
   onClose,
   onGenerate,
   onModelGenderChange,
   onOutputTypeChange,
+  onReferenceImageConsentChange,
+  onReferenceImageFileChange,
+  onReferenceImageKindChange,
+  onRemoveReferenceImage,
 }: {
   composedPromptCharacterCount: number;
   creditBalance: number;
   estimatedBalanceAfterSubmit: number;
   isGenerating: boolean;
   isPromptTooLong: boolean;
+  isReferenceImageUploading: boolean;
   modelGender: ModelGender;
   modelSource: ModelSource;
   outputType: GenerationOutputType;
   promptCharacterCount: number;
+  referenceImageConsentAccepted: boolean;
+  referenceImageError: string | null;
+  referenceImageFileInputRef: RefObject<HTMLInputElement>;
+  referenceImagePreviewUrl: string | null;
+  referenceImageUploadProgress: number | null;
+  referenceKind: ReferenceImageKind;
   selectedStyleIntent: StyleIntent | undefined;
+  selectedReferenceImage: ReferenceImageAssetDto | null;
   onClose: () => void;
   onGenerate: () => void;
   onModelGenderChange: (gender: ModelGender) => void;
   onOutputTypeChange: (outputType: GenerationOutputType) => void;
+  onReferenceImageConsentChange: (accepted: boolean) => void;
+  onReferenceImageFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onReferenceImageKindChange: (kind: ReferenceImageKind) => void;
+  onRemoveReferenceImage: () => void;
 }) {
   const { t } = useI18n();
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -883,6 +1131,11 @@ function GenerationSetupDialog({
       GENERATION_OUTPUT_TYPES.find((option) => option.id === outputType)
         ?.labelKey ?? "dashboard.setup.output.2d",
     );
+  const selectedReferenceKindLabel = selectedReferenceImage
+    ? (REFERENCE_IMAGE_KINDS.find(
+        (kind) => kind.id === selectedReferenceImage.referenceKind,
+      )?.labelKey ?? "dashboard.reference.kind.genericReference")
+    : null;
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -938,10 +1191,10 @@ function GenerationSetupDialog({
               <h3 className="text-sm font-bold text-white">
                 {t("dashboard.setup.modelSource")}
               </h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3">
                 <button
                   aria-pressed={modelSource === "default"}
-                  className="rounded-lg border border-[#00e5ff]/65 bg-[#00e5ff]/10 p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+                  className="w-full rounded-lg border border-[#00e5ff]/65 bg-[#00e5ff]/10 p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
                   type="button"
                 >
                   <span className="flex items-center gap-2 text-sm font-bold text-[#c3f5ff]">
@@ -950,23 +1203,6 @@ function GenerationSetupDialog({
                   </span>
                   <span className="mt-2 block text-xs leading-5 text-[#bac9cc]">
                     {t("dashboard.setup.defaultModelBody")}
-                  </span>
-                </button>
-                <button
-                  aria-disabled="true"
-                  className="cursor-not-allowed rounded-lg border border-white/[0.08] bg-white/[0.025] p-4 text-left opacity-70"
-                  disabled
-                  type="button"
-                >
-                  <span className="flex items-center gap-2 text-sm font-bold text-[#bac9cc]">
-                    <UserRound className="h-4 w-4" />
-                    {t("dashboard.setup.uploadedImage")}
-                  </span>
-                  <span className="mt-2 block text-xs leading-5 text-[#849396]">
-                    {t("dashboard.setup.uploadedImageBody")}
-                  </span>
-                  <span className="mt-2 block text-xs font-semibold leading-5 text-[#ffeac0]">
-                    {t("dashboard.setup.uploadedImageSoon")}
                   </span>
                 </button>
               </div>
@@ -1000,6 +1236,21 @@ function GenerationSetupDialog({
                 </div>
               </section>
             ) : null}
+
+            <ReferenceImagePanel
+              consentAccepted={referenceImageConsentAccepted}
+              fileInputRef={referenceImageFileInputRef}
+              isUploading={isReferenceImageUploading}
+              previewUrl={referenceImagePreviewUrl}
+              referenceKind={referenceKind}
+              selectedReferenceImage={selectedReferenceImage}
+              uploadError={referenceImageError}
+              uploadProgress={referenceImageUploadProgress}
+              onConsentChange={onReferenceImageConsentChange}
+              onFileChange={onReferenceImageFileChange}
+              onReferenceKindChange={onReferenceImageKindChange}
+              onRemove={onRemoveReferenceImage}
+            />
 
             <section>
               <h3 className="text-sm font-bold text-white">
@@ -1092,6 +1343,18 @@ function GenerationSetupDialog({
               </div>
               <div>
                 <dt className="text-[#849396]">
+                  {t("dashboard.reference.summaryLabel")}
+                </dt>
+                <dd className="mt-1 font-semibold leading-5 text-[#e5e2e1]">
+                  {selectedReferenceImage && selectedReferenceKindLabel
+                    ? t("dashboard.reference.summarySelected", {
+                        kind: t(selectedReferenceKindLabel),
+                      })
+                    : t("dashboard.setup.noneSelected")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[#849396]">
                   {t("dashboard.setup.defaultGender")}
                 </dt>
                 <dd className="mt-1 font-semibold capitalize text-[#e5e2e1]">
@@ -1169,6 +1432,22 @@ export function DashboardPage() {
   const [modelSource] = useState<ModelSource>("default");
   const [modelGender, setModelGender] = useState<ModelGender>("unisex");
   const [outputType, setOutputType] = useState<GenerationOutputType>("2d");
+  const [referenceKind, setReferenceKind] =
+    useState<ReferenceImageKind>("generic_reference");
+  const [referenceImageConsentAccepted, setReferenceImageConsentAccepted] =
+    useState(false);
+  const [selectedReferenceImage, setSelectedReferenceImage] =
+    useState<ReferenceImageAssetDto | null>(null);
+  const [referenceImagePreviewUrl, setReferenceImagePreviewUrl] = useState<
+    string | null
+  >(null);
+  const [referenceImageError, setReferenceImageError] = useState<string | null>(
+    null,
+  );
+  const [referenceImageUploadProgress, setReferenceImageUploadProgress] =
+    useState<number | null>(null);
+  const [isReferenceImageUploading, setIsReferenceImageUploading] =
+    useState(false);
   const [isGenerationSetupOpen, setIsGenerationSetupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFiguresLoading, setIsFiguresLoading] = useState(true);
@@ -1190,6 +1469,8 @@ export function DashboardPage() {
   const pollingStartedAtRef = useRef<number | null>(null);
   const pollingFigureIdRef = useRef<string | null>(null);
   const generateButtonRef = useRef<HTMLButtonElement | null>(null);
+  const referenceImageFileInputRef = useRef<HTMLInputElement | null>(null);
+  const referenceImageObjectUrlRef = useRef<string | null>(null);
 
   const loadBillingSummary = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -1257,6 +1538,15 @@ export function DashboardPage() {
       isMountedRef.current = false;
     };
   }, [loadBillingSummary, loadFigures]);
+
+  useEffect(() => {
+    return () => {
+      if (referenceImageObjectUrlRef.current) {
+        URL.revokeObjectURL(referenceImageObjectUrlRef.current);
+        referenceImageObjectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const dontShowKey =
@@ -1439,6 +1729,13 @@ export function DashboardPage() {
     window.requestAnimationFrame(() => generateButtonRef.current?.focus());
   }, []);
 
+  const clearReferenceImageObjectUrl = useCallback(() => {
+    if (referenceImageObjectUrlRef.current) {
+      URL.revokeObjectURL(referenceImageObjectUrlRef.current);
+      referenceImageObjectUrlRef.current = null;
+    }
+  }, []);
+
   const handleDownloadFigureAsset = useCallback(
     async (figure: FigureDto, kind: FigureAssetKind) => {
       const url =
@@ -1463,6 +1760,112 @@ export function DashboardPage() {
       }
     },
     [],
+  );
+
+  const handleReferenceImageKindChange = useCallback(
+    (kind: ReferenceImageKind) => {
+      setReferenceKind(kind);
+      setReferenceImageError(null);
+    },
+    [],
+  );
+
+  const handleReferenceImageConsentChange = useCallback((accepted: boolean) => {
+    setReferenceImageConsentAccepted(accepted);
+    setReferenceImageError(null);
+  }, []);
+
+  const handleRemoveReferenceImage = useCallback(() => {
+    clearReferenceImageObjectUrl();
+    setSelectedReferenceImage(null);
+    setReferenceImagePreviewUrl(null);
+    setReferenceImageError(null);
+    setReferenceImageUploadProgress(null);
+    setIsReferenceImageUploading(false);
+
+    if (referenceImageFileInputRef.current) {
+      referenceImageFileInputRef.current.value = "";
+    }
+  }, [clearReferenceImageObjectUrl]);
+
+  const handleReferenceImageFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0] ?? null;
+
+      event.target.value = "";
+
+      if (!file) {
+        return;
+      }
+
+      if (!referenceImageConsentAccepted) {
+        setReferenceImageError(t("dashboard.reference.error.consentRequired"));
+        return;
+      }
+
+      const validationError = getReferenceImageValidationError(file, t);
+
+      if (validationError) {
+        clearReferenceImageObjectUrl();
+        setSelectedReferenceImage(null);
+        setReferenceImagePreviewUrl(null);
+        setReferenceImageError(validationError);
+        setReferenceImageUploadProgress(null);
+        return;
+      }
+
+      clearReferenceImageObjectUrl();
+
+      const localPreviewUrl = URL.createObjectURL(file);
+      referenceImageObjectUrlRef.current = localPreviewUrl;
+      setSelectedReferenceImage(null);
+      setReferenceImagePreviewUrl(localPreviewUrl);
+      setReferenceImageError(null);
+      setReferenceImageUploadProgress(0);
+      setIsReferenceImageUploading(true);
+
+      try {
+        const uploadedAsset = await figuresApi.uploadReferenceImageAsset({
+          file,
+          referenceKind,
+          consentAccepted: true,
+          onUploadProgress: (progress) => {
+            if (isMountedRef.current) {
+              setReferenceImageUploadProgress(progress);
+            }
+          },
+        });
+
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        setSelectedReferenceImage(uploadedAsset);
+        setReferenceKind(uploadedAsset.referenceKind);
+        setReferenceImageUploadProgress(100);
+
+        if (uploadedAsset.previewUrl) {
+          clearReferenceImageObjectUrl();
+          setReferenceImagePreviewUrl(uploadedAsset.previewUrl);
+        }
+      } catch (uploadError) {
+        if (isMountedRef.current) {
+          setSelectedReferenceImage(null);
+          setReferenceImageError(getApiErrorMessage(uploadError));
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setIsReferenceImageUploading(false);
+          setReferenceImageUploadProgress(null);
+        }
+      }
+    },
+    [
+      clearReferenceImageObjectUrl,
+      referenceImageConsentAccepted,
+      referenceKind,
+      t,
+    ],
   );
 
   function handleGenerate(event: FormEvent<HTMLFormElement>) {
@@ -2132,11 +2535,19 @@ export function DashboardPage() {
           estimatedBalanceAfterSubmit={estimatedBalanceAfterSubmit}
           isGenerating={isGenerating}
           isPromptTooLong={isComposedPromptTooLong}
+          isReferenceImageUploading={isReferenceImageUploading}
           modelGender={modelGender}
           modelSource={modelSource}
           outputType={outputType}
           promptCharacterCount={trimmedPrompt.length}
+          referenceImageConsentAccepted={referenceImageConsentAccepted}
+          referenceImageError={referenceImageError}
+          referenceImageFileInputRef={referenceImageFileInputRef}
+          referenceImagePreviewUrl={referenceImagePreviewUrl}
+          referenceImageUploadProgress={referenceImageUploadProgress}
+          referenceKind={referenceKind}
           selectedStyleIntent={selectedStyleIntent}
+          selectedReferenceImage={selectedReferenceImage}
           onClose={handleCloseGenerationSetup}
           onGenerate={() => void handleGenerateNow()}
           onModelGenderChange={(gender) => {
@@ -2147,6 +2558,12 @@ export function DashboardPage() {
             setOutputType(selectedOutputType);
             setGenerationError(null);
           }}
+          onReferenceImageConsentChange={handleReferenceImageConsentChange}
+          onReferenceImageFileChange={(event) =>
+            void handleReferenceImageFileChange(event)
+          }
+          onReferenceImageKindChange={handleReferenceImageKindChange}
+          onRemoveReferenceImage={handleRemoveReferenceImage}
         />
       ) : null}
       {selectedFigure ? (
