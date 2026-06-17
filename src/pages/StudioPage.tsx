@@ -612,7 +612,7 @@ function StudioMetadataPanel({
     regenerationPrompt.length > MAX_REGENERATION_PROMPT_LENGTH;
 
   return (
-    <aside className="studio-metadata-panel internal-scroll-region min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
+    <aside className="studio-metadata-panel internal-scroll-region min-h-0 min-w-0 max-w-full self-start rounded-lg border border-[#3b494c]/60 bg-[#111619]/88 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)]">
       <section className="min-w-0">
         <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
           {t("studio.metadata")}
@@ -1201,55 +1201,50 @@ export function StudioPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
-              <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
-              <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="studio-layout grid min-h-0 min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="studio-workspace min-h-0 min-w-0 self-start overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
+                <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
                 <div className="studio-preview-stage animate-pulse bg-white/[0.035]" />
-                <div className="h-72 animate-pulse border-t border-white/10 bg-white/[0.04] xl:h-auto xl:border-l xl:border-t-0" />
               </div>
+              <div className="studio-metadata-panel internal-scroll-region h-72 min-h-0 min-w-0 self-start rounded-lg border border-white/10 bg-white/[0.04] xl:h-auto" />
             </div>
           ) : figures.length === 0 ? (
             <StudioEmptyState />
           ) : selectedFigure ? (
-            <div className="studio-workspace min-w-0 max-w-full overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
-              <div className="grid min-w-0 items-start xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section className="min-w-0 max-w-full">
-                  <StudioCommandSurface
-                    canDownloadModel={
-                      summary?.capabilities.canDownloadModel === true
-                    }
-                    canExportModel={
-                      summary?.capabilities.canExportModel === true
-                    }
-                    figures={figures}
-                    selectedFigure={selectedFigure}
-                    viewMode={viewMode}
-                    onSelectFigure={handleSelectFigure}
-                    onViewModeChange={setViewMode}
-                  />
-
-                  <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
-                    <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
-                      <StudioPreview
-                        figure={selectedFigure}
-                        onShow2d={() => setViewMode("2d")}
-                        viewMode={viewMode}
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <StudioMetadataPanel
-                  isRegenerating={isRegenerating}
-                  regenerationError={regenerationError}
-                  regenerationPrompt={regenerationPrompt}
+            <div className="studio-layout grid min-h-0 min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_320px]">
+              <section className="studio-workspace min-h-0 min-w-0 max-w-full self-start overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
+                <StudioCommandSurface
+                  canDownloadModel={
+                    summary?.capabilities.canDownloadModel === true
+                  }
+                  canExportModel={summary?.capabilities.canExportModel === true}
+                  figures={figures}
                   selectedFigure={selectedFigure}
-                  summary={summary}
-                  onRegenerate={() => void handleRegenerateSelectedFigure()}
-                  onRegenerationPromptChange={setRegenerationPrompt}
+                  viewMode={viewMode}
+                  onSelectFigure={handleSelectFigure}
+                  onViewModeChange={setViewMode}
                 />
-              </div>
 
+                <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
+                  <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
+                    <StudioPreview
+                      figure={selectedFigure}
+                      onShow2d={() => setViewMode("2d")}
+                      viewMode={viewMode}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <StudioMetadataPanel
+                isRegenerating={isRegenerating}
+                regenerationError={regenerationError}
+                regenerationPrompt={regenerationPrompt}
+                selectedFigure={selectedFigure}
+                summary={summary}
+                onRegenerate={() => void handleRegenerateSelectedFigure()}
+                onRegenerationPromptChange={setRegenerationPrompt}
+              />
             </div>
           ) : null}
         </div>
