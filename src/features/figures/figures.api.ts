@@ -4,6 +4,7 @@ import type {
   FigureListResult,
   GenerateFigurePayload,
   ListFiguresParams,
+  RegenerateFigurePayload,
 } from "./figures.types";
 
 interface ApiResponse<T> {
@@ -39,12 +40,34 @@ function compactPayload(payload: GenerateFigurePayload): GenerateFigurePayload {
   };
 }
 
+function compactRegenerationPayload(
+  payload: RegenerateFigurePayload = {},
+): RegenerateFigurePayload {
+  return {
+    ...(payload.promptOverride?.trim()
+      ? { promptOverride: payload.promptOverride.trim() }
+      : {}),
+  };
+}
+
 export async function generateFigure(
   payload: GenerateFigurePayload,
 ): Promise<FigureDto> {
   const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
     "/figures/generate",
     compactPayload(payload),
+  );
+
+  return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function regenerateFigure(
+  id: string,
+  payload: RegenerateFigurePayload = {},
+): Promise<FigureDto> {
+  const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
+    `/figures/${id}/regenerations`,
+    compactRegenerationPayload(payload),
   );
 
   return normalizeFigure(unwrapData(data).figure);
@@ -85,6 +108,7 @@ export async function getFigureStatus(id: string): Promise<FigureDto> {
 
 export const figuresApi = {
   generateFigure,
+  regenerateFigure,
   listFigures,
   getFigure,
   getFigureStatus,

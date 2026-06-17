@@ -40,6 +40,7 @@ import { formatI18nDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 
 const STUDIO_POLL_INTERVAL_MS = 3000;
+const MAX_REGENERATION_PROMPT_LENGTH = 1000;
 type StudioViewMode = "2d" | "3d";
 type ReadinessState = "ready" | "pending" | "unavailable";
 
@@ -579,11 +580,21 @@ function StudioCommandSurface({
 }
 
 function StudioMetadataPanel({
+  isRegenerating,
+  regenerationError,
+  regenerationPrompt,
   selectedFigure,
   summary,
+  onRegenerate,
+  onRegenerationPromptChange,
 }: {
+  isRegenerating: boolean;
+  regenerationError: string | null;
+  regenerationPrompt: string;
   selectedFigure: FigureDto;
   summary: BillingSummary | null;
+  onRegenerate: () => void;
+  onRegenerationPromptChange: (value: string) => void;
 }) {
   const { language, t } = useI18n();
   const hasModelAccess =
@@ -594,6 +605,11 @@ function StudioMetadataPanel({
     summary?.capabilities.canExportModel === true && Boolean(exportModelUrl);
   const canDownloadExport =
     summary?.capabilities.canDownloadModel === true && Boolean(exportModelUrl);
+  const canRegenerate =
+    selectedFigure.status === "success" &&
+    Boolean(selectedFigure.prompt?.trim());
+  const isRegenerationPromptTooLong =
+    regenerationPrompt.length > MAX_REGENERATION_PROMPT_LENGTH;
 
   return (
     <aside className="min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
@@ -670,6 +686,82 @@ function StudioMetadataPanel({
           />
         </div>
       </section>
+
+      {canRegenerate ? (
+        <section className="mt-4 border-t border-[#3b494c]/35 pt-4">
+          <div className="flex gap-3 text-xs leading-5">
+            <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]/85" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
+                {t("studio.regenerate.title")}
+              </h2>
+              <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
+                {t("studio.regenerate.body")}
+              </p>
+              <label
+                className="mt-3 block text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]"
+                htmlFor="studio-regenerate-prompt"
+              >
+                {t("studio.regenerate.promptLabel")}
+              </label>
+              <textarea
+                className="mt-2 min-h-28 w-full resize-y rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 px-3 py-2 text-sm leading-6 text-[#e5e2e1] outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isRegenerating}
+                id="studio-regenerate-prompt"
+                maxLength={MAX_REGENERATION_PROMPT_LENGTH + 1}
+                value={regenerationPrompt}
+                onChange={(event) =>
+                  onRegenerationPromptChange(event.target.value)
+                }
+              />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[0.68rem] font-semibold">
+                <span className="text-[#849396]">
+                  {t("studio.regenerate.costNotice")}
+                </span>
+                <span
+                  className={
+                    isRegenerationPromptTooLong
+                      ? "text-[#ffb4ab]"
+                      : "text-[#849396]"
+                  }
+                >
+                  {t("studio.regenerate.promptCount", {
+                    count: regenerationPrompt.length,
+                    max: MAX_REGENERATION_PROMPT_LENGTH,
+                  })}
+                </span>
+              </div>
+              {regenerationError ? (
+                <p
+                  className="mt-3 rounded-md border border-[#ffb4ab]/30 bg-[#93000a]/20 px-3 py-2 text-xs leading-5 text-[#ffdad6]"
+                  role="alert"
+                >
+                  {regenerationError}
+                </p>
+              ) : null}
+              <button
+                className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={
+                  isRegenerating ||
+                  !regenerationPrompt.trim() ||
+                  isRegenerationPromptTooLong
+                }
+                type="button"
+                onClick={onRegenerate}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${
+                    isRegenerating ? "animate-spin" : ""
+                  }`}
+                />
+                {isRegenerating
+                  ? t("studio.regenerate.starting")
+                  : t("studio.regenerate.action")}
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="mt-4 border-t border-[#3b494c]/35 pt-4">
         <div className="flex gap-3 text-xs leading-5">
@@ -856,6 +948,11 @@ export function StudioPage() {
   const [viewMode, setViewMode] = useState<StudioViewMode>("2d");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerationPrompt, setRegenerationPrompt] = useState("");
+  const [regenerationError, setRegenerationError] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
 
@@ -979,6 +1076,11 @@ export function StudioPage() {
     return () => window.clearInterval(intervalId);
   }, [refreshSelectedFigure, selectedFigure]);
 
+  useEffect(() => {
+    setRegenerationPrompt(selectedFigure?.prompt?.trim() ?? "");
+    setRegenerationError(null);
+  }, [selectedFigure?.id, selectedFigure?.prompt]);
+
   function handleSelectFigure(figureId: string) {
     setSelectedFigureId(figureId);
     setSearchParams({ figureId }, { replace: true });
@@ -996,6 +1098,55 @@ export function StudioPage() {
     } finally {
       if (isMountedRef.current) {
         setIsRefreshing(false);
+      }
+    }
+  }
+
+  async function handleRegenerateSelectedFigure() {
+    if (
+      !selectedFigure ||
+      selectedFigure.status !== "success" ||
+      !selectedFigure.prompt?.trim()
+    ) {
+      return;
+    }
+
+    const promptOverride = regenerationPrompt.trim();
+
+    if (!promptOverride) {
+      return;
+    }
+
+    setIsRegenerating(true);
+    setRegenerationError(null);
+
+    try {
+      const childFigure = await figuresApi.regenerateFigure(
+        selectedFigure.id,
+        promptOverride === selectedFigure.prompt.trim()
+          ? {}
+          : { promptOverride },
+      );
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setFigures((currentFigures) => [
+        childFigure,
+        ...currentFigures.filter((figure) => figure.id !== childFigure.id),
+      ]);
+      setSelectedFigureId(childFigure.id);
+      setSearchParams({ figureId: childFigure.id }, { replace: true });
+      setViewMode("2d");
+      void loadBillingSummary();
+    } catch (regenerateError) {
+      if (isMountedRef.current) {
+        setRegenerationError(getApiErrorMessage(regenerateError));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsRegenerating(false);
       }
     }
   }
@@ -1053,7 +1204,7 @@ export function StudioPage() {
             <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
               <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
               <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px]">
-                <div className="h-[clamp(450px,58vw,760px)] animate-pulse bg-white/[0.035]" />
+                <div className="studio-preview-stage animate-pulse bg-white/[0.035]" />
                 <div className="h-72 animate-pulse border-t border-white/10 bg-white/[0.04] xl:h-auto xl:border-l xl:border-t-0" />
               </div>
             </div>
@@ -1077,7 +1228,7 @@ export function StudioPage() {
                     onViewModeChange={setViewMode}
                   />
 
-                  <div className="studio-grid relative h-[clamp(450px,58vw,760px)] w-full min-w-0 overflow-hidden bg-[#0a0c0e]">
+                  <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
                     <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
                       <StudioPreview
                         figure={selectedFigure}
@@ -1089,8 +1240,13 @@ export function StudioPage() {
                 </section>
 
                 <StudioMetadataPanel
+                  isRegenerating={isRegenerating}
+                  regenerationError={regenerationError}
+                  regenerationPrompt={regenerationPrompt}
                   selectedFigure={selectedFigure}
                   summary={summary}
+                  onRegenerate={() => void handleRegenerateSelectedFigure()}
+                  onRegenerationPromptChange={setRegenerationPrompt}
                 />
               </div>
 

@@ -499,6 +499,14 @@ export const messages: Record<Language, Record<string, string>> = {
       "Billing state confirms model export access for this account.",
     "studio.exportRestrictedBody":
       "Download and export are available on paid plans. Previewing remains available.",
+    "studio.regenerate.title": "Regenerate",
+    "studio.regenerate.body":
+      "Creates a new generation from this prompt and costs credits. The current result stays in history.",
+    "studio.regenerate.promptLabel": "Prompt for new generation",
+    "studio.regenerate.costNotice": "Uses generation credits",
+    "studio.regenerate.promptCount": "{count}/{max} characters",
+    "studio.regenerate.action": "Create again",
+    "studio.regenerate.starting": "Starting",
 
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -1494,6 +1502,14 @@ export const messages: Record<Language, Record<string, string>> = {
       "Trạng thái thanh toán xác nhận quyền xuất mô hình cho tài khoản này.",
     "studio.exportRestrictedBody":
       "Tải xuống và xuất mô hình khả dụng cho các gói trả phí. Xem trước vẫn khả dụng.",
+    "studio.regenerate.title": "Tạo lại",
+    "studio.regenerate.body":
+      "Tạo một bản mới từ prompt này và tốn tín dụng. Kết quả hiện tại vẫn nằm trong lịch sử.",
+    "studio.regenerate.promptLabel": "Prompt cho bản tạo mới",
+    "studio.regenerate.costNotice": "Dùng tín dụng tạo mẫu",
+    "studio.regenerate.promptCount": "{count}/{max} ký tự",
+    "studio.regenerate.action": "Tạo lại",
+    "studio.regenerate.starting": "Đang bắt đầu",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",

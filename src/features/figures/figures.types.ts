@@ -8,9 +8,16 @@ export type FigureStatus =
 
 export type FigureProvider = "mock" | "meshy" | "tripo" | string;
 
+export type FigureGenerationMode =
+  | "text_to_3d"
+  | "text_regeneration"
+  | string;
+
 export interface FigureDto {
   id: string;
   prompt: string | null;
+  generationMode?: FigureGenerationMode;
+  parentFigureId?: string | null;
   status: FigureStatus;
   provider?: FigureProvider | null;
   providerTaskId?: string | null;
@@ -29,6 +36,10 @@ export interface GenerateFigurePayload {
   prompt: string;
   stylePresetId?: string;
   inputAssetId?: string;
+}
+
+export interface RegenerateFigurePayload {
+  promptOverride?: string;
 }
 
 export interface ListFiguresParams {
