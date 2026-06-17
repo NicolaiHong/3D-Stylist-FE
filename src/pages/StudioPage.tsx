@@ -189,12 +189,12 @@ function StudioViewModeControl({
   return (
     <div
       aria-label={t("studio.viewModeAria")}
-      className="grid shrink-0 grid-cols-2 rounded-md bg-[#0a0a0a]/80 p-1 ring-1 ring-white/10"
+      className="grid shrink-0 grid-cols-2 rounded-lg bg-[#0a0a0a]/80 p-1 ring-1 ring-white/10"
       role="group"
     >
       <button
         aria-pressed={viewMode === "2d"}
-        className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-10 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "2d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -206,7 +206,7 @@ function StudioViewModeControl({
       </button>
       <button
         aria-pressed={viewMode === "3d"}
-        className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-10 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "3d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -1229,7 +1229,7 @@ export function StudioPage() {
                   />
 
                   <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
-                    <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
+                    <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
                       <StudioPreview
                         figure={selectedFigure}
                         onShow2d={() => setViewMode("2d")}

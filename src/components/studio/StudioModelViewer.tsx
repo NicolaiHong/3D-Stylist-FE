@@ -33,7 +33,7 @@ const DEFAULT_FRAME: ModelFrame = {
   depth: 1.4,
   floorY: -MODEL_HEIGHT / 2,
   height: MODEL_HEIGHT,
-  target: [0, 0.16, 0],
+  target: [0, 0.0, 0],
   width: 1.4,
 };
 
@@ -79,7 +79,7 @@ function GeneratedModel({
     const scale = MODEL_HEIGHT / safeVisualHeight;
     const centeredMinY = (visualBox.min.y - visualCenter.y) * scale;
     const centeredHeight = safeVisualHeight * scale;
-    const targetY = centeredMinY + centeredHeight * 0.48;
+    const targetY = centeredMinY + centeredHeight * 0.45;
 
     renderScene.traverse((object) => {
       const mesh = object as Mesh;
@@ -147,9 +147,9 @@ function getCameraDistance(frame: ModelFrame, width: number, height: number) {
   const aspect = width / Math.max(height, 1);
   const verticalFov = (VIEWER_FOV * Math.PI) / 180;
   const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const shortViewportPadding = height < 500 ? 0.08 : 0;
+  const shortViewportPadding = height < 500 ? 0.06 : 0;
   const margin =
-    (width < 640 ? 1.28 : width < 1024 ? 1.22 : 1.14) +
+    (width < 640 ? 1.18 : width < 1024 ? 1.14 : 1.08) +
     shortViewportPadding;
   const distanceForHeight =
     (frame.height * margin * 0.5) / Math.tan(verticalFov / 2);
@@ -185,7 +185,7 @@ function CameraControls({ frame }: { frame: ModelFrame }) {
     perspectiveCamera.fov = VIEWER_FOV;
     perspectiveCamera.position.set(
       target.x,
-      target.y + (size.width >= 1024 ? 0.01 : 0.005),
+      target.y + (size.width >= 1024 ? 0.004 : 0.002),
       distance,
     );
     perspectiveCamera.near = 0.1;
@@ -445,7 +445,7 @@ export default function StudioModelViewer({
   }, [modelUrl]);
 
   return (
-    <div className="studio-model-viewer relative h-full min-h-[380px] w-full overflow-hidden">
+    <div className="studio-model-viewer relative h-full min-h-[320px] w-full overflow-hidden">
       <ViewerErrorBoundary
         fallback={
           <ViewerFallback onRetry={handleRetry} onShow2d={onShow2d} />
