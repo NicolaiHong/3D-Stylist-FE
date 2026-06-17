@@ -47,7 +47,6 @@ export interface GenerateFigurePayload {
 export interface GenerateFigureFromReferencePayload {
   inputAssetId: string;
   prompt?: string;
-  referenceKind?: ReferenceImageKind;
 }
 
 export interface RegenerateFigurePayload {

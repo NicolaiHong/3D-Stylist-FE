@@ -59,7 +59,6 @@ function compactReferencePayload(
   return {
     inputAssetId: payload.inputAssetId,
     ...(payload.prompt?.trim() ? { prompt: payload.prompt.trim() } : {}),
-    ...(payload.referenceKind ? { referenceKind: payload.referenceKind } : {}),
   };
 }
 
