@@ -3,6 +3,7 @@ import { apiClient, resolveApiAssetUrl } from "../../services/apiClient";
 import type {
   FigureDto,
   FigureListResult,
+  GenerateFigureFromReferencePayload,
   GenerateFigurePayload,
   ListFiguresParams,
   ReferenceImageAssetDto,
@@ -52,6 +53,16 @@ function compactPayload(payload: GenerateFigurePayload): GenerateFigurePayload {
   };
 }
 
+function compactReferencePayload(
+  payload: GenerateFigureFromReferencePayload,
+): GenerateFigureFromReferencePayload {
+  return {
+    inputAssetId: payload.inputAssetId,
+    ...(payload.prompt?.trim() ? { prompt: payload.prompt.trim() } : {}),
+    ...(payload.referenceKind ? { referenceKind: payload.referenceKind } : {}),
+  };
+}
+
 function compactRegenerationPayload(
   payload: RegenerateFigurePayload = {},
 ): RegenerateFigurePayload {
@@ -68,6 +79,17 @@ export async function generateFigure(
   const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
     "/figures/generate",
     compactPayload(payload),
+  );
+
+  return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function generateFigureFromReference(
+  payload: GenerateFigureFromReferencePayload,
+): Promise<FigureDto> {
+  const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
+    "/figures/generate-from-reference",
+    compactReferencePayload(payload),
   );
 
   return normalizeFigure(unwrapData(data).figure);
@@ -149,6 +171,7 @@ export async function getFigureStatus(id: string): Promise<FigureDto> {
 
 export const figuresApi = {
   generateFigure,
+  generateFigureFromReference,
   regenerateFigure,
   uploadReferenceImageAsset,
   listFigures,

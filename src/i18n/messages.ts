@@ -412,8 +412,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.generateNow": "Generate now",
     "dashboard.reference.title": "Reference image",
     "dashboard.reference.body":
-      "Upload one image owned by you or used with permission. It is stored now for later image-guided generation; this generation still submits the text prompt only.",
-    "dashboard.reference.deferredBadge": "Preparing image guidance",
+      "Upload one image owned by you or used with permission. Generate with reference submits only this owned asset ID and your prompt.",
+    "dashboard.reference.deferredBadge": "Image guidance ready",
     "dashboard.reference.previewAlt": "Selected reference image preview",
     "dashboard.reference.emptyPreview": "No reference image selected",
     "dashboard.reference.kindLabel": "Reference kind",
@@ -426,10 +426,13 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.identityNotice":
       "Exact face or identity match is not guaranteed.",
     "dashboard.reference.retentionNotice":
-      "Uploaded reference images may be stored for generation history unless deleted according to the current product policy.",
+      "This costs generation credits. Export and download remain restricted by your plan.",
     "dashboard.reference.upload": "Upload reference",
     "dashboard.reference.replace": "Replace reference",
     "dashboard.reference.remove": "Remove reference",
+    "dashboard.reference.generateWithReference": "Generate with reference",
+    "dashboard.reference.generateWithReferenceAria":
+      "Generate a new figure using the uploaded reference image",
     "dashboard.reference.uploading": "Uploading {progress}%",
     "dashboard.reference.uploaded":
       "{kind} reference stored. Image size: {dimensions}.",
@@ -439,8 +442,10 @@ export const messages: Record<Language, Record<string, string>> = {
       "File is too large. Please upload an image under 5MB.",
     "dashboard.reference.error.consentRequired":
       "Accept the reference image consent before upload.",
+    "dashboard.reference.error.unsupported":
+      "Image-guided generation is available in mock mode only for this batch. The configured live provider does not support it yet.",
     "dashboard.reference.summaryLabel": "Reference image",
-    "dashboard.reference.summarySelected": "{kind} stored for later image guidance",
+    "dashboard.reference.summarySelected": "{kind} ready for image guidance",
     "dashboard.plan.checking": "Checking",
     "dashboard.plan.active": "Active plan",
     "dashboard.plan.free": "Free plan",
@@ -1444,8 +1449,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.generateNow": "Tạo ngay",
     "dashboard.reference.title": "Ảnh tham chiếu",
     "dashboard.reference.body":
-      "Tải một ảnh do bạn sở hữu hoặc có quyền sử dụng. Ảnh được lưu để chuẩn bị cho tạo hình có hướng dẫn bằng ảnh sau này; lượt tạo hiện tại vẫn chỉ gửi mô tả văn bản.",
-    "dashboard.reference.deferredBadge": "Đang chuẩn bị hướng dẫn bằng ảnh",
+      "Tải một ảnh do bạn sở hữu hoặc có quyền sử dụng. Tạo với tham chiếu chỉ gửi ID tài sản đã sở hữu này cùng mô tả của bạn.",
+    "dashboard.reference.deferredBadge": "Sẵn sàng hướng dẫn bằng ảnh",
     "dashboard.reference.previewAlt": "Xem trước ảnh tham chiếu đã chọn",
     "dashboard.reference.emptyPreview": "Chưa chọn ảnh tham chiếu",
     "dashboard.reference.kindLabel": "Loại tham chiếu",
@@ -1458,10 +1463,13 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.identityNotice":
       "Không bảo đảm khớp chính xác khuôn mặt hoặc danh tính.",
     "dashboard.reference.retentionNotice":
-      "Ảnh tham chiếu đã tải lên có thể được lưu cho lịch sử tạo hình trừ khi bị xóa theo chính sách sản phẩm hiện tại.",
+      "Luồng này dùng tín dụng tạo mẫu. Xuất và tải xuống vẫn bị giới hạn theo gói của bạn.",
     "dashboard.reference.upload": "Tải ảnh tham chiếu",
     "dashboard.reference.replace": "Thay ảnh tham chiếu",
     "dashboard.reference.remove": "Gỡ ảnh tham chiếu",
+    "dashboard.reference.generateWithReference": "Tạo với tham chiếu",
+    "dashboard.reference.generateWithReferenceAria":
+      "Tạo mẫu mới bằng ảnh tham chiếu đã tải lên",
     "dashboard.reference.uploading": "Đang tải {progress}%",
     "dashboard.reference.uploaded":
       "Đã lưu tham chiếu {kind}. Kích thước ảnh: {dimensions}.",
@@ -1471,9 +1479,11 @@ export const messages: Record<Language, Record<string, string>> = {
       "Tệp quá lớn. Vui lòng tải ảnh dưới 5MB.",
     "dashboard.reference.error.consentRequired":
       "Hãy chấp nhận điều khoản ảnh tham chiếu trước khi tải lên.",
+    "dashboard.reference.error.unsupported":
+      "Tạo hình có hướng dẫn bằng ảnh chỉ khả dụng ở chế độ mock trong batch này. Nhà cung cấp live đang cấu hình chưa hỗ trợ luồng này.",
     "dashboard.reference.summaryLabel": "Ảnh tham chiếu",
     "dashboard.reference.summarySelected":
-      "Đã lưu {kind} cho hướng dẫn bằng ảnh sau này",
+      "{kind} đã sẵn sàng cho hướng dẫn bằng ảnh",
     "dashboard.plan.checking": "Đang kiểm tra",
     "dashboard.plan.active": "Gói đang hoạt động",
     "dashboard.plan.free": "Gói miễn phí",

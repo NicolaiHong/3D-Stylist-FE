@@ -1090,6 +1090,7 @@ function GenerationSetupDialog({
   selectedReferenceImage,
   onClose,
   onGenerate,
+  onGenerateWithReference,
   onModelGenderChange,
   onOutputTypeChange,
   onReferenceImageConsentChange,
@@ -1117,6 +1118,7 @@ function GenerationSetupDialog({
   selectedReferenceImage: ReferenceImageAssetDto | null;
   onClose: () => void;
   onGenerate: () => void;
+  onGenerateWithReference: () => void;
   onModelGenderChange: (gender: ModelGender) => void;
   onOutputTypeChange: (outputType: GenerationOutputType) => void;
   onReferenceImageConsentChange: (accepted: boolean) => void;
@@ -1396,6 +1398,24 @@ function GenerationSetupDialog({
           >
             {t("common.cancel")}
           </button>
+          {selectedReferenceImage ? (
+            <button
+              aria-label={t("dashboard.reference.generateWithReferenceAria")}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#2cebcf]/45 px-4 py-2.5 text-sm font-bold text-[#c9fff6] transition hover:bg-[#2cebcf]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2cebcf] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={
+                isGenerating || isPromptTooLong || isReferenceImageUploading
+              }
+              type="button"
+              onClick={onGenerateWithReference}
+            >
+              {isGenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ImageIcon className="h-4 w-4" />
+              )}
+              {t("dashboard.reference.generateWithReference")}
+            </button>
+          ) : null}
           <button
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isGenerating || isPromptTooLong}
@@ -1933,6 +1953,71 @@ export function DashboardPage() {
       if (errorCode === "INSUFFICIENT_GENERATION_CREDITS") {
         setGenerationError(insufficientCreditsMessage);
         void loadBillingSummary(false);
+      } else if (errorCode === "GENERATION_PROVIDER_UNAVAILABLE") {
+        setGenerationError(
+          t("dashboard.generate.error.serviceUnavailable"),
+        );
+      } else if (errorCode === "GENERATION_FAILED") {
+        setGenerationError(
+          t("dashboard.generate.error.failedBeforeResult"),
+        );
+      } else {
+        setGenerationError(getApiErrorMessage(generateError));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsGenerating(false);
+      }
+    }
+  }
+
+  async function handleGenerateWithReference() {
+    if (!selectedReferenceImage || !trimmedPrompt || isGenerating) {
+      return;
+    }
+
+    if (hasLoadedZeroCredits) {
+      handleCloseGenerationSetup();
+      setGenerationError(insufficientCreditsMessage);
+      return;
+    }
+
+    if (isComposedPromptTooLong) {
+      setGenerationError(promptTooLongMessage);
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationError(null);
+    handleCloseGenerationSetup();
+
+    try {
+      const figure = await figuresApi.generateFigureFromReference({
+        inputAssetId: selectedReferenceImage.assetId,
+        prompt: composedPrompt,
+      });
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setPrompt("");
+      setActiveFigure(figure);
+      setFigures((currentFigures) => mergeFigureIntoList(currentFigures, figure));
+      void loadBillingSummary(false);
+      void loadFigures(false);
+    } catch (generateError) {
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      const errorCode = getApiErrorCode(generateError);
+
+      if (errorCode === "INSUFFICIENT_GENERATION_CREDITS") {
+        setGenerationError(insufficientCreditsMessage);
+        void loadBillingSummary(false);
+      } else if (errorCode === "GENERATION_MODE_UNSUPPORTED") {
+        setGenerationError(t("dashboard.reference.error.unsupported"));
       } else if (errorCode === "GENERATION_PROVIDER_UNAVAILABLE") {
         setGenerationError(
           t("dashboard.generate.error.serviceUnavailable"),
@@ -2550,6 +2635,7 @@ export function DashboardPage() {
           selectedReferenceImage={selectedReferenceImage}
           onClose={handleCloseGenerationSetup}
           onGenerate={() => void handleGenerateNow()}
+          onGenerateWithReference={() => void handleGenerateWithReference()}
           onModelGenderChange={(gender) => {
             setModelGender(gender);
             setGenerationError(null);
