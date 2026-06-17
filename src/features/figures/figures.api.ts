@@ -1,10 +1,14 @@
+import type { AxiosProgressEvent } from "axios";
 import { apiClient, resolveApiAssetUrl } from "../../services/apiClient";
 import type {
   FigureDto,
   FigureListResult,
+  GenerateFigureFromReferencePayload,
   GenerateFigurePayload,
   ListFiguresParams,
+  ReferenceImageAssetDto,
   RegenerateFigurePayload,
+  UploadReferenceImageOptions,
 } from "./figures.types";
 
 interface ApiResponse<T> {
@@ -32,11 +36,30 @@ function normalizeFigure(figure: FigureDto): FigureDto {
   };
 }
 
+function normalizeReferenceImageAsset(
+  asset: ReferenceImageAssetDto,
+): ReferenceImageAssetDto {
+  return {
+    ...asset,
+    previewUrl: resolveApiAssetUrl(asset.previewUrl),
+  };
+}
+
 function compactPayload(payload: GenerateFigurePayload): GenerateFigurePayload {
   return {
     prompt: payload.prompt,
     ...(payload.stylePresetId ? { stylePresetId: payload.stylePresetId } : {}),
     ...(payload.inputAssetId ? { inputAssetId: payload.inputAssetId } : {}),
+  };
+}
+
+function compactReferencePayload(
+  payload: GenerateFigureFromReferencePayload,
+): GenerateFigureFromReferencePayload {
+  return {
+    inputAssetId: payload.inputAssetId,
+    ...(payload.prompt?.trim() ? { prompt: payload.prompt.trim() } : {}),
+    ...(payload.referenceKind ? { referenceKind: payload.referenceKind } : {}),
   };
 }
 
@@ -61,6 +84,17 @@ export async function generateFigure(
   return normalizeFigure(unwrapData(data).figure);
 }
 
+export async function generateFigureFromReference(
+  payload: GenerateFigureFromReferencePayload,
+): Promise<FigureDto> {
+  const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
+    "/figures/generate-from-reference",
+    compactReferencePayload(payload),
+  );
+
+  return normalizeFigure(unwrapData(data).figure);
+}
+
 export async function regenerateFigure(
   id: string,
   payload: RegenerateFigurePayload = {},
@@ -71,6 +105,35 @@ export async function regenerateFigure(
   );
 
   return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function uploadReferenceImageAsset({
+  consentAccepted,
+  file,
+  onUploadProgress,
+  referenceKind,
+}: UploadReferenceImageOptions): Promise<ReferenceImageAssetDto> {
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("referenceKind", referenceKind);
+  formData.append("consentAccepted", String(consentAccepted));
+
+  const { data } = await apiClient.post<ApiResponse<ReferenceImageAssetDto>>(
+    "/assets/reference-images",
+    formData,
+    {
+      onUploadProgress: (event: AxiosProgressEvent) => {
+        if (!onUploadProgress || !event.total) {
+          return;
+        }
+
+        onUploadProgress(Math.round((event.loaded / event.total) * 100));
+      },
+    },
+  );
+
+  return normalizeReferenceImageAsset(unwrapData(data));
 }
 
 export async function listFigures(
@@ -108,7 +171,9 @@ export async function getFigureStatus(id: string): Promise<FigureDto> {
 
 export const figuresApi = {
   generateFigure,
+  generateFigureFromReference,
   regenerateFigure,
+  uploadReferenceImageAsset,
   listFigures,
   getFigure,
   getFigureStatus,

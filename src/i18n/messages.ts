@@ -410,6 +410,42 @@ export const messages: Record<Language, Record<string, string>> = {
       "Composed request: {count}/{max} chars",
     "dashboard.setup.submitting": "Submitting",
     "dashboard.setup.generateNow": "Generate now",
+    "dashboard.reference.title": "Reference image",
+    "dashboard.reference.body":
+      "Upload one image owned by you or used with permission. Generate with reference submits only this owned asset ID and your prompt.",
+    "dashboard.reference.deferredBadge": "Image guidance ready",
+    "dashboard.reference.previewAlt": "Selected reference image preview",
+    "dashboard.reference.emptyPreview": "No reference image selected",
+    "dashboard.reference.kindLabel": "Reference kind",
+    "dashboard.reference.kind.face": "Face",
+    "dashboard.reference.kind.fullBody": "Full body",
+    "dashboard.reference.kind.clothingStyle": "Clothing style",
+    "dashboard.reference.kind.genericReference": "Generic reference",
+    "dashboard.reference.consent":
+      "I own this image or have permission to use it as a generation reference.",
+    "dashboard.reference.identityNotice":
+      "Exact face or identity match is not guaranteed.",
+    "dashboard.reference.retentionNotice":
+      "This costs generation credits. Export and download remain restricted by your plan.",
+    "dashboard.reference.upload": "Upload reference",
+    "dashboard.reference.replace": "Replace reference",
+    "dashboard.reference.remove": "Remove reference",
+    "dashboard.reference.generateWithReference": "Generate with reference",
+    "dashboard.reference.generateWithReferenceAria":
+      "Generate a new figure using the uploaded reference image",
+    "dashboard.reference.uploading": "Uploading {progress}%",
+    "dashboard.reference.uploaded":
+      "{kind} reference stored. Image size: {dimensions}.",
+    "dashboard.reference.error.unsupportedType":
+      "Unsupported file type. Please use JPG or PNG and keep the extension matched.",
+    "dashboard.reference.error.fileTooLarge":
+      "File is too large. Please upload an image under 5MB.",
+    "dashboard.reference.error.consentRequired":
+      "Accept the reference image consent before upload.",
+    "dashboard.reference.error.unsupported":
+      "Image-guided generation is available in mock mode only for this batch. The configured live provider does not support it yet.",
+    "dashboard.reference.summaryLabel": "Reference image",
+    "dashboard.reference.summarySelected": "{kind} ready for image guidance",
     "dashboard.plan.checking": "Checking",
     "dashboard.plan.active": "Active plan",
     "dashboard.plan.free": "Free plan",
@@ -1411,6 +1447,43 @@ export const messages: Record<Language, Record<string, string>> = {
       "Yêu cầu đã ghép: {count}/{max} ký tự",
     "dashboard.setup.submitting": "Đang gửi",
     "dashboard.setup.generateNow": "Tạo ngay",
+    "dashboard.reference.title": "Ảnh tham chiếu",
+    "dashboard.reference.body":
+      "Tải một ảnh do bạn sở hữu hoặc có quyền sử dụng. Tạo với tham chiếu chỉ gửi ID tài sản đã sở hữu này cùng mô tả của bạn.",
+    "dashboard.reference.deferredBadge": "Sẵn sàng hướng dẫn bằng ảnh",
+    "dashboard.reference.previewAlt": "Xem trước ảnh tham chiếu đã chọn",
+    "dashboard.reference.emptyPreview": "Chưa chọn ảnh tham chiếu",
+    "dashboard.reference.kindLabel": "Loại tham chiếu",
+    "dashboard.reference.kind.face": "Khuôn mặt",
+    "dashboard.reference.kind.fullBody": "Toàn thân",
+    "dashboard.reference.kind.clothingStyle": "Phong cách trang phục",
+    "dashboard.reference.kind.genericReference": "Tham chiếu chung",
+    "dashboard.reference.consent":
+      "Tôi sở hữu ảnh này hoặc có quyền dùng ảnh làm tham chiếu tạo hình.",
+    "dashboard.reference.identityNotice":
+      "Không bảo đảm khớp chính xác khuôn mặt hoặc danh tính.",
+    "dashboard.reference.retentionNotice":
+      "Luồng này dùng tín dụng tạo mẫu. Xuất và tải xuống vẫn bị giới hạn theo gói của bạn.",
+    "dashboard.reference.upload": "Tải ảnh tham chiếu",
+    "dashboard.reference.replace": "Thay ảnh tham chiếu",
+    "dashboard.reference.remove": "Gỡ ảnh tham chiếu",
+    "dashboard.reference.generateWithReference": "Tạo với tham chiếu",
+    "dashboard.reference.generateWithReferenceAria":
+      "Tạo mẫu mới bằng ảnh tham chiếu đã tải lên",
+    "dashboard.reference.uploading": "Đang tải {progress}%",
+    "dashboard.reference.uploaded":
+      "Đã lưu tham chiếu {kind}. Kích thước ảnh: {dimensions}.",
+    "dashboard.reference.error.unsupportedType":
+      "Loại tệp không được hỗ trợ. Vui lòng dùng JPG hoặc PNG và giữ phần mở rộng khớp.",
+    "dashboard.reference.error.fileTooLarge":
+      "Tệp quá lớn. Vui lòng tải ảnh dưới 5MB.",
+    "dashboard.reference.error.consentRequired":
+      "Hãy chấp nhận điều khoản ảnh tham chiếu trước khi tải lên.",
+    "dashboard.reference.error.unsupported":
+      "Tạo hình có hướng dẫn bằng ảnh chỉ khả dụng ở chế độ mock trong batch này. Nhà cung cấp live đang cấu hình chưa hỗ trợ luồng này.",
+    "dashboard.reference.summaryLabel": "Ảnh tham chiếu",
+    "dashboard.reference.summarySelected":
+      "{kind} đã sẵn sàng cho hướng dẫn bằng ảnh",
     "dashboard.plan.checking": "Đang kiểm tra",
     "dashboard.plan.active": "Gói đang hoạt động",
     "dashboard.plan.free": "Gói miễn phí",
