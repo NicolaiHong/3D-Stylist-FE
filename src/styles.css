@@ -959,7 +959,7 @@ textarea {
 }
 
 .studio-preview-stage {
-  height: clamp(440px, 52vw, 680px);
+  height: clamp(400px, 46vw, 580px);
 }
 
 .studio-grid {
@@ -1012,13 +1012,13 @@ textarea {
 
 @media (max-width: 639px) {
   .studio-preview-stage {
-    height: clamp(440px, 118vw, 540px);
+    height: clamp(380px, 100vw, 480px);
   }
 }
 
 @media (min-width: 1280px) {
   .studio-preview-stage {
-    height: clamp(520px, calc(100vh - 14.5rem), 680px);
+    height: clamp(460px, calc(100vh - 16rem), 580px);
   }
 }
 
