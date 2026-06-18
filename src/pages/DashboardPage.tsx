@@ -874,10 +874,12 @@ function ReferenceImagePanel({
     "dashboard.reference.kind.genericReference";
   const dimensions = selectedReferenceImage?.dimensions;
   const canChooseFile = consentAccepted && !isUploading;
+  const hasPreview = Boolean(previewUrl);
+  const isUploaded = Boolean(selectedReferenceImage);
 
   return (
-    <section className="rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <section className="border-y border-[#3b494c]/55 py-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-white">
             {t("dashboard.reference.title")}
@@ -886,123 +888,164 @@ function ReferenceImagePanel({
             {t("dashboard.reference.body")}
           </p>
         </div>
-        <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-2.5 py-1 font-bold text-[#ffeac0]">
-          {t("dashboard.reference.deferredBadge")}
-        </span>
+        {isUploading ? (
+          <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/8 px-2.5 py-1 font-bold text-[#9cf0ff]">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {t("dashboard.reference.uploading", {
+              progress: uploadProgress ?? 0,
+            })}
+          </span>
+        ) : uploadError ? (
+          <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#ffb4ab]/25 bg-[#93000a]/20 px-2.5 py-1 font-bold text-[#ffdad6]">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {t("dashboard.reference.statusError")}
+          </span>
+        ) : isUploaded ? (
+          <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/8 px-2.5 py-1 font-bold text-[#c9fff6]">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {t("dashboard.reference.deferredBadge")}
+          </span>
+        ) : null}
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[180px_1fr]">
-        <div className="aspect-[4/3] overflow-hidden rounded-md border border-[#3b494c] bg-[#090909]">
-          {previewUrl ? (
-            <img
-              alt={t("dashboard.reference.previewAlt")}
-              className="h-full w-full object-contain"
-              src={previewUrl}
-            />
+      <input
+        accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+        className="sr-only"
+        disabled={!canChooseFile}
+        ref={fileInputRef}
+        type="file"
+        onChange={onFileChange}
+      />
+
+      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(180px,0.85fr)_minmax(0,1.35fr)]">
+        <div
+          className={`overflow-hidden rounded-lg border bg-[#090909] ${
+            uploadError
+              ? "border-[#ffb4ab]/35"
+              : isUploaded
+                ? "border-[#2cebcf]/30"
+                : "border-[#3b494c]/70"
+          }`}
+        >
+          {hasPreview ? (
+            <>
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  alt={t("dashboard.reference.previewAlt")}
+                  className="h-full w-full object-cover"
+                  src={previewUrl ?? undefined}
+                />
+                {isUploading ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 p-4 text-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-[#00e5ff]" />
+                    <p className="mt-3 text-xs font-bold text-white">
+                      {t("dashboard.reference.uploading", {
+                        progress: uploadProgress ?? 0,
+                      })}
+                    </p>
+                    <div className="mt-3 h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-white/[0.12]">
+                      <div
+                        className="h-full rounded-full bg-[#00e5ff] transition-[width]"
+                        style={{ width: `${uploadProgress ?? 5}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              {!isUploading ? (
+                <div className="flex items-center gap-2 border-t border-[#3b494c]/45 p-2">
+                  <button
+                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/30 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:text-[#849396]"
+                    disabled={!canChooseFile}
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    {t("dashboard.reference.replace")}
+                  </button>
+                  <button
+                    aria-label={t("dashboard.reference.remove")}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:bg-[#ffb4ab]/10 hover:text-[#ffdad6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
+                    type="button"
+                    onClick={onRemove}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {t("dashboard.reference.remove")}
+                  </button>
+                </div>
+              ) : null}
+            </>
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
-              <ImageIcon className="h-7 w-7 text-[#3b494c]" />
-              <p className="mt-2 text-xs font-semibold leading-5 text-[#849396]">
-                {t("dashboard.reference.emptyPreview")}
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="min-w-0 space-y-4">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <label className="block text-xs font-bold leading-5 text-[#bac9cc]">
-              {t("dashboard.reference.kindLabel")}
-              <select
-                className="mt-2 min-h-11 w-full rounded-md border border-white/[0.12] bg-[#141313] px-3 py-2 text-sm font-bold text-white outline-none transition focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={Boolean(selectedReferenceImage) || isUploading}
-                value={referenceKind}
-                onChange={(event) =>
-                  onReferenceKindChange(event.target.value as ReferenceImageKind)
-                }
-              >
-                {REFERENCE_IMAGE_KINDS.map((kind) => (
-                  <option key={kind.id} value={kind.id}>
-                    {t(kind.labelKey)}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="flex min-h-11 items-start gap-3 rounded-md border border-white/[0.12] bg-white/[0.03] p-3 text-xs leading-5 text-[#bac9cc]">
-              <input
-                checked={consentAccepted}
-                className="mt-1 h-4 w-4 accent-[#00e5ff]"
-                disabled={Boolean(selectedReferenceImage) || isUploading}
-                type="checkbox"
-                onChange={(event) => onConsentChange(event.target.checked)}
-              />
-              <span>{t("dashboard.reference.consent")}</span>
-            </label>
-          </div>
-
-          <div className="rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 p-3 text-xs leading-5 text-[#ffeac0]">
-            <p>{t("dashboard.reference.identityNotice")}</p>
-            <p className="mt-1 text-[#ffefcf]">
-              {t("dashboard.reference.retentionNotice")}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <input
-              accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-              className="sr-only"
-              disabled={!canChooseFile}
-              ref={fileInputRef}
-              type="file"
-              onChange={onFileChange}
-            />
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex aspect-[4/3] min-h-[180px] w-full flex-col items-center justify-center border border-dashed border-transparent p-5 text-center transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed"
               disabled={!canChooseFile}
               type="button"
               onClick={() => fileInputRef.current?.click()}
             >
-              {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )}
-              {selectedReferenceImage
-                ? t("dashboard.reference.replace")
-                : t("dashboard.reference.upload")}
+              <span className="flex h-11 w-11 items-center justify-center rounded-md border border-[#3b494c]/70 bg-white/[0.04] text-[#9cf0ff]">
+                <Upload className="h-5 w-5" />
+              </span>
+              <span className="mt-3 text-sm font-bold text-[#e5e2e1]">
+                {t("dashboard.reference.emptyPreview")}
+              </span>
+              <span className="mt-1 text-xs leading-5 text-[#849396]">
+                {t("dashboard.reference.emptyPreviewHelp")}
+              </span>
             </button>
-            {previewUrl ? (
-              <button
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#ffb4ab]/45 hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isUploading}
-                type="button"
-                onClick={onRemove}
-              >
-                <Trash2 className="h-4 w-4" />
-                {t("dashboard.reference.remove")}
-              </button>
-            ) : null}
+          )}
+        </div>
+
+        <div className="min-w-0 space-y-3">
+          <label className="block text-xs font-bold leading-5 text-[#bac9cc]">
+            {t("dashboard.reference.kindLabel")}
+            <select
+              className="mt-2 min-h-11 w-full rounded-md border border-white/[0.12] bg-[#141313] px-3 py-2 text-sm font-bold text-white outline-none transition focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={Boolean(selectedReferenceImage) || isUploading}
+              value={referenceKind}
+              onChange={(event) =>
+                onReferenceKindChange(event.target.value as ReferenceImageKind)
+              }
+            >
+              {REFERENCE_IMAGE_KINDS.map((kind) => (
+                <option key={kind.id} value={kind.id}>
+                  {t(kind.labelKey)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-start gap-3 py-1 text-xs leading-5 text-[#bac9cc]">
+            <input
+              checked={consentAccepted}
+              className="mt-0.5 h-5 w-5 shrink-0 accent-[#00e5ff]"
+              disabled={Boolean(selectedReferenceImage) || isUploading}
+              type="checkbox"
+              onChange={(event) => onConsentChange(event.target.checked)}
+            />
+            <span>
+              <span className="block font-semibold text-[#e5e2e1]">
+                {t("dashboard.reference.consent")}
+              </span>
+              <span className="mt-0.5 block text-[#849396]">
+                {t("dashboard.reference.retentionNotice")}
+              </span>
+            </span>
+          </label>
+
+          <div className="border-l border-[#3b494c]/70 pl-3 text-xs leading-5 text-[#849396]">
+            <p>{t("dashboard.reference.identityNotice")}</p>
+            <p className="mt-1">
+              {consentAccepted || isUploaded
+                ? t("dashboard.reference.uploadHelp")
+                : t("dashboard.reference.uploadDisabledHelp")}
+            </p>
           </div>
 
-          {isUploading ? (
-            <div>
-              <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
-                <div
-                  className="h-full rounded-full bg-[#00e5ff] transition-[width]"
-                  style={{ width: `${uploadProgress ?? 5}%` }}
-                />
-              </div>
-              <p className="mt-2 text-xs font-semibold text-[#9cf0ff]">
-                {t("dashboard.reference.uploading", {
-                  progress: uploadProgress ?? 0,
-                })}
-              </p>
-            </div>
-          ) : null}
-
           {selectedReferenceImage ? (
-            <p className="text-xs font-semibold leading-5 text-[#c9fff6]">
+            <p
+              aria-live="polite"
+              className="text-xs font-semibold leading-5 text-[#c9fff6]"
+            >
               {t("dashboard.reference.uploaded", {
                 kind: t(selectedKindLabel),
                 dimensions: dimensions
@@ -1014,7 +1057,7 @@ function ReferenceImagePanel({
 
           {uploadError ? (
             <p
-              className="rounded-md border border-[#ffb4ab]/30 bg-[#93000a]/25 p-3 text-xs font-semibold leading-5 text-[#ffdad6]"
+              className="border-l-2 border-[#ffb4ab]/50 pl-3 text-xs font-semibold leading-5 text-[#ffdad6]"
               role="alert"
             >
               {uploadError}
@@ -1389,48 +1432,56 @@ function GenerationSetupDialog({
           </aside>
         </div>
 
-        <footer className="flex flex-col-reverse gap-3 border-t border-[#3b494c]/70 p-5 sm:flex-row sm:justify-end sm:p-6">
-          <button
-            className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isGenerating}
-            type="button"
-            onClick={onClose}
-          >
-            {t("common.cancel")}
-          </button>
-          {selectedReferenceImage ? (
-            <button
-              aria-label={t("dashboard.reference.generateWithReferenceAria")}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#2cebcf]/45 px-4 py-2.5 text-sm font-bold text-[#c9fff6] transition hover:bg-[#2cebcf]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2cebcf] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={
-                isGenerating || isPromptTooLong || isReferenceImageUploading
-              }
-              type="button"
-              onClick={onGenerateWithReference}
-            >
-              {isGenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ImageIcon className="h-4 w-4" />
-              )}
-              {t("dashboard.reference.generateWithReference")}
-            </button>
-          ) : null}
-          <button
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isGenerating || isPromptTooLong}
-            type="button"
-            onClick={onGenerate}
-          >
-            {isGenerating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+        <footer className="border-t border-[#3b494c]/70 p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {selectedReferenceImage ? (
+              <button
+                aria-label={t(
+                  "dashboard.reference.generateWithReferenceAria",
+                )}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#2cebcf]/40 bg-[#2cebcf]/[0.06] px-4 py-2.5 text-sm font-bold text-[#c9fff6] transition hover:bg-[#2cebcf]/12 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2cebcf] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={
+                  isGenerating || isPromptTooLong || isReferenceImageUploading
+                }
+                type="button"
+                onClick={onGenerateWithReference}
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ImageIcon className="h-4 w-4" />
+                )}
+                {t("dashboard.reference.generateWithReference")}
+              </button>
             ) : (
-              <Sparkles className="h-4 w-4" />
+              <span />
             )}
-            {isGenerating
-              ? t("dashboard.setup.submitting")
-              : t("dashboard.setup.generateNow")}
-          </button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isGenerating}
+                type="button"
+                onClick={onClose}
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isGenerating || isPromptTooLong}
+                type="button"
+                onClick={onGenerate}
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {isGenerating
+                  ? t("dashboard.setup.submitting")
+                  : t("dashboard.setup.generateNow")}
+              </button>
+            </div>
+          </div>
         </footer>
       </div>
     </div>
