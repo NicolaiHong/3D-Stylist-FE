@@ -876,9 +876,18 @@ function ReferenceImagePanel({
   const canChooseFile = consentAccepted && !isUploading;
   const hasPreview = Boolean(previewUrl);
   const isUploaded = Boolean(selectedReferenceImage);
+  const isReady = isUploaded && consentAccepted;
+  const uploadedStatus = isReady
+    ? t("dashboard.reference.uploaded", {
+        kind: t(selectedKindLabel),
+        dimensions: dimensions
+          ? `${dimensions.width}×${dimensions.height}`
+          : t("common.unknown"),
+      })
+    : null;
 
   return (
-    <section className="border-y border-[#3b494c]/55 py-4">
+    <section className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-white">
@@ -888,22 +897,10 @@ function ReferenceImagePanel({
             {t("dashboard.reference.body")}
           </p>
         </div>
-        {isUploading ? (
-          <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#00e5ff]/25 bg-[#00e5ff]/8 px-2.5 py-1 font-bold text-[#9cf0ff]">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            {t("dashboard.reference.uploading", {
-              progress: uploadProgress ?? 0,
-            })}
-          </span>
-        ) : uploadError ? (
+        {uploadError ? (
           <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#ffb4ab]/25 bg-[#93000a]/20 px-2.5 py-1 font-bold text-[#ffdad6]">
             <AlertTriangle className="h-3.5 w-3.5" />
             {t("dashboard.reference.statusError")}
-          </span>
-        ) : isUploaded ? (
-          <span className="dashboard-utility-label inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/8 px-2.5 py-1 font-bold text-[#c9fff6]">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            {t("dashboard.reference.deferredBadge")}
           </span>
         ) : null}
       </div>
@@ -917,85 +914,8 @@ function ReferenceImagePanel({
         onChange={onFileChange}
       />
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(180px,0.85fr)_minmax(0,1.35fr)]">
-        <div
-          className={`overflow-hidden rounded-lg border bg-[#090909] ${
-            uploadError
-              ? "border-[#ffb4ab]/35"
-              : isUploaded
-                ? "border-[#2cebcf]/30"
-                : "border-[#3b494c]/70"
-          }`}
-        >
-          {hasPreview ? (
-            <>
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img
-                  alt={t("dashboard.reference.previewAlt")}
-                  className="h-full w-full object-cover"
-                  src={previewUrl ?? undefined}
-                />
-                {isUploading ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 p-4 text-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-[#00e5ff]" />
-                    <p className="mt-3 text-xs font-bold text-white">
-                      {t("dashboard.reference.uploading", {
-                        progress: uploadProgress ?? 0,
-                      })}
-                    </p>
-                    <div className="mt-3 h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-white/[0.12]">
-                      <div
-                        className="h-full rounded-full bg-[#00e5ff] transition-[width]"
-                        style={{ width: `${uploadProgress ?? 5}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-              {!isUploading ? (
-                <div className="flex items-center gap-2 border-t border-[#3b494c]/45 p-2">
-                  <button
-                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/30 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:text-[#849396]"
-                    disabled={!canChooseFile}
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    {t("dashboard.reference.replace")}
-                  </button>
-                  <button
-                    aria-label={t("dashboard.reference.remove")}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:bg-[#ffb4ab]/10 hover:text-[#ffdad6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
-                    type="button"
-                    onClick={onRemove}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    {t("dashboard.reference.remove")}
-                  </button>
-                </div>
-              ) : null}
-            </>
-          ) : (
-            <button
-              className="flex aspect-[4/3] min-h-[180px] w-full flex-col items-center justify-center border border-dashed border-transparent p-5 text-center transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed"
-              disabled={!canChooseFile}
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-md border border-[#3b494c]/70 bg-white/[0.04] text-[#9cf0ff]">
-                <Upload className="h-5 w-5" />
-              </span>
-              <span className="mt-3 text-sm font-bold text-[#e5e2e1]">
-                {t("dashboard.reference.emptyPreview")}
-              </span>
-              <span className="mt-1 text-xs leading-5 text-[#849396]">
-                {t("dashboard.reference.emptyPreviewHelp")}
-              </span>
-            </button>
-          )}
-        </div>
-
-        <div className="min-w-0 space-y-3">
+      <div className="space-y-3 rounded-lg bg-white/[0.025] p-3 sm:p-4">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <label className="block text-xs font-bold leading-5 text-[#bac9cc]">
             {t("dashboard.reference.kindLabel")}
             <select
@@ -1014,7 +934,7 @@ function ReferenceImagePanel({
             </select>
           </label>
 
-          <label className="flex items-start gap-3 py-1 text-xs leading-5 text-[#bac9cc]">
+          <label className="flex min-h-11 items-start gap-3 px-1 py-2 text-xs leading-5 text-[#bac9cc]">
             <input
               checked={consentAccepted}
               className="mt-0.5 h-5 w-5 shrink-0 accent-[#00e5ff]"
@@ -1031,39 +951,120 @@ function ReferenceImagePanel({
               </span>
             </span>
           </label>
+        </div>
 
-          <div className="border-l border-[#3b494c]/70 pl-3 text-xs leading-5 text-[#849396]">
-            <p>{t("dashboard.reference.identityNotice")}</p>
-            <p className="mt-1">
-              {consentAccepted || isUploaded
-                ? t("dashboard.reference.uploadHelp")
-                : t("dashboard.reference.uploadDisabledHelp")}
-            </p>
-          </div>
-
-          {selectedReferenceImage ? (
-            <p
-              aria-live="polite"
-              className="text-xs font-semibold leading-5 text-[#c9fff6]"
-            >
-              {t("dashboard.reference.uploaded", {
-                kind: t(selectedKindLabel),
-                dimensions: dimensions
-                  ? `${dimensions.width}x${dimensions.height}`
-                  : t("common.unknown"),
-              })}
-            </p>
-          ) : null}
-
-          {uploadError ? (
-            <p
-              className="border-l-2 border-[#ffb4ab]/50 pl-3 text-xs font-semibold leading-5 text-[#ffdad6]"
-              role="alert"
-            >
-              {uploadError}
-            </p>
+        <div className="flex flex-col gap-1 px-1 text-xs leading-5 text-[#849396] sm:flex-row sm:flex-wrap sm:gap-x-4">
+          <p>{t("dashboard.reference.identityNotice")}</p>
+          <p>{t("dashboard.reference.uploadHelp")}</p>
+          {!consentAccepted && !isUploaded ? (
+            <p>{t("dashboard.reference.uploadDisabledHelp")}</p>
           ) : null}
         </div>
+
+        {hasPreview ? (
+          <div
+            className={`flex flex-col gap-3 rounded-lg border bg-[#0e0e0e]/80 p-3 sm:flex-row sm:items-center ${
+              uploadError
+                ? "border-[#ffb4ab]/35"
+                : isReady
+                  ? "border-[#2cebcf]/25"
+                  : "border-white/[0.09]"
+            }`}
+          >
+            <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-md border border-white/[0.1] bg-[#090909] sm:h-24 sm:w-32">
+              <img
+                alt={t("dashboard.reference.previewAlt")}
+                className="h-full w-full object-cover"
+                src={previewUrl ?? undefined}
+              />
+              {isUploading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/65">
+                  <Loader2 className="h-5 w-5 animate-spin text-[#00e5ff]" />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              {uploadedStatus ? (
+                <p
+                  aria-live="polite"
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-[#2cebcf]/25 bg-[#2cebcf]/8 px-2.5 py-1 text-xs font-semibold leading-5 text-[#c9fff6]"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>{uploadedStatus}</span>
+                </p>
+              ) : isUploading ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-[#9cf0ff]">
+                    {t("dashboard.reference.uploading", {
+                      progress: uploadProgress ?? 0,
+                    })}
+                  </p>
+                  <div className="h-1.5 w-full max-w-48 overflow-hidden rounded-full bg-white/[0.12]">
+                    <div
+                      className="h-full rounded-full bg-[#00e5ff] transition-[width]"
+                      style={{ width: `${uploadProgress ?? 5}%` }}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {!isUploading ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/30 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:text-[#849396]"
+                    disabled={!canChooseFile}
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    {t("dashboard.reference.replace")}
+                  </button>
+                  <button
+                    aria-label={t("dashboard.reference.remove")}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-[#bac9cc] transition hover:bg-[#ffb4ab]/10 hover:text-[#ffdad6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab]"
+                    type="button"
+                    onClick={onRemove}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {t("dashboard.reference.remove")}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <button
+            className="flex min-h-24 w-full items-center gap-3 rounded-lg border border-dashed border-[#3b494c]/70 bg-[#0e0e0e]/45 p-3 text-left transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-55"
+            disabled={!canChooseFile}
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-[#9cf0ff]">
+              <Upload className="h-4 w-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-[#e5e2e1]">
+                {t("dashboard.reference.emptyPreview")}
+              </span>
+              <span className="mt-0.5 block text-xs leading-5 text-[#849396]">
+                {t("dashboard.reference.emptyPreviewHelp")}
+              </span>
+            </span>
+            <span className="hidden min-h-10 shrink-0 items-center rounded-md border border-white/[0.1] px-3 text-xs font-bold text-[#bac9cc] sm:inline-flex">
+              {t("dashboard.reference.upload")}
+            </span>
+          </button>
+        )}
+
+        {uploadError ? (
+          <p
+            className="border-l-2 border-[#ffb4ab]/50 pl-3 text-xs font-semibold leading-5 text-[#ffdad6]"
+            role="alert"
+          >
+            {uploadError}
+          </p>
+        ) : null}
       </div>
     </section>
   );
@@ -1391,7 +1392,9 @@ function GenerationSetupDialog({
                   {t("dashboard.reference.summaryLabel")}
                 </dt>
                 <dd className="mt-1 font-semibold leading-5 text-[#e5e2e1]">
-                  {selectedReferenceImage && selectedReferenceKindLabel
+                  {selectedReferenceImage &&
+                  referenceImageConsentAccepted &&
+                  selectedReferenceKindLabel
                     ? t("dashboard.reference.summarySelected", {
                         kind: t(selectedReferenceKindLabel),
                       })
@@ -1434,7 +1437,7 @@ function GenerationSetupDialog({
 
         <footer className="border-t border-[#3b494c]/70 p-5 sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {selectedReferenceImage ? (
+            {selectedReferenceImage && referenceImageConsentAccepted ? (
               <button
                 aria-label={t(
                   "dashboard.reference.generateWithReferenceAria",

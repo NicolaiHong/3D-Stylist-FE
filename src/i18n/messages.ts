@@ -433,7 +433,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.uploadDisabledHelp":
       "Confirm permission to enable image upload.",
     "dashboard.reference.upload": "Choose image",
-    "dashboard.reference.replace": "Replace image",
+    "dashboard.reference.replace": "Replace",
     "dashboard.reference.remove": "Remove",
     "dashboard.reference.generateWithReference": "Generate with reference",
     "dashboard.reference.generateWithReferenceAria":
@@ -1474,7 +1474,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.uploadDisabledHelp":
       "Xác nhận quyền sử dụng để bật tải ảnh.",
     "dashboard.reference.upload": "Chọn ảnh",
-    "dashboard.reference.replace": "Thay ảnh",
+    "dashboard.reference.replace": "Thay",
     "dashboard.reference.remove": "Gỡ",
     "dashboard.reference.generateWithReference": "Tạo với tham chiếu",
     "dashboard.reference.generateWithReferenceAria":
