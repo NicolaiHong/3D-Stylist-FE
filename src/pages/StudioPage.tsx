@@ -190,12 +190,12 @@ function StudioViewModeControl({
   return (
     <div
       aria-label={t("studio.viewModeAria")}
-      className="grid shrink-0 grid-cols-2 rounded-md bg-[#0a0a0a]/80 p-1 ring-1 ring-white/10"
+      className="grid shrink-0 grid-cols-2 rounded-lg bg-[#0a0a0a]/80 p-1 ring-1 ring-white/10"
       role="group"
     >
       <button
         aria-pressed={viewMode === "2d"}
-        className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-11 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "2d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -207,7 +207,7 @@ function StudioViewModeControl({
       </button>
       <button
         aria-pressed={viewMode === "3d"}
-        className={`min-h-10 rounded px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
+        className={`min-h-11 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
           viewMode === "3d"
             ? "bg-[#00e5ff] text-[#001f24]"
             : "text-[#bac9cc] hover:text-white"
@@ -240,6 +240,9 @@ function FigureSelector({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const isDisabled = figures.length === 0;
+  const selectedPreviewUrl = selectedFigure
+    ? getPreviewUrl(selectedFigure)
+    : null;
 
   const openListbox = useCallback(() => {
     if (isDisabled) {
@@ -382,7 +385,7 @@ function FigureSelector({
 
   return (
     <div
-      className="relative min-w-0 flex-1 lg:min-w-[18rem]"
+      className="min-w-0 border-t border-[#3b494c]/45 bg-[#0d1214]/88 p-3 sm:p-4"
       ref={wrapperRef}
       onBlur={(event) => {
         const nextTarget = event.relatedTarget as Node | null;
@@ -405,11 +408,22 @@ function FigureSelector({
         onClick={() => (isOpen ? closeListbox() : openListbox())}
         onKeyDown={handleButtonKeyDown}
       >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-[#0a0a0a]">
+          {selectedPreviewUrl ? (
+            <img
+              alt=""
+              className="h-full w-full object-cover"
+              src={selectedPreviewUrl}
+            />
+          ) : (
+            <ImageIcon className="h-5 w-5 text-[#3b494c]" />
+          )}
+        </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#849396]">
+          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#9aa8aa]">
             {t("studio.selector.current")}
           </span>
-          <span className="block truncate text-sm font-semibold text-[#e5e2e1]">
+          <span className="mt-0.5 block truncate text-sm font-semibold text-[#e5e2e1]">
             {selectedFigure
               ? getPromptSnippet(
                   selectedFigure.prompt,
@@ -418,6 +432,20 @@ function FigureSelector({
                 )
               : t("studio.noGenerationsOption")}
           </span>
+          {selectedFigure ? (
+            <span className="mt-2 flex flex-wrap gap-1.5">
+              <ReadinessPill
+                compact
+                label="IMG"
+                state={getPreviewReadinessState(selectedFigure)}
+              />
+              <ReadinessPill
+                compact
+                label="GLB"
+                state={getModelReadinessState(selectedFigure)}
+              />
+            </span>
+          ) : null}
         </span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 text-[#9cf0ff] transition ${
@@ -429,7 +457,7 @@ function FigureSelector({
       {isOpen ? (
         <div
           aria-label={t("studio.selector.list")}
-          className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 max-h-[min(22rem,62vh)] overflow-y-auto rounded-lg border border-[#00e5ff]/20 bg-[#111719] p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.42),0_0_0_1px_rgba(0,229,255,0.06)]"
+          className="internal-scroll-region mt-3 grid max-h-[26rem] grid-cols-1 gap-1 overflow-y-auto overscroll-contain rounded-lg border border-[#3b494c]/55 bg-[#111719] p-1.5 pr-2 sm:grid-cols-2"
           id={listboxId}
           role="listbox"
           tabIndex={-1}
@@ -510,20 +538,16 @@ function FigureSelector({
 }
 
 function StudioCommandSurface({
-  figures,
   selectedFigure,
   viewMode,
   canExportModel,
   canDownloadModel,
-  onSelectFigure,
   onViewModeChange,
 }: {
-  figures: FigureDto[];
   selectedFigure: FigureDto;
   viewMode: StudioViewMode;
   canExportModel: boolean;
   canDownloadModel: boolean;
-  onSelectFigure: (figureId: string) => void;
   onViewModeChange: (mode: StudioViewMode) => void;
 }) {
   const { t } = useI18n();
@@ -531,18 +555,11 @@ function StudioCommandSurface({
 
   return (
     <section className="relative z-30 border-b border-[#3b494c]/45 bg-[#121719]/95 px-3 py-3 sm:px-4">
-      <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
-          <StudioViewModeControl
-            viewMode={viewMode}
-            onChange={onViewModeChange}
-          />
-          <FigureSelector
-            figures={figures}
-            selectedFigure={selectedFigure}
-            onSelect={onSelectFigure}
-          />
-        </div>
+      <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <StudioViewModeControl
+          viewMode={viewMode}
+          onChange={onViewModeChange}
+        />
 
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <FigureStatusBadge status={selectedFigure.status} />
@@ -629,7 +646,7 @@ function StudioMetadataPanel({
     MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH;
 
   return (
-    <aside className="min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
+    <aside className="studio-metadata-panel internal-scroll-region min-h-0 min-w-0 max-w-full self-start rounded-lg border border-[#3b494c]/60 bg-[#111619]/88 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)]">
       <section className="min-w-0">
         <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#bac9cc]">
           {t("studio.metadata")}
@@ -955,7 +972,7 @@ function StudioPreview({
         src={previewUrl}
       />
     ) : (
-      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <ImageIcon className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
           {t("studio.preview2dPending")}
@@ -971,7 +988,7 @@ function StudioPreview({
     const isPending = isPollingStatus(figure.status);
 
     return (
-      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
           {isPending
@@ -989,7 +1006,7 @@ function StudioPreview({
 
   if (!figure.modelViewerUrl) {
     return (
-      <div className="flex h-full min-h-[440px] flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
         <h3 className="mt-4 font-display text-2xl font-semibold text-white">
           {t("studio.viewer.unavailable")}
@@ -1002,12 +1019,12 @@ function StudioPreview({
   }
 
   return (
-    <div className="relative h-full min-h-[440px] w-full">
+    <div className="relative h-full min-h-0 w-full">
       <Suspense
         fallback={
           <div
             aria-live="polite"
-            className="flex h-full min-h-[440px] items-center justify-center p-8 text-center text-sm font-semibold text-[#c3f5ff]"
+            className="flex h-full min-h-0 items-center justify-center p-8 text-center text-sm font-semibold text-[#c3f5ff]"
             role="status"
           >
             {t("studio.viewer.loading")}
@@ -1344,43 +1361,37 @@ export function StudioPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
-              <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
-              <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="studio-layout grid min-h-0 min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="studio-workspace min-h-0 min-w-0 self-start overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
+                <div className="h-16 animate-pulse border-b border-white/10 bg-white/[0.05]" />
                 <div className="studio-preview-stage animate-pulse bg-white/[0.035]" />
-                <div className="h-72 animate-pulse border-t border-white/10 bg-white/[0.04] xl:h-auto xl:border-l xl:border-t-0" />
               </div>
+              <div className="studio-metadata-panel internal-scroll-region h-72 min-h-0 min-w-0 self-start rounded-lg border border-white/10 bg-white/[0.04] xl:h-auto" />
             </div>
           ) : figures.length === 0 ? (
             <StudioEmptyState />
           ) : selectedFigure ? (
-            <div className="min-w-0 max-w-full overflow-visible rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
-              <div className="grid min-w-0 xl:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section className="min-w-0 max-w-full">
-                  <StudioCommandSurface
-                    canDownloadModel={
-                      summary?.capabilities.canDownloadModel === true
-                    }
-                    canExportModel={
-                      summary?.capabilities.canExportModel === true
-                    }
-                    figures={figures}
-                    selectedFigure={selectedFigure}
-                    viewMode={viewMode}
-                    onSelectFigure={handleSelectFigure}
-                    onViewModeChange={setViewMode}
-                  />
+            <div className="studio-layout grid min-h-0 min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_320px]">
+              <section className="studio-workspace min-h-0 min-w-0 max-w-full self-start overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
+                <StudioCommandSurface
+                  canDownloadModel={
+                    summary?.capabilities.canDownloadModel === true
+                  }
+                  canExportModel={summary?.capabilities.canExportModel === true}
+                  selectedFigure={selectedFigure}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
 
-                  <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
-                    <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center overflow-hidden">
-                      <StudioPreview
-                        figure={selectedFigure}
-                        onShow2d={() => setViewMode("2d")}
-                        viewMode={viewMode}
-                      />
-                    </div>
+                <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
+                  <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
+                    <StudioPreview
+                      figure={selectedFigure}
+                      onShow2d={() => setViewMode("2d")}
+                      viewMode={viewMode}
+                    />
                   </div>
-                </section>
+                </div>
 
                 <StudioMetadataPanel
                   isCreatingPreviewVariation={isCreatingPreviewVariation}
@@ -1400,8 +1411,26 @@ export function StudioPage() {
                   onRegenerate={() => void handleRegenerateSelectedFigure()}
                   onVariationInstructionChange={setVariationInstruction}
                 />
-              </div>
+              </section>
 
+              <StudioMetadataPanel
+                isCreatingPreviewVariation={isCreatingPreviewVariation}
+                isRegenerating={isRegenerating}
+                previewVariationError={previewVariationError}
+                previewVariationInstruction={previewVariationInstruction}
+                regenerationError={regenerationError}
+                regenerationInstruction={regenerationInstruction}
+                selectedFigure={selectedFigure}
+                summary={summary}
+                onCreatePreviewVariation={() =>
+                  void handleCreatePreviewVariation()
+                }
+                onPreviewVariationInstructionChange={
+                  setPreviewVariationInstruction
+                }
+                onRegenerate={() => void handleRegenerateSelectedFigure()}
+                onRegenerationInstructionChange={setRegenerationInstruction}
+              />
             </div>
           ) : null}
         </div>

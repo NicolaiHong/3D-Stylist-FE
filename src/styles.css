@@ -958,8 +958,17 @@ textarea {
   animation: generation-result-arrow 1.4s ease-in-out infinite;
 }
 
+.studio-layout {
+  --studio-preview-stage-height: clamp(380px, 44vw, 500px);
+}
+
+.studio-workspace {
+  min-height: 0;
+}
+
 .studio-preview-stage {
-  height: clamp(440px, 52vw, 680px);
+  height: var(--studio-preview-stage-height, clamp(380px, 44vw, 500px));
+  min-height: 0;
 }
 
 .studio-grid {
@@ -989,7 +998,7 @@ textarea {
   inset: 0;
   background:
     linear-gradient(90deg, rgb(0 0 0 / 0.18), transparent 28%, transparent 72%, rgb(0 0 0 / 0.16)),
-    linear-gradient(180deg, transparent 0 63%, rgb(255 255 255 / 0.028) 63.5%, transparent 64%),
+    linear-gradient(180deg, transparent 0 72%, rgb(255 255 255 / 0.028) 72.5%, transparent 73%),
     radial-gradient(ellipse at 50% 76%, rgb(var(--accent-cyan) / 0.07), transparent 42%);
   opacity: 0.72;
 }
@@ -1011,14 +1020,26 @@ textarea {
 }
 
 @media (max-width: 639px) {
-  .studio-preview-stage {
-    height: clamp(440px, 118vw, 540px);
+  .studio-layout {
+    --studio-preview-stage-height: clamp(320px, 80vw, 400px);
   }
 }
 
 @media (min-width: 1280px) {
-  .studio-preview-stage {
-    height: clamp(520px, calc(100vh - 14.5rem), 680px);
+  .studio-layout {
+    --studio-preview-stage-height: clamp(360px, calc(100vh - 18rem), 520px);
+  }
+
+  .studio-workspace {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+  }
+
+  .studio-metadata-panel {
+    align-self: start;
+    max-height: none;
+    overflow: visible;
   }
 }
 

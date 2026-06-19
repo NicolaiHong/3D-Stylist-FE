@@ -411,22 +411,23 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.submitting": "Submitting",
     "dashboard.setup.generateNow": "Generate now",
     "dashboard.reference.title": "Reference image",
-    "dashboard.reference.body":
-      "Upload one image owned by you or used with permission. Generate with reference submits only this owned asset ID and your prompt.",
-    "dashboard.reference.deferredBadge": "Image guidance ready",
+    "dashboard.reference.body": "Use one image you own as a reference.",
+    "dashboard.reference.deferredBadge": "Ready",
+    "dashboard.reference.statusError": "Upload needs attention",
     "dashboard.reference.previewAlt": "Selected reference image preview",
-    "dashboard.reference.emptyPreview": "No reference image selected",
+    "dashboard.reference.emptyPreview": "Choose a reference image",
+    "dashboard.reference.emptyPreviewHelp": "JPG or PNG · up to 5MB",
     "dashboard.reference.kindLabel": "Reference kind",
     "dashboard.reference.kind.face": "Face",
     "dashboard.reference.kind.fullBody": "Full body",
     "dashboard.reference.kind.clothingStyle": "Clothing style",
     "dashboard.reference.kind.genericReference": "Generic reference",
     "dashboard.reference.consent":
-      "I own this image or have permission to use it as a generation reference.",
+      "I own this image or have permission to use it.",
     "dashboard.reference.identityNotice":
-      "Exact face or identity match is not guaranteed.",
+      "Creates a new image-guided model. Exact identity or model matching is not guaranteed. Uses 1 credit.",
     "dashboard.reference.retentionNotice":
-      "This costs generation credits. Export and download remain restricted by your plan.",
+      "Export and download remain restricted by your plan.",
     "dashboard.reference.upload": "Upload reference",
     "dashboard.reference.replace": "Replace reference",
     "dashboard.reference.remove": "Remove reference",
@@ -434,8 +435,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.generateWithReferenceAria":
       "Generate a new figure using the uploaded reference image",
     "dashboard.reference.uploading": "Uploading {progress}%",
-    "dashboard.reference.uploaded":
-      "{kind} reference stored. Image size: {dimensions}.",
+    "dashboard.reference.uploaded": "Uploaded · {kind} · {dimensions}",
     "dashboard.reference.error.unsupportedType":
       "Unsupported file type. Please use JPG or PNG and keep the extension matched.",
     "dashboard.reference.error.fileTooLarge":
@@ -443,9 +443,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.error.consentRequired":
       "Accept the reference image consent before upload.",
     "dashboard.reference.error.unsupported":
-      "Image-guided generation is available in mock mode only for this batch. The configured live provider does not support it yet.",
+      "Image-guided generation is disabled or unsupported by the configured provider.",
     "dashboard.reference.summaryLabel": "Reference image",
-    "dashboard.reference.summarySelected": "{kind} ready for image guidance",
+    "dashboard.reference.summarySelected": "Uploaded · {kind}",
     "dashboard.plan.checking": "Checking",
     "dashboard.plan.active": "Active plan",
     "dashboard.plan.free": "Free plan",
@@ -913,7 +913,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.noCode": "No code",
     "admin.table.verifyTransfer": "Verify transfer and mark paid",
     "admin.table.noAction": "No action",
-    "admin.table.payosNoVerification": "No admin verification required",
+    "admin.table.reconcilePayos": "Check payOS status",
     "admin.health.title": "System Health",
     "admin.health.description":
       "Configuration presence only. Secret values stay server-side.",
@@ -978,6 +978,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.missingProducts": "{count} missing core products",
     "admin.kpi.catalogCoverage": "Core catalog coverage",
     "admin.success.markPaid": "Order {orderId} returned {status}.",
+    "admin.success.payosFinalized": "Order {orderId} was finalized from verified payOS status.",
+    "admin.success.payosAlreadyPaid": "Order {orderId} was already finalized.",
+    "admin.success.payosPending": "Order {orderId} is still pending at payOS.",
+    "admin.success.payosRejected": "Order {orderId} was not finalized because payOS did not confirm a valid paid payment.",
+    "admin.error.payosUnavailable": "payOS status is temporarily unavailable. No payment or entitlement was changed.",
+    "admin.error.payosRejected": "payOS reconciliation was rejected because the verified payment details did not match this order.",
     "admin.orders.title": "Recent Orders",
     "admin.orders.description":
       "{count} matching orders. Manual mark-paid requires checking the bank app or statement outside this system. This app does not reconcile transfers automatically.",
@@ -1458,22 +1464,23 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.submitting": "Đang gửi",
     "dashboard.setup.generateNow": "Tạo ngay",
     "dashboard.reference.title": "Ảnh tham chiếu",
-    "dashboard.reference.body":
-      "Tải một ảnh do bạn sở hữu hoặc có quyền sử dụng. Tạo với tham chiếu chỉ gửi ID tài sản đã sở hữu này cùng mô tả của bạn.",
-    "dashboard.reference.deferredBadge": "Sẵn sàng hướng dẫn bằng ảnh",
+    "dashboard.reference.body": "Dùng một ảnh bạn sở hữu làm tham chiếu.",
+    "dashboard.reference.deferredBadge": "Sẵn sàng",
+    "dashboard.reference.statusError": "Cần kiểm tra bản tải lên",
     "dashboard.reference.previewAlt": "Xem trước ảnh tham chiếu đã chọn",
-    "dashboard.reference.emptyPreview": "Chưa chọn ảnh tham chiếu",
+    "dashboard.reference.emptyPreview": "Chọn ảnh tham chiếu",
+    "dashboard.reference.emptyPreviewHelp": "JPG hoặc PNG · tối đa 5MB",
     "dashboard.reference.kindLabel": "Loại tham chiếu",
     "dashboard.reference.kind.face": "Khuôn mặt",
     "dashboard.reference.kind.fullBody": "Toàn thân",
     "dashboard.reference.kind.clothingStyle": "Phong cách trang phục",
     "dashboard.reference.kind.genericReference": "Tham chiếu chung",
     "dashboard.reference.consent":
-      "Tôi sở hữu ảnh này hoặc có quyền dùng ảnh làm tham chiếu tạo hình.",
+      "Tôi sở hữu ảnh này hoặc có quyền sử dụng ảnh.",
     "dashboard.reference.identityNotice":
-      "Không bảo đảm khớp chính xác khuôn mặt hoặc danh tính.",
+      "Tạo một mô hình mới có hướng dẫn bằng ảnh. Không bảo đảm khớp chính xác danh tính hoặc mô hình. Dùng 1 tín dụng.",
     "dashboard.reference.retentionNotice":
-      "Luồng này dùng tín dụng tạo mẫu. Xuất và tải xuống vẫn bị giới hạn theo gói của bạn.",
+      "Xuất và tải xuống vẫn bị giới hạn theo gói của bạn.",
     "dashboard.reference.upload": "Tải ảnh tham chiếu",
     "dashboard.reference.replace": "Thay ảnh tham chiếu",
     "dashboard.reference.remove": "Gỡ ảnh tham chiếu",
@@ -1481,8 +1488,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.generateWithReferenceAria":
       "Tạo mẫu mới bằng ảnh tham chiếu đã tải lên",
     "dashboard.reference.uploading": "Đang tải {progress}%",
-    "dashboard.reference.uploaded":
-      "Đã lưu tham chiếu {kind}. Kích thước ảnh: {dimensions}.",
+    "dashboard.reference.uploaded": "Đã tải · {kind} · {dimensions}",
     "dashboard.reference.error.unsupportedType":
       "Loại tệp không được hỗ trợ. Vui lòng dùng JPG hoặc PNG và giữ phần mở rộng khớp.",
     "dashboard.reference.error.fileTooLarge":
@@ -1490,10 +1496,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.error.consentRequired":
       "Hãy chấp nhận điều khoản ảnh tham chiếu trước khi tải lên.",
     "dashboard.reference.error.unsupported":
-      "Tạo hình có hướng dẫn bằng ảnh chỉ khả dụng ở chế độ mock trong batch này. Nhà cung cấp live đang cấu hình chưa hỗ trợ luồng này.",
+      "Tạo hình có hướng dẫn bằng ảnh đang bị tắt hoặc không được nhà cung cấp đã cấu hình hỗ trợ.",
     "dashboard.reference.summaryLabel": "Ảnh tham chiếu",
-    "dashboard.reference.summarySelected":
-      "{kind} đã sẵn sàng cho hướng dẫn bằng ảnh",
+    "dashboard.reference.summarySelected": "Đã tải · {kind}",
     "dashboard.plan.checking": "Đang kiểm tra",
     "dashboard.plan.active": "Gói đang hoạt động",
     "dashboard.plan.free": "Gói miễn phí",
@@ -1963,7 +1968,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.noCode": "Không có mã",
     "admin.table.verifyTransfer": "Xác minh chuyển khoản và đánh dấu đã thanh toán",
     "admin.table.noAction": "Không có thao tác",
-    "admin.table.payosNoVerification": "Không cần quản trị viên xác minh",
+    "admin.table.reconcilePayos": "Kiểm tra trạng thái payOS",
     "admin.health.title": "Sức khỏe hệ thống",
     "admin.health.description":
       "Chỉ hiển thị trạng thái cấu hình. Giá trị bí mật vẫn ở server.",
@@ -2028,6 +2033,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.missingProducts": "{count} sản phẩm cốt lõi bị thiếu",
     "admin.kpi.catalogCoverage": "Độ phủ danh mục cốt lõi",
     "admin.success.markPaid": "Đơn {orderId} trả về {status}.",
+    "admin.success.payosFinalized": "Đơn {orderId} đã được hoàn tất từ trạng thái payOS đã xác minh.",
+    "admin.success.payosAlreadyPaid": "Đơn {orderId} đã được hoàn tất trước đó.",
+    "admin.success.payosPending": "Đơn {orderId} vẫn đang chờ xử lý tại payOS.",
+    "admin.success.payosRejected": "Đơn {orderId} chưa được hoàn tất vì payOS không xác nhận một khoản thanh toán hợp lệ.",
+    "admin.error.payosUnavailable": "Tạm thời không thể kiểm tra payOS. Không có thanh toán hay quyền lợi nào bị thay đổi.",
+    "admin.error.payosRejected": "Đối soát payOS bị từ chối vì thông tin thanh toán đã xác minh không khớp với đơn này.",
     "admin.orders.title": "Đơn gần đây",
     "admin.orders.description":
       "{count} đơn khớp. Đánh dấu đã thanh toán thủ công yêu cầu kiểm tra ứng dụng ngân hàng hoặc sao kê bên ngoài hệ thống. Ứng dụng không tự đối soát chuyển khoản.",
