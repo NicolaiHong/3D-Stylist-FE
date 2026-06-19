@@ -4,7 +4,6 @@ import type {
   CreatePreviewVariationPayload,
   FigureDto,
   FigureListResult,
-  CreatePreviewVariationPayload,
   GenerateFigureFromReferencePayload,
   GenerateFigurePayload,
   ListFiguresParams,

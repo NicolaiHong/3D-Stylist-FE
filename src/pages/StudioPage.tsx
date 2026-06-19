@@ -1393,6 +1393,12 @@ export function StudioPage() {
                   </div>
                 </div>
 
+                <FigureSelector
+                  figures={figures}
+                  selectedFigure={selectedFigure}
+                  onSelect={handleSelectFigure}
+                />
+
                 <StudioMetadataPanel
                   isCreatingPreviewVariation={isCreatingPreviewVariation}
                   isRegenerating={isRegenerating}
@@ -1419,9 +1425,9 @@ export function StudioPage() {
                 previewVariationError={previewVariationError}
                 previewVariationInstruction={previewVariationInstruction}
                 regenerationError={regenerationError}
-                regenerationInstruction={regenerationInstruction}
                 selectedFigure={selectedFigure}
                 summary={summary}
+                variationInstruction={variationInstruction}
                 onCreatePreviewVariation={() =>
                   void handleCreatePreviewVariation()
                 }
@@ -1429,7 +1435,7 @@ export function StudioPage() {
                   setPreviewVariationInstruction
                 }
                 onRegenerate={() => void handleRegenerateSelectedFigure()}
-                onRegenerationInstructionChange={setRegenerationInstruction}
+                onVariationInstructionChange={setVariationInstruction}
               />
             </div>
           ) : null}
