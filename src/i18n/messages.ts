@@ -411,18 +411,19 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.submitting": "Submitting",
     "dashboard.setup.generateNow": "Generate now",
     "dashboard.reference.title": "Reference image",
-    "dashboard.reference.body":
-      "Upload one image owned by you or used with permission. Generate with reference submits only this owned asset ID and your prompt.",
-    "dashboard.reference.deferredBadge": "Image guidance ready",
+    "dashboard.reference.body": "Use one image you own as a reference.",
+    "dashboard.reference.deferredBadge": "Ready",
+    "dashboard.reference.statusError": "Upload needs attention",
     "dashboard.reference.previewAlt": "Selected reference image preview",
-    "dashboard.reference.emptyPreview": "No reference image selected",
+    "dashboard.reference.emptyPreview": "Choose a reference image",
+    "dashboard.reference.emptyPreviewHelp": "JPG or PNG · up to 5MB",
     "dashboard.reference.kindLabel": "Reference kind",
     "dashboard.reference.kind.face": "Face",
     "dashboard.reference.kind.fullBody": "Full body",
     "dashboard.reference.kind.clothingStyle": "Clothing style",
     "dashboard.reference.kind.genericReference": "Generic reference",
     "dashboard.reference.consent":
-      "I own this image or have permission to use it as a generation reference.",
+      "I own this image or have permission to use it.",
     "dashboard.reference.identityNotice":
       "Creates a new image-guided model. Exact identity or model matching is not guaranteed. Uses 1 credit.",
     "dashboard.reference.retentionNotice":
@@ -434,8 +435,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.generateWithReferenceAria":
       "Generate a new figure using the uploaded reference image",
     "dashboard.reference.uploading": "Uploading {progress}%",
-    "dashboard.reference.uploaded":
-      "{kind} reference stored. Image size: {dimensions}.",
+    "dashboard.reference.uploaded": "Uploaded · {kind} · {dimensions}",
     "dashboard.reference.error.unsupportedType":
       "Unsupported file type. Please use JPG or PNG and keep the extension matched.",
     "dashboard.reference.error.fileTooLarge":
@@ -445,7 +445,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.error.unsupported":
       "Image-guided generation is disabled or unsupported by the configured provider.",
     "dashboard.reference.summaryLabel": "Reference image",
-    "dashboard.reference.summarySelected": "{kind} ready for image guidance",
+    "dashboard.reference.summarySelected": "Uploaded · {kind}",
     "dashboard.plan.checking": "Checking",
     "dashboard.plan.active": "Active plan",
     "dashboard.plan.free": "Free plan",
@@ -1463,18 +1463,19 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.submitting": "Đang gửi",
     "dashboard.setup.generateNow": "Tạo ngay",
     "dashboard.reference.title": "Ảnh tham chiếu",
-    "dashboard.reference.body":
-      "Tải một ảnh do bạn sở hữu hoặc có quyền sử dụng. Tạo với tham chiếu chỉ gửi ID tài sản đã sở hữu này cùng mô tả của bạn.",
-    "dashboard.reference.deferredBadge": "Sẵn sàng hướng dẫn bằng ảnh",
+    "dashboard.reference.body": "Dùng một ảnh bạn sở hữu làm tham chiếu.",
+    "dashboard.reference.deferredBadge": "Sẵn sàng",
+    "dashboard.reference.statusError": "Cần kiểm tra bản tải lên",
     "dashboard.reference.previewAlt": "Xem trước ảnh tham chiếu đã chọn",
-    "dashboard.reference.emptyPreview": "Chưa chọn ảnh tham chiếu",
+    "dashboard.reference.emptyPreview": "Chọn ảnh tham chiếu",
+    "dashboard.reference.emptyPreviewHelp": "JPG hoặc PNG · tối đa 5MB",
     "dashboard.reference.kindLabel": "Loại tham chiếu",
     "dashboard.reference.kind.face": "Khuôn mặt",
     "dashboard.reference.kind.fullBody": "Toàn thân",
     "dashboard.reference.kind.clothingStyle": "Phong cách trang phục",
     "dashboard.reference.kind.genericReference": "Tham chiếu chung",
     "dashboard.reference.consent":
-      "Tôi sở hữu ảnh này hoặc có quyền dùng ảnh làm tham chiếu tạo hình.",
+      "Tôi sở hữu ảnh này hoặc có quyền sử dụng ảnh.",
     "dashboard.reference.identityNotice":
       "Tạo một mô hình mới có hướng dẫn bằng ảnh. Không bảo đảm khớp chính xác danh tính hoặc mô hình. Dùng 1 tín dụng.",
     "dashboard.reference.retentionNotice":
@@ -1486,8 +1487,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.generateWithReferenceAria":
       "Tạo mẫu mới bằng ảnh tham chiếu đã tải lên",
     "dashboard.reference.uploading": "Đang tải {progress}%",
-    "dashboard.reference.uploaded":
-      "Đã lưu tham chiếu {kind}. Kích thước ảnh: {dimensions}.",
+    "dashboard.reference.uploaded": "Đã tải · {kind} · {dimensions}",
     "dashboard.reference.error.unsupportedType":
       "Loại tệp không được hỗ trợ. Vui lòng dùng JPG hoặc PNG và giữ phần mở rộng khớp.",
     "dashboard.reference.error.fileTooLarge":
@@ -1497,8 +1497,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.error.unsupported":
       "Tạo hình có hướng dẫn bằng ảnh đang bị tắt hoặc không được nhà cung cấp đã cấu hình hỗ trợ.",
     "dashboard.reference.summaryLabel": "Ảnh tham chiếu",
-    "dashboard.reference.summarySelected":
-      "{kind} đã sẵn sàng cho hướng dẫn bằng ảnh",
+    "dashboard.reference.summarySelected": "Đã tải · {kind}",
     "dashboard.plan.checking": "Đang kiểm tra",
     "dashboard.plan.active": "Gói đang hoạt động",
     "dashboard.plan.free": "Gói miễn phí",

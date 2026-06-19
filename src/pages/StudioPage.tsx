@@ -239,6 +239,9 @@ function FigureSelector({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const isDisabled = figures.length === 0;
+  const selectedPreviewUrl = selectedFigure
+    ? getPreviewUrl(selectedFigure)
+    : null;
 
   const openListbox = useCallback(() => {
     if (isDisabled) {
@@ -381,7 +384,7 @@ function FigureSelector({
 
   return (
     <div
-      className="relative min-w-0 flex-1 lg:min-w-[18rem]"
+      className="min-w-0 border-t border-[#3b494c]/45 bg-[#0d1214]/88 p-3 sm:p-4"
       ref={wrapperRef}
       onBlur={(event) => {
         const nextTarget = event.relatedTarget as Node | null;
@@ -404,11 +407,22 @@ function FigureSelector({
         onClick={() => (isOpen ? closeListbox() : openListbox())}
         onKeyDown={handleButtonKeyDown}
       >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-[#0a0a0a]">
+          {selectedPreviewUrl ? (
+            <img
+              alt=""
+              className="h-full w-full object-cover"
+              src={selectedPreviewUrl}
+            />
+          ) : (
+            <ImageIcon className="h-5 w-5 text-[#3b494c]" />
+          )}
+        </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#849396]">
+          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#9aa8aa]">
             {t("studio.selector.current")}
           </span>
-          <span className="block truncate text-sm font-semibold text-[#e5e2e1]">
+          <span className="mt-0.5 block truncate text-sm font-semibold text-[#e5e2e1]">
             {selectedFigure
               ? getPromptSnippet(
                   selectedFigure.prompt,
@@ -417,6 +431,20 @@ function FigureSelector({
                 )
               : t("studio.noGenerationsOption")}
           </span>
+          {selectedFigure ? (
+            <span className="mt-2 flex flex-wrap gap-1.5">
+              <ReadinessPill
+                compact
+                label="IMG"
+                state={getPreviewReadinessState(selectedFigure)}
+              />
+              <ReadinessPill
+                compact
+                label="GLB"
+                state={getModelReadinessState(selectedFigure)}
+              />
+            </span>
+          ) : null}
         </span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 text-[#9cf0ff] transition ${
@@ -428,7 +456,7 @@ function FigureSelector({
       {isOpen ? (
         <div
           aria-label={t("studio.selector.list")}
-          className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 max-h-[min(22rem,62vh)] overflow-y-auto rounded-lg border border-[#00e5ff]/20 bg-[#111719] p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.42),0_0_0_1px_rgba(0,229,255,0.06)]"
+          className="internal-scroll-region mt-3 grid max-h-[26rem] grid-cols-1 gap-1 overflow-y-auto overscroll-contain rounded-lg border border-[#3b494c]/55 bg-[#111719] p-1.5 pr-2 sm:grid-cols-2"
           id={listboxId}
           role="listbox"
           tabIndex={-1}
@@ -509,20 +537,16 @@ function FigureSelector({
 }
 
 function StudioCommandSurface({
-  figures,
   selectedFigure,
   viewMode,
   canExportModel,
   canDownloadModel,
-  onSelectFigure,
   onViewModeChange,
 }: {
-  figures: FigureDto[];
   selectedFigure: FigureDto;
   viewMode: StudioViewMode;
   canExportModel: boolean;
   canDownloadModel: boolean;
-  onSelectFigure: (figureId: string) => void;
   onViewModeChange: (mode: StudioViewMode) => void;
 }) {
   const { t } = useI18n();
@@ -530,18 +554,11 @@ function StudioCommandSurface({
 
   return (
     <section className="relative z-30 border-b border-[#3b494c]/45 bg-[#121719]/95 px-3 py-3 sm:px-4">
-      <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
-          <StudioViewModeControl
-            viewMode={viewMode}
-            onChange={onViewModeChange}
-          />
-          <FigureSelector
-            figures={figures}
-            selectedFigure={selectedFigure}
-            onSelect={onSelectFigure}
-          />
-        </div>
+      <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <StudioViewModeControl
+          viewMode={viewMode}
+          onChange={onViewModeChange}
+        />
 
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <FigureStatusBadge status={selectedFigure.status} />
@@ -1328,10 +1345,8 @@ export function StudioPage() {
                     summary?.capabilities.canDownloadModel === true
                   }
                   canExportModel={summary?.capabilities.canExportModel === true}
-                  figures={figures}
                   selectedFigure={selectedFigure}
                   viewMode={viewMode}
-                  onSelectFigure={handleSelectFigure}
                   onViewModeChange={setViewMode}
                 />
 
@@ -1344,6 +1359,12 @@ export function StudioPage() {
                     />
                   </div>
                 </div>
+
+                <FigureSelector
+                  figures={figures}
+                  selectedFigure={selectedFigure}
+                  onSelect={handleSelectFigure}
+                />
               </section>
 
               <StudioMetadataPanel
