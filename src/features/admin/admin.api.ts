@@ -5,6 +5,7 @@ import type {
   AdminMarkPaidResult,
   AdminOrder,
   AdminOrdersFilters,
+  AdminPayosReconciliationResult,
   AdminPagination,
   AdminPaymentTransaction,
   AdminPaymentTransactionsFilters,
@@ -181,6 +182,16 @@ export const adminApi = {
       `/admin/billing/orders/${orderId}/mark-paid`,
       {},
     );
+
+    return data.data;
+  },
+
+  async reconcilePayosOrder(
+    orderId: string,
+  ): Promise<AdminPayosReconciliationResult> {
+    const { data } = await apiClient.post<
+      ApiSuccessResponse<AdminPayosReconciliationResult>
+    >(`/admin/billing/orders/${orderId}/payos-reconcile`);
 
     return data.data;
   },

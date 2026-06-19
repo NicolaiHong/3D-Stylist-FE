@@ -424,9 +424,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.consent":
       "I own this image or have permission to use it as a generation reference.",
     "dashboard.reference.identityNotice":
-      "Exact face or identity match is not guaranteed.",
+      "Creates a new image-guided model. Exact identity or model matching is not guaranteed. Uses 1 credit.",
     "dashboard.reference.retentionNotice":
-      "This costs generation credits. Export and download remain restricted by your plan.",
+      "Export and download remain restricted by your plan.",
     "dashboard.reference.upload": "Upload reference",
     "dashboard.reference.replace": "Replace reference",
     "dashboard.reference.remove": "Remove reference",
@@ -443,7 +443,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.error.consentRequired":
       "Accept the reference image consent before upload.",
     "dashboard.reference.error.unsupported":
-      "Image-guided generation is available in mock mode only for this batch. The configured live provider does not support it yet.",
+      "Image-guided generation is disabled or unsupported by the configured provider.",
     "dashboard.reference.summaryLabel": "Reference image",
     "dashboard.reference.summarySelected": "{kind} ready for image guidance",
     "dashboard.plan.checking": "Checking",
@@ -535,14 +535,23 @@ export const messages: Record<Language, Record<string, string>> = {
       "Billing state confirms model export access for this account.",
     "studio.exportRestrictedBody":
       "Download and export are available on paid plans. Previewing remains available.",
-    "studio.regenerate.title": "Regenerate",
+    "studio.regenerate.title": "Text variation",
     "studio.regenerate.body":
-      "Creates a new generation from this prompt and costs credits. The current result stays in history.",
-    "studio.regenerate.promptLabel": "Prompt for new generation",
-    "studio.regenerate.costNotice": "Uses generation credits",
+      "Creates a new 3D model from the original prompt. The current result stays in history.",
+    "studio.regenerate.promptLabel": "Variation instruction",
+    "studio.regenerate.costNotice":
+      "Uses the original prompt plus your instruction. Shape may change. Uses 1 credit.",
     "studio.regenerate.promptCount": "{count}/{max} characters",
-    "studio.regenerate.action": "Create again",
+    "studio.regenerate.action": "Create text variation",
     "studio.regenerate.starting": "Starting",
+    "studio.previewVariation.title": "Use preview as reference",
+    "studio.previewVariation.body":
+      "Uses the current preview as an image reference and creates a new model. This is not exact same-model editing.",
+    "studio.previewVariation.instructionLabel": "Optional instruction",
+    "studio.previewVariation.costNotice":
+      "Uses 1 credit. Download and export remain restricted by your plan.",
+    "studio.previewVariation.action": "Use preview as reference",
+    "studio.previewVariation.starting": "Starting",
 
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -903,7 +912,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.noCode": "No code",
     "admin.table.verifyTransfer": "Verify transfer and mark paid",
     "admin.table.noAction": "No action",
-    "admin.table.payosNoVerification": "No admin verification required",
+    "admin.table.reconcilePayos": "Check payOS status",
     "admin.health.title": "System Health",
     "admin.health.description":
       "Configuration presence only. Secret values stay server-side.",
@@ -968,6 +977,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.missingProducts": "{count} missing core products",
     "admin.kpi.catalogCoverage": "Core catalog coverage",
     "admin.success.markPaid": "Order {orderId} returned {status}.",
+    "admin.success.payosFinalized": "Order {orderId} was finalized from verified payOS status.",
+    "admin.success.payosAlreadyPaid": "Order {orderId} was already finalized.",
+    "admin.success.payosPending": "Order {orderId} is still pending at payOS.",
+    "admin.success.payosRejected": "Order {orderId} was not finalized because payOS did not confirm a valid paid payment.",
+    "admin.error.payosUnavailable": "payOS status is temporarily unavailable. No payment or entitlement was changed.",
+    "admin.error.payosRejected": "payOS reconciliation was rejected because the verified payment details did not match this order.",
     "admin.orders.title": "Recent Orders",
     "admin.orders.description":
       "{count} matching orders. Manual mark-paid requires checking the bank app or statement outside this system. This app does not reconcile transfers automatically.",
@@ -1461,9 +1476,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.consent":
       "Tôi sở hữu ảnh này hoặc có quyền dùng ảnh làm tham chiếu tạo hình.",
     "dashboard.reference.identityNotice":
-      "Không bảo đảm khớp chính xác khuôn mặt hoặc danh tính.",
+      "Tạo một mô hình mới có hướng dẫn bằng ảnh. Không bảo đảm khớp chính xác danh tính hoặc mô hình. Dùng 1 tín dụng.",
     "dashboard.reference.retentionNotice":
-      "Luồng này dùng tín dụng tạo mẫu. Xuất và tải xuống vẫn bị giới hạn theo gói của bạn.",
+      "Xuất và tải xuống vẫn bị giới hạn theo gói của bạn.",
     "dashboard.reference.upload": "Tải ảnh tham chiếu",
     "dashboard.reference.replace": "Thay ảnh tham chiếu",
     "dashboard.reference.remove": "Gỡ ảnh tham chiếu",
@@ -1480,7 +1495,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.reference.error.consentRequired":
       "Hãy chấp nhận điều khoản ảnh tham chiếu trước khi tải lên.",
     "dashboard.reference.error.unsupported":
-      "Tạo hình có hướng dẫn bằng ảnh chỉ khả dụng ở chế độ mock trong batch này. Nhà cung cấp live đang cấu hình chưa hỗ trợ luồng này.",
+      "Tạo hình có hướng dẫn bằng ảnh đang bị tắt hoặc không được nhà cung cấp đã cấu hình hỗ trợ.",
     "dashboard.reference.summaryLabel": "Ảnh tham chiếu",
     "dashboard.reference.summarySelected":
       "{kind} đã sẵn sàng cho hướng dẫn bằng ảnh",
@@ -1575,14 +1590,23 @@ export const messages: Record<Language, Record<string, string>> = {
       "Trạng thái thanh toán xác nhận quyền xuất mô hình cho tài khoản này.",
     "studio.exportRestrictedBody":
       "Tải xuống và xuất mô hình khả dụng cho các gói trả phí. Xem trước vẫn khả dụng.",
-    "studio.regenerate.title": "Tạo lại",
+    "studio.regenerate.title": "Biến thể văn bản",
     "studio.regenerate.body":
-      "Tạo một bản mới từ prompt này và tốn tín dụng. Kết quả hiện tại vẫn nằm trong lịch sử.",
-    "studio.regenerate.promptLabel": "Prompt cho bản tạo mới",
-    "studio.regenerate.costNotice": "Dùng tín dụng tạo mẫu",
+      "Tạo một mô hình 3D mới từ prompt gốc. Kết quả hiện tại vẫn nằm trong lịch sử.",
+    "studio.regenerate.promptLabel": "Hướng dẫn biến thể",
+    "studio.regenerate.costNotice":
+      "Dùng prompt gốc cùng hướng dẫn của bạn. Hình dạng có thể thay đổi. Dùng 1 tín dụng.",
     "studio.regenerate.promptCount": "{count}/{max} ký tự",
-    "studio.regenerate.action": "Tạo lại",
+    "studio.regenerate.action": "Tạo biến thể văn bản",
     "studio.regenerate.starting": "Đang bắt đầu",
+    "studio.previewVariation.title": "Dùng bản xem trước làm tham chiếu",
+    "studio.previewVariation.body":
+      "Dùng bản xem trước hiện tại làm ảnh tham chiếu và tạo một mô hình mới. Đây không phải chỉnh sửa chính xác cùng một mô hình.",
+    "studio.previewVariation.instructionLabel": "Hướng dẫn tùy chọn",
+    "studio.previewVariation.costNotice":
+      "Dùng 1 tín dụng. Tải xuống và xuất vẫn bị giới hạn theo gói của bạn.",
+    "studio.previewVariation.action": "Dùng bản xem trước làm tham chiếu",
+    "studio.previewVariation.starting": "Đang bắt đầu",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -1943,7 +1967,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.noCode": "Không có mã",
     "admin.table.verifyTransfer": "Xác minh chuyển khoản và đánh dấu đã thanh toán",
     "admin.table.noAction": "Không có thao tác",
-    "admin.table.payosNoVerification": "Không cần quản trị viên xác minh",
+    "admin.table.reconcilePayos": "Kiểm tra trạng thái payOS",
     "admin.health.title": "Sức khỏe hệ thống",
     "admin.health.description":
       "Chỉ hiển thị trạng thái cấu hình. Giá trị bí mật vẫn ở server.",
@@ -2008,6 +2032,12 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.missingProducts": "{count} sản phẩm cốt lõi bị thiếu",
     "admin.kpi.catalogCoverage": "Độ phủ danh mục cốt lõi",
     "admin.success.markPaid": "Đơn {orderId} trả về {status}.",
+    "admin.success.payosFinalized": "Đơn {orderId} đã được hoàn tất từ trạng thái payOS đã xác minh.",
+    "admin.success.payosAlreadyPaid": "Đơn {orderId} đã được hoàn tất trước đó.",
+    "admin.success.payosPending": "Đơn {orderId} vẫn đang chờ xử lý tại payOS.",
+    "admin.success.payosRejected": "Đơn {orderId} chưa được hoàn tất vì payOS không xác nhận một khoản thanh toán hợp lệ.",
+    "admin.error.payosUnavailable": "Tạm thời không thể kiểm tra payOS. Không có thanh toán hay quyền lợi nào bị thay đổi.",
+    "admin.error.payosRejected": "Đối soát payOS bị từ chối vì thông tin thanh toán đã xác minh không khớp với đơn này.",
     "admin.orders.title": "Đơn gần đây",
     "admin.orders.description":
       "{count} đơn khớp. Đánh dấu đã thanh toán thủ công yêu cầu kiểm tra ứng dụng ngân hàng hoặc sao kê bên ngoài hệ thống. Ứng dụng không tự đối soát chuyển khoản.",

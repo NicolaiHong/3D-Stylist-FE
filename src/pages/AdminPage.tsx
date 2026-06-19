@@ -42,7 +42,7 @@ import {
   type AdminUser,
 } from "../features/admin/admin.types";
 import { useAuthStore } from "../features/auth/auth.store";
-import { getApiErrorMessage } from "../services/apiClient";
+import { getApiErrorCode, getApiErrorMessage } from "../services/apiClient";
 import { getDisplayLabel, getKnownDisplayLabel } from "../i18n/displayMaps";
 import {
   formatI18nCurrency,
@@ -524,12 +524,16 @@ function OrdersTable({
   health,
   isLoading,
   markingOrderId,
+  reconcilingOrderId,
+  onReconcilePayos,
   onRequestMarkPaid,
 }: {
   orders: AdminOrder[];
   health: AdminHealth | null;
   isLoading: boolean;
   markingOrderId: string | null;
+  reconcilingOrderId: string | null;
+  onReconcilePayos: (order: AdminOrder) => void;
   onRequestMarkPaid: (order: AdminOrder) => void;
 }) {
   const { language, t } = useI18n();
@@ -570,6 +574,8 @@ function OrdersTable({
               manualMarkPaidEnabled &&
               order.status === "pending" &&
               order.actions.canManualMarkPaid;
+            const canReconcilePayos =
+              paymentMethod === "payos" && order.status === "pending";
 
             return (
               <tr className="transition hover:bg-white/[0.035]" key={order.id}>
@@ -639,11 +645,23 @@ function OrdersTable({
                       ) : null}
                       {t("admin.table.verifyTransfer")}
                     </button>
+                  ) : canReconcilePayos ? (
+                    <button
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold text-[#c3f5ff] transition hover:bg-[#00e5ff]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-70"
+                      disabled={reconcilingOrderId === order.id}
+                      type="button"
+                      onClick={() => onReconcilePayos(order)}
+                    >
+                      {reconcilingOrderId === order.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3.5 w-3.5" />
+                      )}
+                      {t("admin.table.reconcilePayos")}
+                    </button>
                   ) : (
                     <span className="text-xs font-semibold text-[#849396]">
-                      {paymentMethod === "payos"
-                        ? t("admin.table.payosNoVerification")
-                        : t("admin.table.noAction")}
+                      {t("admin.table.noAction")}
                     </span>
                   )}
                 </td>
@@ -1265,6 +1283,9 @@ export function AdminPage() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [confirmOrder, setConfirmOrder] = useState<AdminOrder | null>(null);
   const [markingOrderId, setMarkingOrderId] = useState<string | null>(null);
+  const [reconcilingOrderId, setReconcilingOrderId] = useState<string | null>(
+    null,
+  );
   const requestIdRef = useRef(0);
 
   const displayName =
@@ -1463,6 +1484,46 @@ export function AdminPage() {
     }
   }
 
+  async function handlePayosReconcile(order: AdminOrder) {
+    setActionError(null);
+    setActionSuccess(null);
+    setReconcilingOrderId(order.id);
+
+    try {
+      const result = await adminApi.reconcilePayosOrder(order.id);
+      const orderLabel = shortId(result.order.id, t);
+
+      if (result.outcome === "finalized") {
+        setActionSuccess(t("admin.success.payosFinalized", { orderId: orderLabel }));
+      } else if (result.outcome === "already_paid") {
+        setActionSuccess(t("admin.success.payosAlreadyPaid", { orderId: orderLabel }));
+      } else if (result.outcome === "pending") {
+        setActionSuccess(t("admin.success.payosPending", { orderId: orderLabel }));
+      } else {
+        setActionSuccess(t("admin.success.payosRejected", { orderId: orderLabel }));
+      }
+
+      await loadAdminData(false);
+    } catch (reconcileError) {
+      const code = getApiErrorCode(reconcileError);
+
+      if (
+        code === "PAYOS_STATUS_UNAVAILABLE" ||
+        code === "PAYOS_STATUS_INVALID_SIGNATURE" ||
+        code === "PAYOS_DISABLED" ||
+        code === "PAYOS_CONFIG_MISSING"
+      ) {
+        setActionError(t("admin.error.payosUnavailable"));
+      } else if (code?.startsWith("PAYOS_") || code === "ORDER_NOT_PAYABLE") {
+        setActionError(t("admin.error.payosRejected"));
+      } else {
+        setActionError(getApiErrorMessage(reconcileError));
+      }
+    } finally {
+      setReconcilingOrderId(null);
+    }
+  }
+
   return (
     <DashboardShell planLabel={t("shell.adminPlan")}>
       <main className="min-h-screen min-w-0 px-4 py-6 text-[#e5e2e1] sm:px-6 lg:px-10 lg:py-8">
@@ -1628,7 +1689,9 @@ export function AdminPage() {
               health={health}
               isLoading={isLoading}
               markingOrderId={markingOrderId}
+              reconcilingOrderId={reconcilingOrderId}
               orders={ordersPage.items}
+              onReconcilePayos={(order) => void handlePayosReconcile(order)}
               onRequestMarkPaid={(order) => {
                 setActionError(null);
                 setActionSuccess(null);
