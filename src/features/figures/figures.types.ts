@@ -11,6 +11,8 @@ export type FigureProvider = "mock" | "meshy" | "tripo" | string;
 export type FigureGenerationMode =
   | "text_to_3d"
   | "text_regeneration"
+  | "image_to_3d"
+  | "image_variation_to_3d"
   | string;
 
 export type ReferenceImageKind =
@@ -50,7 +52,11 @@ export interface GenerateFigureFromReferencePayload {
 }
 
 export interface RegenerateFigurePayload {
-  promptOverride?: string;
+  variationInstruction?: string;
+}
+
+export interface CreatePreviewVariationPayload {
+  instruction?: string;
 }
 
 export interface ReferenceImageAssetDto {

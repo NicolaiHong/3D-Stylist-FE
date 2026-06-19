@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent } from "axios";
 import { apiClient, resolveApiAssetUrl } from "../../services/apiClient";
 import type {
+  CreatePreviewVariationPayload,
   FigureDto,
   FigureListResult,
   GenerateFigureFromReferencePayload,
@@ -66,8 +67,18 @@ function compactRegenerationPayload(
   payload: RegenerateFigurePayload = {},
 ): RegenerateFigurePayload {
   return {
-    ...(payload.promptOverride?.trim()
-      ? { promptOverride: payload.promptOverride.trim() }
+    ...(payload.variationInstruction?.trim()
+      ? { variationInstruction: payload.variationInstruction.trim() }
+      : {}),
+  };
+}
+
+function compactPreviewVariationPayload(
+  payload: CreatePreviewVariationPayload = {},
+): CreatePreviewVariationPayload {
+  return {
+    ...(payload.instruction?.trim()
+      ? { instruction: payload.instruction.trim() }
       : {}),
   };
 }
@@ -101,6 +112,18 @@ export async function regenerateFigure(
   const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
     `/figures/${id}/regenerations`,
     compactRegenerationPayload(payload),
+  );
+
+  return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function createPreviewVariation(
+  id: string,
+  payload: CreatePreviewVariationPayload = {},
+): Promise<FigureDto> {
+  const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
+    `/figures/${id}/variations`,
+    compactPreviewVariationPayload(payload),
   );
 
   return normalizeFigure(unwrapData(data).figure);
@@ -172,6 +195,7 @@ export const figuresApi = {
   generateFigure,
   generateFigureFromReference,
   regenerateFigure,
+  createPreviewVariation,
   uploadReferenceImageAsset,
   listFigures,
   getFigure,

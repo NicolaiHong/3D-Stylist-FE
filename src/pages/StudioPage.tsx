@@ -40,7 +40,8 @@ import { formatI18nDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 
 const STUDIO_POLL_INTERVAL_MS = 3000;
-const MAX_REGENERATION_PROMPT_LENGTH = 1000;
+const MAX_VARIATION_INSTRUCTION_LENGTH = 600;
+const MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH = 1000;
 type StudioViewMode = "2d" | "3d";
 type ReadinessState = "ready" | "pending" | "unavailable";
 
@@ -580,21 +581,31 @@ function StudioCommandSurface({
 }
 
 function StudioMetadataPanel({
+  isCreatingPreviewVariation,
   isRegenerating,
+  previewVariationError,
+  previewVariationInstruction,
   regenerationError,
-  regenerationPrompt,
   selectedFigure,
   summary,
+  variationInstruction,
+  onCreatePreviewVariation,
+  onPreviewVariationInstructionChange,
   onRegenerate,
-  onRegenerationPromptChange,
+  onVariationInstructionChange,
 }: {
+  isCreatingPreviewVariation: boolean;
   isRegenerating: boolean;
+  previewVariationError: string | null;
+  previewVariationInstruction: string;
   regenerationError: string | null;
-  regenerationPrompt: string;
   selectedFigure: FigureDto;
   summary: BillingSummary | null;
+  variationInstruction: string;
+  onCreatePreviewVariation: () => void;
+  onPreviewVariationInstructionChange: (value: string) => void;
   onRegenerate: () => void;
-  onRegenerationPromptChange: (value: string) => void;
+  onVariationInstructionChange: (value: string) => void;
 }) {
   const { language, t } = useI18n();
   const hasModelAccess =
@@ -608,8 +619,14 @@ function StudioMetadataPanel({
   const canRegenerate =
     selectedFigure.status === "success" &&
     Boolean(selectedFigure.prompt?.trim());
-  const isRegenerationPromptTooLong =
-    regenerationPrompt.length > MAX_REGENERATION_PROMPT_LENGTH;
+  const canCreatePreviewVariation =
+    selectedFigure.status === "success" && Boolean(selectedFigure.previewUrl);
+  const isCreatingChild = isRegenerating || isCreatingPreviewVariation;
+  const isVariationInstructionTooLong =
+    variationInstruction.length > MAX_VARIATION_INSTRUCTION_LENGTH;
+  const isPreviewVariationInstructionTooLong =
+    previewVariationInstruction.length >
+    MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH;
 
   return (
     <aside className="min-w-0 max-w-full border-t border-[#3b494c]/45 bg-[#111619]/72 p-4 xl:border-l xl:border-t-0">
@@ -706,12 +723,12 @@ function StudioMetadataPanel({
               </label>
               <textarea
                 className="mt-2 min-h-28 w-full resize-y rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 px-3 py-2 text-sm leading-6 text-[#e5e2e1] outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isRegenerating}
+                disabled={isCreatingChild}
                 id="studio-regenerate-prompt"
-                maxLength={MAX_REGENERATION_PROMPT_LENGTH + 1}
-                value={regenerationPrompt}
+                maxLength={MAX_VARIATION_INSTRUCTION_LENGTH + 1}
+                value={variationInstruction}
                 onChange={(event) =>
-                  onRegenerationPromptChange(event.target.value)
+                  onVariationInstructionChange(event.target.value)
                 }
               />
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[0.68rem] font-semibold">
@@ -720,14 +737,14 @@ function StudioMetadataPanel({
                 </span>
                 <span
                   className={
-                    isRegenerationPromptTooLong
+                    isVariationInstructionTooLong
                       ? "text-[#ffb4ab]"
                       : "text-[#849396]"
                   }
                 >
                   {t("studio.regenerate.promptCount", {
-                    count: regenerationPrompt.length,
-                    max: MAX_REGENERATION_PROMPT_LENGTH,
+                    count: variationInstruction.length,
+                    max: MAX_VARIATION_INSTRUCTION_LENGTH,
                   })}
                 </span>
               </div>
@@ -742,9 +759,7 @@ function StudioMetadataPanel({
               <button
                 className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={
-                  isRegenerating ||
-                  !regenerationPrompt.trim() ||
-                  isRegenerationPromptTooLong
+                  isCreatingChild || isVariationInstructionTooLong
                 }
                 type="button"
                 onClick={onRegenerate}
@@ -757,6 +772,76 @@ function StudioMetadataPanel({
                 {isRegenerating
                   ? t("studio.regenerate.starting")
                   : t("studio.regenerate.action")}
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {canCreatePreviewVariation ? (
+        <section className="mt-4 border-t border-[#3b494c]/35 pt-4">
+          <div className="flex gap-3 text-xs leading-5">
+            <ImageIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]/85" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
+                {t("studio.previewVariation.title")}
+              </h2>
+              <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
+                {t("studio.previewVariation.body")}
+              </p>
+              <label
+                className="mt-3 block text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]"
+                htmlFor="studio-preview-variation-instruction"
+              >
+                {t("studio.previewVariation.instructionLabel")}
+              </label>
+              <textarea
+                className="mt-2 min-h-24 w-full resize-y rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 px-3 py-2 text-sm leading-6 text-[#e5e2e1] outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isCreatingChild}
+                id="studio-preview-variation-instruction"
+                maxLength={MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH + 1}
+                value={previewVariationInstruction}
+                onChange={(event) =>
+                  onPreviewVariationInstructionChange(event.target.value)
+                }
+              />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[0.68rem] font-semibold">
+                <span className="text-[#849396]">
+                  {t("studio.previewVariation.instructionHelp")}
+                </span>
+                <span
+                  className={
+                    isPreviewVariationInstructionTooLong
+                      ? "text-[#ffb4ab]"
+                      : "text-[#849396]"
+                  }
+                >
+                  {t("studio.previewVariation.instructionCount", {
+                    count: previewVariationInstruction.length,
+                    max: MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH,
+                  })}
+                </span>
+              </div>
+              {previewVariationError ? (
+                <p
+                  className="mt-3 rounded-md border border-[#ffb4ab]/30 bg-[#93000a]/20 px-3 py-2 text-xs leading-5 text-[#ffdad6]"
+                  role="alert"
+                >
+                  {previewVariationError}
+                </p>
+              ) : null}
+              <button
+                className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-[#00e5ff]/45 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#9cf0ff] transition hover:bg-[#00e5ff]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={
+                  isCreatingChild || isPreviewVariationInstructionTooLong
+                }
+                type="button"
+                onClick={onCreatePreviewVariation}
+              >
+                <ImageIcon className="h-4 w-4" />
+                {isCreatingPreviewVariation
+                  ? t("studio.previewVariation.starting")
+                  : t("studio.previewVariation.action")}
               </button>
             </div>
           </div>
@@ -949,10 +1034,17 @@ export function StudioPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [regenerationPrompt, setRegenerationPrompt] = useState("");
+  const [isCreatingPreviewVariation, setIsCreatingPreviewVariation] =
+    useState(false);
+  const [variationInstruction, setVariationInstruction] = useState("");
+  const [previewVariationInstruction, setPreviewVariationInstruction] =
+    useState("");
   const [regenerationError, setRegenerationError] = useState<string | null>(
     null,
   );
+  const [previewVariationError, setPreviewVariationError] = useState<
+    string | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
 
@@ -1077,9 +1169,11 @@ export function StudioPage() {
   }, [refreshSelectedFigure, selectedFigure]);
 
   useEffect(() => {
-    setRegenerationPrompt(selectedFigure?.prompt?.trim() ?? "");
+    setVariationInstruction("");
+    setPreviewVariationInstruction("");
     setRegenerationError(null);
-  }, [selectedFigure?.id, selectedFigure?.prompt]);
+    setPreviewVariationError(null);
+  }, [selectedFigure?.id]);
 
   function handleSelectFigure(figureId: string) {
     setSelectedFigureId(figureId);
@@ -1104,6 +1198,8 @@ export function StudioPage() {
 
   async function handleRegenerateSelectedFigure() {
     if (
+      isRegenerating ||
+      isCreatingPreviewVariation ||
       !selectedFigure ||
       selectedFigure.status !== "success" ||
       !selectedFigure.prompt?.trim()
@@ -1111,9 +1207,9 @@ export function StudioPage() {
       return;
     }
 
-    const promptOverride = regenerationPrompt.trim();
+    const instruction = variationInstruction.trim();
 
-    if (!promptOverride) {
+    if (instruction.length > MAX_VARIATION_INSTRUCTION_LENGTH) {
       return;
     }
 
@@ -1123,9 +1219,7 @@ export function StudioPage() {
     try {
       const childFigure = await figuresApi.regenerateFigure(
         selectedFigure.id,
-        promptOverride === selectedFigure.prompt.trim()
-          ? {}
-          : { promptOverride },
+        instruction ? { variationInstruction: instruction } : {},
       );
 
       if (!isMountedRef.current) {
@@ -1147,6 +1241,55 @@ export function StudioPage() {
     } finally {
       if (isMountedRef.current) {
         setIsRegenerating(false);
+      }
+    }
+  }
+
+  async function handleCreatePreviewVariation() {
+    if (
+      isRegenerating ||
+      isCreatingPreviewVariation ||
+      !selectedFigure ||
+      selectedFigure.status !== "success" ||
+      !selectedFigure.previewUrl
+    ) {
+      return;
+    }
+
+    const instruction = previewVariationInstruction.trim();
+
+    if (instruction.length > MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH) {
+      return;
+    }
+
+    setIsCreatingPreviewVariation(true);
+    setPreviewVariationError(null);
+
+    try {
+      const childFigure = await figuresApi.createPreviewVariation(
+        selectedFigure.id,
+        instruction ? { instruction } : {},
+      );
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setFigures((currentFigures) => [
+        childFigure,
+        ...currentFigures.filter((figure) => figure.id !== childFigure.id),
+      ]);
+      setSelectedFigureId(childFigure.id);
+      setSearchParams({ figureId: childFigure.id }, { replace: true });
+      setViewMode("2d");
+      void loadBillingSummary();
+    } catch (variationError) {
+      if (isMountedRef.current) {
+        setPreviewVariationError(getApiErrorMessage(variationError));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsCreatingPreviewVariation(false);
       }
     }
   }
@@ -1240,13 +1383,22 @@ export function StudioPage() {
                 </section>
 
                 <StudioMetadataPanel
+                  isCreatingPreviewVariation={isCreatingPreviewVariation}
                   isRegenerating={isRegenerating}
+                  previewVariationError={previewVariationError}
+                  previewVariationInstruction={previewVariationInstruction}
                   regenerationError={regenerationError}
-                  regenerationPrompt={regenerationPrompt}
                   selectedFigure={selectedFigure}
                   summary={summary}
+                  variationInstruction={variationInstruction}
+                  onCreatePreviewVariation={() =>
+                    void handleCreatePreviewVariation()
+                  }
+                  onPreviewVariationInstructionChange={
+                    setPreviewVariationInstruction
+                  }
                   onRegenerate={() => void handleRegenerateSelectedFigure()}
-                  onRegenerationPromptChange={setRegenerationPrompt}
+                  onVariationInstructionChange={setVariationInstruction}
                 />
               </div>
 

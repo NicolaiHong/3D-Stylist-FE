@@ -535,14 +535,24 @@ export const messages: Record<Language, Record<string, string>> = {
       "Billing state confirms model export access for this account.",
     "studio.exportRestrictedBody":
       "Download and export are available on paid plans. Previewing remains available.",
-    "studio.regenerate.title": "Regenerate",
+    "studio.regenerate.title": "Text variation",
     "studio.regenerate.body":
-      "Creates a new generation from this prompt and costs credits. The current result stays in history.",
-    "studio.regenerate.promptLabel": "Prompt for new generation",
-    "studio.regenerate.costNotice": "Uses generation credits",
+      "Creates a new text variation. Shape may change. Uses 1 credit.",
+    "studio.regenerate.promptLabel": "Variation instruction",
+    "studio.regenerate.costNotice":
+      "Optional. The original prompt remains the base.",
     "studio.regenerate.promptCount": "{count}/{max} characters",
-    "studio.regenerate.action": "Create again",
-    "studio.regenerate.starting": "Starting",
+    "studio.regenerate.action": "Create text variation",
+    "studio.regenerate.starting": "Creating variation",
+    "studio.previewVariation.title": "Use preview as reference",
+    "studio.previewVariation.body":
+      "Uses this preview as a reference. Creates a new image-guided model. Not exact same-model editing. Uses 1 credit.",
+    "studio.previewVariation.instructionLabel": "Optional instruction",
+    "studio.previewVariation.instructionHelp":
+      "Leave blank to use the preview alone.",
+    "studio.previewVariation.instructionCount": "{count}/{max} characters",
+    "studio.previewVariation.action": "Use preview as reference",
+    "studio.previewVariation.starting": "Creating image-guided model",
 
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -1575,14 +1585,24 @@ export const messages: Record<Language, Record<string, string>> = {
       "Trạng thái thanh toán xác nhận quyền xuất mô hình cho tài khoản này.",
     "studio.exportRestrictedBody":
       "Tải xuống và xuất mô hình khả dụng cho các gói trả phí. Xem trước vẫn khả dụng.",
-    "studio.regenerate.title": "Tạo lại",
+    "studio.regenerate.title": "Biến thể văn bản",
     "studio.regenerate.body":
-      "Tạo một bản mới từ prompt này và tốn tín dụng. Kết quả hiện tại vẫn nằm trong lịch sử.",
-    "studio.regenerate.promptLabel": "Prompt cho bản tạo mới",
-    "studio.regenerate.costNotice": "Dùng tín dụng tạo mẫu",
+      "Tạo một biến thể văn bản mới. Hình dáng có thể thay đổi. Dùng 1 tín dụng.",
+    "studio.regenerate.promptLabel": "Hướng dẫn biến thể",
+    "studio.regenerate.costNotice":
+      "Không bắt buộc. Prompt gốc vẫn là nội dung nền.",
     "studio.regenerate.promptCount": "{count}/{max} ký tự",
-    "studio.regenerate.action": "Tạo lại",
-    "studio.regenerate.starting": "Đang bắt đầu",
+    "studio.regenerate.action": "Tạo biến thể văn bản",
+    "studio.regenerate.starting": "Đang tạo biến thể",
+    "studio.previewVariation.title": "Dùng bản xem trước làm tham chiếu",
+    "studio.previewVariation.body":
+      "Dùng bản xem trước này làm tham chiếu. Tạo một mô hình mới có ảnh hướng dẫn. Không phải chỉnh sửa chính xác cùng một mô hình. Dùng 1 tín dụng.",
+    "studio.previewVariation.instructionLabel": "Hướng dẫn không bắt buộc",
+    "studio.previewVariation.instructionHelp":
+      "Để trống nếu chỉ dùng bản xem trước.",
+    "studio.previewVariation.instructionCount": "{count}/{max} ký tự",
+    "studio.previewVariation.action": "Dùng bản xem trước làm tham chiếu",
+    "studio.previewVariation.starting": "Đang tạo mô hình theo ảnh",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",
