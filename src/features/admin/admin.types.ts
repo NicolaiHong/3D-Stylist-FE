@@ -284,3 +284,10 @@ export interface AdminMarkPaidResult {
     signatureVerified: boolean;
   };
 }
+
+export interface AdminPayosReconciliationResult {
+  outcome: "finalized" | "already_paid" | "pending" | "rejected";
+  providerStatus: string;
+  order: AdminMarkedPaidOrder;
+  transaction: AdminBillingTransaction | null;
+}

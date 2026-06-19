@@ -3,6 +3,7 @@ import { apiClient, resolveApiAssetUrl } from "../../services/apiClient";
 import type {
   FigureDto,
   FigureListResult,
+  CreatePreviewVariationPayload,
   GenerateFigureFromReferencePayload,
   GenerateFigurePayload,
   ListFiguresParams,
@@ -66,8 +67,8 @@ function compactRegenerationPayload(
   payload: RegenerateFigurePayload = {},
 ): RegenerateFigurePayload {
   return {
-    ...(payload.promptOverride?.trim()
-      ? { promptOverride: payload.promptOverride.trim() }
+    ...(payload.variationInstruction?.trim()
+      ? { variationInstruction: payload.variationInstruction.trim() }
       : {}),
   };
 }
@@ -101,6 +102,21 @@ export async function regenerateFigure(
   const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
     `/figures/${id}/regenerations`,
     compactRegenerationPayload(payload),
+  );
+
+  return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function createPreviewVariation(
+  id: string,
+  payload: CreatePreviewVariationPayload = {},
+): Promise<FigureDto> {
+  const body = payload.instruction?.trim()
+    ? { instruction: payload.instruction.trim() }
+    : {};
+  const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
+    `/figures/${id}/variations`,
+    body,
   );
 
   return normalizeFigure(unwrapData(data).figure);
@@ -172,6 +188,7 @@ export const figuresApi = {
   generateFigure,
   generateFigureFromReference,
   regenerateFigure,
+  createPreviewVariation,
   uploadReferenceImageAsset,
   listFigures,
   getFigure,
