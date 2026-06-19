@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent } from "axios";
 import { apiClient, resolveApiAssetUrl } from "../../services/apiClient";
 import type {
+  CreatePreviewVariationPayload,
   FigureDto,
   FigureListResult,
   CreatePreviewVariationPayload,
@@ -73,6 +74,16 @@ function compactRegenerationPayload(
   };
 }
 
+function compactPreviewVariationPayload(
+  payload: CreatePreviewVariationPayload = {},
+): CreatePreviewVariationPayload {
+  return {
+    ...(payload.instruction?.trim()
+      ? { instruction: payload.instruction.trim() }
+      : {}),
+  };
+}
+
 export async function generateFigure(
   payload: GenerateFigurePayload,
 ): Promise<FigureDto> {
@@ -111,12 +122,9 @@ export async function createPreviewVariation(
   id: string,
   payload: CreatePreviewVariationPayload = {},
 ): Promise<FigureDto> {
-  const body = payload.instruction?.trim()
-    ? { instruction: payload.instruction.trim() }
-    : {};
   const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
     `/figures/${id}/variations`,
-    body,
+    compactPreviewVariationPayload(payload),
   );
 
   return normalizeFigure(unwrapData(data).figure);
