@@ -2,6 +2,7 @@ import type { AxiosProgressEvent } from "axios";
 import { apiClient, resolveApiAssetUrl } from "../../services/apiClient";
 import type {
   CreatePreviewVariationPayload,
+  CreateRetexturePayload,
   FigureDto,
   FigureListResult,
   GenerateFigureFromReferencePayload,
@@ -83,6 +84,14 @@ function compactPreviewVariationPayload(
   };
 }
 
+function compactRetexturePayload(
+  payload: CreateRetexturePayload,
+): CreateRetexturePayload {
+  return {
+    instruction: payload.instruction.trim(),
+  };
+}
+
 export async function generateFigure(
   payload: GenerateFigurePayload,
 ): Promise<FigureDto> {
@@ -124,6 +133,18 @@ export async function createPreviewVariation(
   const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
     `/figures/${id}/variations`,
     compactPreviewVariationPayload(payload),
+  );
+
+  return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function createRetexture(
+  id: string,
+  payload: CreateRetexturePayload,
+): Promise<FigureDto> {
+  const { data } = await apiClient.post<ApiResponse<{ figure: FigureDto }>>(
+    `/figures/${id}/retextures`,
+    compactRetexturePayload(payload),
   );
 
   return normalizeFigure(unwrapData(data).figure);
@@ -196,6 +217,7 @@ export const figuresApi = {
   generateFigureFromReference,
   regenerateFigure,
   createPreviewVariation,
+  createRetexture,
   uploadReferenceImageAsset,
   listFigures,
   getFigure,

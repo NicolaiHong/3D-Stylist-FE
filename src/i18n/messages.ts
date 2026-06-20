@@ -553,6 +553,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.previewVariation.instructionCount": "{count}/{max} characters",
     "studio.previewVariation.action": "Use preview as reference",
     "studio.previewVariation.starting": "Creating image-guided model",
+    "studio.retexture.title": "Recolor / Retexture",
+    "studio.retexture.body":
+      "Best for color and material changes. Creates a new model result. Uses 1 credit. Not exact same-model editing. Export/download still depends on your plan.",
+    "studio.retexture.instructionLabel": "Color and material instruction",
+    "studio.retexture.instructionHelp": "Required.",
+    "studio.retexture.instructionCount": "{count}/{max} characters",
+    "studio.retexture.action": "Recolor / Retexture",
+    "studio.retexture.starting": "Creating Retexture result",
+    "studio.retexture.success":
+      "New Retexture result created. The source remains in history.",
 
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -1608,6 +1618,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.previewVariation.instructionCount": "{count}/{max} ký tự",
     "studio.previewVariation.action": "Dùng bản xem trước làm tham chiếu",
     "studio.previewVariation.starting": "Đang tạo mô hình theo ảnh",
+    "studio.retexture.title": "Đổi màu / Tạo lại chất liệu",
+    "studio.retexture.body":
+      "Phù hợp nhất cho thay đổi màu sắc và chất liệu. Tạo một kết quả mô hình mới. Dùng 1 tín dụng. Không phải chỉnh sửa chính xác cùng một mô hình. Quyền xuất/tải xuống vẫn phụ thuộc vào gói của bạn.",
+    "studio.retexture.instructionLabel": "Hướng dẫn màu sắc và chất liệu",
+    "studio.retexture.instructionHelp": "Bắt buộc.",
+    "studio.retexture.instructionCount": "{count}/{max} ký tự",
+    "studio.retexture.action": "Đổi màu / Tạo lại chất liệu",
+    "studio.retexture.starting": "Đang tạo kết quả Retexture",
+    "studio.retexture.success":
+      "Đã tạo kết quả Retexture mới. Mô hình nguồn vẫn được giữ trong lịch sử.",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",

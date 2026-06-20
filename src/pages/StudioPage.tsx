@@ -22,6 +22,7 @@ import {
   ExternalLink,
   ImageIcon,
   LockKeyhole,
+  Palette,
   RefreshCw,
   Rotate3D,
   Sparkles,
@@ -42,6 +43,7 @@ import { useI18n } from "../i18n/useI18n";
 const STUDIO_POLL_INTERVAL_MS = 3000;
 const MAX_VARIATION_INSTRUCTION_LENGTH = 600;
 const MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH = 1000;
+const MAX_RETEXTURE_INSTRUCTION_LENGTH = 600;
 type StudioViewMode = "2d" | "3d";
 type ReadinessState = "ready" | "pending" | "unavailable";
 
@@ -600,28 +602,40 @@ function StudioCommandSurface({
 function StudioMetadataPanel({
   isCreatingPreviewVariation,
   isRegenerating,
+  isRetexturing,
   previewVariationError,
   previewVariationInstruction,
   regenerationError,
+  retextureError,
+  retextureInstruction,
+  retextureSucceeded,
   selectedFigure,
   summary,
   variationInstruction,
   onCreatePreviewVariation,
   onPreviewVariationInstructionChange,
   onRegenerate,
+  onRetexture,
+  onRetextureInstructionChange,
   onVariationInstructionChange,
 }: {
   isCreatingPreviewVariation: boolean;
   isRegenerating: boolean;
+  isRetexturing: boolean;
   previewVariationError: string | null;
   previewVariationInstruction: string;
   regenerationError: string | null;
+  retextureError: string | null;
+  retextureInstruction: string;
+  retextureSucceeded: boolean;
   selectedFigure: FigureDto;
   summary: BillingSummary | null;
   variationInstruction: string;
   onCreatePreviewVariation: () => void;
   onPreviewVariationInstructionChange: (value: string) => void;
   onRegenerate: () => void;
+  onRetexture: () => void;
+  onRetextureInstructionChange: (value: string) => void;
   onVariationInstructionChange: (value: string) => void;
 }) {
   const { language, t } = useI18n();
@@ -638,12 +652,19 @@ function StudioMetadataPanel({
     Boolean(selectedFigure.prompt?.trim());
   const canCreatePreviewVariation =
     selectedFigure.status === "success" && Boolean(selectedFigure.previewUrl);
-  const isCreatingChild = isRegenerating || isCreatingPreviewVariation;
+  const canRetexture =
+    selectedFigure.status === "success" &&
+    selectedFigure.modelAssetReady === true;
+  const isCreatingChild =
+    isRegenerating || isCreatingPreviewVariation || isRetexturing;
   const isVariationInstructionTooLong =
     variationInstruction.length > MAX_VARIATION_INSTRUCTION_LENGTH;
   const isPreviewVariationInstructionTooLong =
     previewVariationInstruction.length >
     MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH;
+  const isRetextureInstructionTooLong =
+    retextureInstruction.length > MAX_RETEXTURE_INSTRUCTION_LENGTH;
+  const isRetextureInstructionEmpty = !retextureInstruction.trim();
 
   return (
     <aside className="studio-metadata-panel internal-scroll-region min-h-0 min-w-0 max-w-full self-start rounded-lg border border-[#3b494c]/60 bg-[#111619]/88 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.18)]">
@@ -865,6 +886,88 @@ function StudioMetadataPanel({
         </section>
       ) : null}
 
+      {canRetexture ? (
+        <section className="mt-4 border-t border-[#3b494c]/35 pt-4">
+          <div className="flex gap-3 text-xs leading-5">
+            <Palette className="mt-0.5 h-4 w-4 shrink-0 text-[#00e5ff]/85" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-white">
+                {t("studio.retexture.title")}
+              </h2>
+              <p className="mt-2 text-xs leading-5 text-[#bac9cc]">
+                {t("studio.retexture.body")}
+              </p>
+              <label
+                className="mt-3 block text-[0.65rem] font-bold uppercase tracking-wide text-[#849396]"
+                htmlFor="studio-retexture-instruction"
+              >
+                {t("studio.retexture.instructionLabel")}
+              </label>
+              <textarea
+                className="mt-2 min-h-24 w-full resize-y rounded-md border border-[#3b494c] bg-[#0a0a0a]/70 px-3 py-2 text-sm leading-6 text-[#e5e2e1] outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isCreatingChild}
+                id="studio-retexture-instruction"
+                maxLength={MAX_RETEXTURE_INSTRUCTION_LENGTH + 1}
+                value={retextureInstruction}
+                onChange={(event) =>
+                  onRetextureInstructionChange(event.target.value)
+                }
+              />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[0.68rem] font-semibold">
+                <span className="text-[#849396]">
+                  {t("studio.retexture.instructionHelp")}
+                </span>
+                <span
+                  className={
+                    isRetextureInstructionTooLong
+                      ? "text-[#ffb4ab]"
+                      : "text-[#849396]"
+                  }
+                >
+                  {t("studio.retexture.instructionCount", {
+                    count: retextureInstruction.length,
+                    max: MAX_RETEXTURE_INSTRUCTION_LENGTH,
+                  })}
+                </span>
+              </div>
+              {retextureError ? (
+                <p
+                  className="mt-3 rounded-md border border-[#ffb4ab]/30 bg-[#93000a]/20 px-3 py-2 text-xs leading-5 text-[#ffdad6]"
+                  role="alert"
+                >
+                  {retextureError}
+                </p>
+              ) : null}
+              {retextureSucceeded ? (
+                <p
+                  className="mt-3 rounded-md border border-[#2cebcf]/30 bg-[#2cebcf]/10 px-3 py-2 text-xs leading-5 text-[#c9fff6]"
+                  role="status"
+                >
+                  {t("studio.retexture.success")}
+                </p>
+              ) : null}
+              <button
+                className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-[#00e5ff]/45 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#9cf0ff] transition hover:bg-[#00e5ff]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={
+                  isCreatingChild ||
+                  isRetextureInstructionEmpty ||
+                  isRetextureInstructionTooLong
+                }
+                type="button"
+                onClick={onRetexture}
+              >
+                <Palette
+                  className={`h-4 w-4 ${isRetexturing ? "animate-pulse" : ""}`}
+                />
+                {isRetexturing
+                  ? t("studio.retexture.starting")
+                  : t("studio.retexture.action")}
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-4 border-t border-[#3b494c]/35 pt-4">
         <div className="flex gap-3 text-xs leading-5">
           {hasModelAccess ? (
@@ -1053,13 +1156,19 @@ export function StudioPage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isCreatingPreviewVariation, setIsCreatingPreviewVariation] =
     useState(false);
+  const [isRetexturing, setIsRetexturing] = useState(false);
   const [variationInstruction, setVariationInstruction] = useState("");
   const [previewVariationInstruction, setPreviewVariationInstruction] =
     useState("");
+  const [retextureInstruction, setRetextureInstruction] = useState("");
   const [regenerationError, setRegenerationError] = useState<string | null>(
     null,
   );
   const [previewVariationError, setPreviewVariationError] = useState<
+    string | null
+  >(null);
+  const [retextureError, setRetextureError] = useState<string | null>(null);
+  const [retextureSuccessFigureId, setRetextureSuccessFigureId] = useState<
     string | null
   >(null);
   const [error, setError] = useState<string | null>(null);
@@ -1188,8 +1297,10 @@ export function StudioPage() {
   useEffect(() => {
     setVariationInstruction("");
     setPreviewVariationInstruction("");
+    setRetextureInstruction("");
     setRegenerationError(null);
     setPreviewVariationError(null);
+    setRetextureError(null);
   }, [selectedFigure?.id]);
 
   function handleSelectFigure(figureId: string) {
@@ -1217,6 +1328,7 @@ export function StudioPage() {
     if (
       isRegenerating ||
       isCreatingPreviewVariation ||
+      isRetexturing ||
       !selectedFigure ||
       selectedFigure.status !== "success" ||
       !selectedFigure.prompt?.trim()
@@ -1266,6 +1378,7 @@ export function StudioPage() {
     if (
       isRegenerating ||
       isCreatingPreviewVariation ||
+      isRetexturing ||
       !selectedFigure ||
       selectedFigure.status !== "success" ||
       !selectedFigure.previewUrl
@@ -1307,6 +1420,59 @@ export function StudioPage() {
     } finally {
       if (isMountedRef.current) {
         setIsCreatingPreviewVariation(false);
+      }
+    }
+  }
+
+  async function handleRetextureSelectedFigure() {
+    if (
+      isRegenerating ||
+      isCreatingPreviewVariation ||
+      isRetexturing ||
+      !selectedFigure ||
+      selectedFigure.status !== "success" ||
+      selectedFigure.modelAssetReady !== true
+    ) {
+      return;
+    }
+
+    const instruction = retextureInstruction.trim();
+
+    if (
+      !instruction ||
+      instruction.length > MAX_RETEXTURE_INSTRUCTION_LENGTH
+    ) {
+      return;
+    }
+
+    setIsRetexturing(true);
+    setRetextureError(null);
+
+    try {
+      const childFigure = await figuresApi.createRetexture(selectedFigure.id, {
+        instruction,
+      });
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setFigures((currentFigures) => [
+        childFigure,
+        ...currentFigures.filter((figure) => figure.id !== childFigure.id),
+      ]);
+      setRetextureSuccessFigureId(childFigure.id);
+      setSelectedFigureId(childFigure.id);
+      setSearchParams({ figureId: childFigure.id }, { replace: true });
+      setViewMode("3d");
+      void loadBillingSummary();
+    } catch (createRetextureError) {
+      if (isMountedRef.current) {
+        setRetextureError(getApiErrorMessage(createRetextureError));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsRetexturing(false);
       }
     }
   }
@@ -1402,9 +1568,15 @@ export function StudioPage() {
                 <StudioMetadataPanel
                   isCreatingPreviewVariation={isCreatingPreviewVariation}
                   isRegenerating={isRegenerating}
+                  isRetexturing={isRetexturing}
                   previewVariationError={previewVariationError}
                   previewVariationInstruction={previewVariationInstruction}
                   regenerationError={regenerationError}
+                  retextureError={retextureError}
+                  retextureInstruction={retextureInstruction}
+                  retextureSucceeded={
+                    retextureSuccessFigureId === selectedFigure.id
+                  }
                   selectedFigure={selectedFigure}
                   summary={summary}
                   variationInstruction={variationInstruction}
@@ -1415,6 +1587,8 @@ export function StudioPage() {
                     setPreviewVariationInstruction
                   }
                   onRegenerate={() => void handleRegenerateSelectedFigure()}
+                  onRetexture={() => void handleRetextureSelectedFigure()}
+                  onRetextureInstructionChange={setRetextureInstruction}
                   onVariationInstructionChange={setVariationInstruction}
                 />
               </section>
@@ -1422,9 +1596,15 @@ export function StudioPage() {
               <StudioMetadataPanel
                 isCreatingPreviewVariation={isCreatingPreviewVariation}
                 isRegenerating={isRegenerating}
+                isRetexturing={isRetexturing}
                 previewVariationError={previewVariationError}
                 previewVariationInstruction={previewVariationInstruction}
                 regenerationError={regenerationError}
+                retextureError={retextureError}
+                retextureInstruction={retextureInstruction}
+                retextureSucceeded={
+                  retextureSuccessFigureId === selectedFigure.id
+                }
                 selectedFigure={selectedFigure}
                 summary={summary}
                 variationInstruction={variationInstruction}
@@ -1435,6 +1615,8 @@ export function StudioPage() {
                   setPreviewVariationInstruction
                 }
                 onRegenerate={() => void handleRegenerateSelectedFigure()}
+                onRetexture={() => void handleRetextureSelectedFigure()}
+                onRetextureInstructionChange={setRetextureInstruction}
                 onVariationInstructionChange={setVariationInstruction}
               />
             </div>

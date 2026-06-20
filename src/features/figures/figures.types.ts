@@ -13,6 +13,7 @@ export type FigureGenerationMode =
   | "text_regeneration"
   | "image_to_3d"
   | "image_variation_to_3d"
+  | "retexture"
   | string;
 
 export type ReferenceImageKind =
@@ -57,6 +58,10 @@ export interface RegenerateFigurePayload {
 
 export interface CreatePreviewVariationPayload {
   instruction?: string;
+}
+
+export interface CreateRetexturePayload {
+  instruction: string;
 }
 
 export interface ReferenceImageAssetDto {
