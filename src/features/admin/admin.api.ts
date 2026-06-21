@@ -5,6 +5,11 @@ import type {
   AdminMarkPaidResult,
   AdminOrder,
   AdminOrdersFilters,
+  AdminPhysicalPrintAssignmentPayload,
+  AdminPhysicalPrintOrderDetail,
+  AdminPhysicalPrintOrderListItem,
+  AdminPhysicalPrintOrdersFilters,
+  AdminPhysicalPrintStatusPayload,
   AdminPayosReconciliationResult,
   AdminPagination,
   AdminPaymentTransaction,
@@ -48,6 +53,11 @@ interface ApiAdminOrdersData extends ApiPaginatedData<AdminOrder> {
 interface ApiAdminTransactionsData
   extends ApiPaginatedData<AdminPaymentTransaction> {
   transactions?: AdminPaymentTransaction[];
+}
+
+interface ApiAdminPhysicalPrintOrdersData
+  extends ApiPaginatedData<AdminPhysicalPrintOrderListItem> {
+  orders?: AdminPhysicalPrintOrderListItem[];
 }
 
 type QueryValue = boolean | number | string | null | undefined;
@@ -194,5 +204,49 @@ export const adminApi = {
     >(`/admin/billing/orders/${orderId}/payos-reconcile`);
 
     return data.data;
+  },
+
+  async getPhysicalPrintOrders(
+    filters: AdminPhysicalPrintOrdersFilters = {},
+  ): Promise<AdminPagination<AdminPhysicalPrintOrderListItem>> {
+    const { data } = await apiClient.get<
+      ApiSuccessResponse<ApiAdminPhysicalPrintOrdersData>
+    >("/admin/physical-print-orders", {
+      params: definedParams({ ...filters }),
+    });
+
+    return normalizePagination(data.data, data.data.orders);
+  },
+
+  async getPhysicalPrintOrder(
+    orderId: string,
+  ): Promise<AdminPhysicalPrintOrderDetail> {
+    const { data } = await apiClient.get<
+      ApiSuccessResponse<{ order: AdminPhysicalPrintOrderDetail }>
+    >(`/admin/physical-print-orders/${orderId}`);
+
+    return data.data.order;
+  },
+
+  async updatePhysicalPrintOrderStatus(
+    orderId: string,
+    payload: AdminPhysicalPrintStatusPayload,
+  ): Promise<AdminPhysicalPrintOrderDetail> {
+    const { data } = await apiClient.patch<
+      ApiSuccessResponse<{ order: AdminPhysicalPrintOrderDetail }>
+    >(`/admin/physical-print-orders/${orderId}/status`, payload);
+
+    return data.data.order;
+  },
+
+  async assignPhysicalPrintOrder(
+    orderId: string,
+    payload: AdminPhysicalPrintAssignmentPayload,
+  ): Promise<AdminPhysicalPrintOrderDetail> {
+    const { data } = await apiClient.patch<
+      ApiSuccessResponse<{ order: AdminPhysicalPrintOrderDetail }>
+    >(`/admin/physical-print-orders/${orderId}/assign`, payload);
+
+    return data.data.order;
   },
 };

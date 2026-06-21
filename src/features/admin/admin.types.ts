@@ -291,3 +291,126 @@ export interface AdminPayosReconciliationResult {
   order: AdminMarkedPaidOrder;
   transaction: AdminBillingTransaction | null;
 }
+
+export type AdminPhysicalPrintPaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "REFUNDED";
+
+export type AdminPhysicalPrintFulfillmentStatus =
+  | "NOT_STARTED"
+  | "WAITING_FULFILLMENT"
+  | "ASSIGNED_TO_PRINT_PARTNER"
+  | "PRINTING"
+  | "PRINTED"
+  | "SHIPPED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type AdminEditablePhysicalPrintFulfillmentStatus = Exclude<
+  AdminPhysicalPrintFulfillmentStatus,
+  "NOT_STARTED"
+>;
+
+export interface AdminPhysicalPrintOrderListItem {
+  id: string;
+  user: {
+    id: string;
+    email: string | null;
+    displayName: string | null;
+    status: string;
+  };
+  figureId: string;
+  packageCode: string;
+  packageName: string;
+  finalPriceVnd: number;
+  currency: string;
+  paymentStatus: AdminPhysicalPrintPaymentStatus;
+  fulfillmentStatus: AdminPhysicalPrintFulfillmentStatus;
+  trackingCode: string | null;
+  shipping: {
+    name: string;
+    phone: string;
+    addressSummary: string;
+  };
+  createdAt: string;
+  paidAt: string | null;
+  shippedAt: string | null;
+  completedAt: string | null;
+}
+
+export interface AdminPhysicalPrintOrderDetail {
+  id: string;
+  user: AdminPhysicalPrintOrderListItem["user"];
+  figureId: string;
+  modelAsset: {
+    ready: boolean;
+    format: "GLB";
+  };
+  package: {
+    code: string;
+    name: string;
+    estimatedSizeLabel: string;
+    qualityLabel: string;
+    productionTimeLabel: string;
+  };
+  price: {
+    basePriceVnd: number;
+    handlingFeeVnd: number;
+    finalPriceVnd: number;
+    currency: string;
+  };
+  paymentStatus: AdminPhysicalPrintPaymentStatus;
+  fulfillmentStatus: AdminPhysicalPrintFulfillmentStatus;
+  shippingName: string;
+  shippingPhone: string;
+  shippingAddress: string;
+  customerNote: string | null;
+  internalNote: string | null;
+  trackingCode: string | null;
+  assignedStaffId: string | null;
+  assignedPartnerId: string | null;
+  assignedStaff: {
+    id: string;
+    email: string | null;
+    displayName: string | null;
+    status: string;
+  } | null;
+  assignedPartner: {
+    id: string;
+    name: string;
+    status: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  paidAt: string | null;
+  assignedAt: string | null;
+  printedAt: string | null;
+  shippedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+}
+
+export interface AdminPhysicalPrintOrdersFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  paymentStatus?: AdminPhysicalPrintPaymentStatus;
+  fulfillmentStatus?: AdminPhysicalPrintFulfillmentStatus;
+  packageCode?: "MINI_PRINT" | "STANDARD_PRINT" | "PREMIUM_PRINT";
+}
+
+export interface AdminPhysicalPrintStatusPayload {
+  fulfillmentStatus: AdminEditablePhysicalPrintFulfillmentStatus;
+  internalNote?: string;
+  trackingCode?: string;
+}
+
+export interface AdminPhysicalPrintAssignmentPayload {
+  assignedStaffId?: string;
+  assignedPartnerId?: string;
+  internalNote?: string;
+}

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { adminApi } from "../features/admin/admin.api";
+import { PhysicalPrintOrdersPanel } from "../features/admin/components/PhysicalPrintOrdersPanel";
 import {
   ADMIN_RANGES,
   type AdminHealth,
@@ -1699,6 +1700,8 @@ export function AdminPage() {
               }}
             />
           </AdminPanel>
+
+          <PhysicalPrintOrdersPanel />
 
           <section className="grid gap-5 xl:grid-cols-12">
             <AdminPanel className="xl:col-span-7">
