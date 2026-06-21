@@ -1564,33 +1564,6 @@ export function StudioPage() {
                   selectedFigure={selectedFigure}
                   onSelect={handleSelectFigure}
                 />
-
-                <StudioMetadataPanel
-                  isCreatingPreviewVariation={isCreatingPreviewVariation}
-                  isRegenerating={isRegenerating}
-                  isRetexturing={isRetexturing}
-                  previewVariationError={previewVariationError}
-                  previewVariationInstruction={previewVariationInstruction}
-                  regenerationError={regenerationError}
-                  retextureError={retextureError}
-                  retextureInstruction={retextureInstruction}
-                  retextureSucceeded={
-                    retextureSuccessFigureId === selectedFigure.id
-                  }
-                  selectedFigure={selectedFigure}
-                  summary={summary}
-                  variationInstruction={variationInstruction}
-                  onCreatePreviewVariation={() =>
-                    void handleCreatePreviewVariation()
-                  }
-                  onPreviewVariationInstructionChange={
-                    setPreviewVariationInstruction
-                  }
-                  onRegenerate={() => void handleRegenerateSelectedFigure()}
-                  onRetexture={() => void handleRetextureSelectedFigure()}
-                  onRetextureInstructionChange={setRetextureInstruction}
-                  onVariationInstructionChange={setVariationInstruction}
-                />
               </section>
 
               <StudioMetadataPanel
