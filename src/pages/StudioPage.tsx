@@ -35,6 +35,7 @@ import type {
   FigureDto,
   FigureStatus,
 } from "../features/figures/figures.types";
+import { PhysicalPrintSection } from "../features/physical-print/components/PhysicalPrintSection";
 import { getApiErrorMessage } from "../services/apiClient";
 import { getDisplayLabel } from "../i18n/displayMaps";
 import { formatI18nDateTime } from "../i18n/formatters";
@@ -1538,33 +1539,44 @@ export function StudioPage() {
             <StudioEmptyState />
           ) : selectedFigure ? (
             <div className="studio-layout grid min-h-0 min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="studio-workspace min-h-0 min-w-0 max-w-full self-start overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
-                <StudioCommandSurface
-                  canDownloadModel={
-                    summary?.capabilities.canDownloadModel === true
-                  }
-                  canExportModel={summary?.capabilities.canExportModel === true}
-                  selectedFigure={selectedFigure}
-                  viewMode={viewMode}
-                  onViewModeChange={setViewMode}
-                />
+              <div className="studio-main-column min-w-0 space-y-4">
+                <section className="studio-workspace min-h-0 min-w-0 max-w-full self-start overflow-hidden rounded-lg border border-[#3b494c]/60 bg-[#101417]/96 shadow-[0_22px_60px_rgba(0,0,0,0.22)]">
+                  <StudioCommandSurface
+                    canDownloadModel={
+                      summary?.capabilities.canDownloadModel === true
+                    }
+                    canExportModel={
+                      summary?.capabilities.canExportModel === true
+                    }
+                    selectedFigure={selectedFigure}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                  />
 
-                <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
-                  <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
-                    <StudioPreview
-                      figure={selectedFigure}
-                      onShow2d={() => setViewMode("2d")}
-                      viewMode={viewMode}
-                    />
+                  <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
+                    <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
+                      <StudioPreview
+                        figure={selectedFigure}
+                        onShow2d={() => setViewMode("2d")}
+                        viewMode={viewMode}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <FigureSelector
-                  figures={figures}
-                  selectedFigure={selectedFigure}
-                  onSelect={handleSelectFigure}
+                  <FigureSelector
+                    figures={figures}
+                    selectedFigure={selectedFigure}
+                    onSelect={handleSelectFigure}
+                  />
+                </section>
+
+                <PhysicalPrintSection
+                  modelAssetReady={selectedFigure.modelAssetReady === true}
+                  selectedFigureId={selectedFigure.id}
+                  selectedFigurePrompt={selectedFigure.prompt}
+                  selectedFigureStatus={selectedFigure.status}
                 />
-              </section>
+              </div>
 
               <StudioMetadataPanel
                 isCreatingPreviewVariation={isCreatingPreviewVariation}
