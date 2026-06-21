@@ -564,6 +564,67 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.retexture.success":
       "New Retexture result created. The source remains in history.",
 
+    "physicalPrint.eyebrow": "Physical 3D print",
+    "physicalPrint.title": "Turn this model into a display piece",
+    "physicalPrint.subtitle":
+      "Choose a print package, provide shipping details, and continue to the backend-created payOS checkout.",
+    "physicalPrint.selectedDesign": "Selected design",
+    "physicalPrint.modelReady": "GLB ready",
+    "physicalPrint.unavailable.title": "Physical print unavailable",
+    "physicalPrint.unavailable.body":
+      "Physical print is available after the 3D model is complete and the GLB file is ready.",
+    "physicalPrint.packages.title": "Print packages",
+    "physicalPrint.packages.body":
+      "Prices and production details are loaded from the current backend catalog.",
+    "physicalPrint.packages.select": "Select a package",
+    "physicalPrint.packages.loading": "Loading print packages...",
+    "physicalPrint.packages.error":
+      "Print packages could not be loaded. Try again.",
+    "physicalPrint.packages.retry": "Retry packages",
+    "physicalPrint.estimatedSize": "Estimated size",
+    "physicalPrint.quality": "Quality",
+    "physicalPrint.productionTime": "Production time",
+    "physicalPrint.basePrice": "Base price",
+    "physicalPrint.handlingFee": "Handling fee",
+    "physicalPrint.finalPrice": "Final price",
+    "physicalPrint.total": "Total",
+    "physicalPrint.shipping.title": "Shipping details",
+    "physicalPrint.shipping.body":
+      "These details are sent only with this order and are not stored in browser storage.",
+    "physicalPrint.shipping.name": "Recipient name",
+    "physicalPrint.shipping.namePlaceholder": "Full recipient name",
+    "physicalPrint.shipping.phone": "Phone number",
+    "physicalPrint.shipping.phonePlaceholder": "Phone for delivery contact",
+    "physicalPrint.shipping.address": "Shipping address",
+    "physicalPrint.shipping.addressPlaceholder":
+      "Street, ward, district, city or province",
+    "physicalPrint.shipping.note": "Customer note",
+    "physicalPrint.shipping.notePlaceholder":
+      "Optional production or delivery note",
+    "physicalPrint.shipping.optional": "optional",
+    "physicalPrint.summary.title": "Order summary",
+    "physicalPrint.summary.package": "Selected package",
+    "physicalPrint.validation.banner":
+      "Check the highlighted shipping fields before continuing.",
+    "physicalPrint.validation.name": "Recipient name is required.",
+    "physicalPrint.validation.phone": "Phone number is required.",
+    "physicalPrint.validation.phoneInvalid":
+      "Enter a phone number containing 8 to 15 digits.",
+    "physicalPrint.validation.address": "Shipping address is required.",
+    "physicalPrint.orderPrint": "Order Print",
+    "physicalPrint.creatingOrder": "Creating order...",
+    "physicalPrint.redirecting": "Redirecting to payOS...",
+    "physicalPrint.retryCheckout": "Retry checkout",
+    "physicalPrint.pendingOrder": "Pending order",
+    "physicalPrint.paymentNote":
+      "Payment is verified by payOS and confirmed by the backend. Returning from checkout does not automatically mark the order as paid.",
+    "physicalPrint.errors.orderCreation":
+      "The pending print order could not be created. Review the details and try again.",
+    "physicalPrint.errors.checkoutCreation":
+      "The order was created, but payOS checkout could not be opened. Retry checkout without creating another order.",
+    "physicalPrint.errors.missingCheckoutUrl":
+      "The backend did not return a payOS checkout URL. Retry checkout for this order.",
+
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
     "paywall.title": "Paid plan required",
@@ -1628,6 +1689,67 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.retexture.starting": "Đang tạo kết quả Retexture",
     "studio.retexture.success":
       "Đã tạo kết quả Retexture mới. Mô hình nguồn vẫn được giữ trong lịch sử.",
+
+    "physicalPrint.eyebrow": "In 3D vật lý",
+    "physicalPrint.title": "Biến mô hình này thành sản phẩm trưng bày",
+    "physicalPrint.subtitle":
+      "Chọn gói in, nhập thông tin giao hàng và tiếp tục đến trang thanh toán payOS do backend tạo.",
+    "physicalPrint.selectedDesign": "Thiết kế đã chọn",
+    "physicalPrint.modelReady": "GLB sẵn sàng",
+    "physicalPrint.unavailable.title": "Chưa thể đặt in vật lý",
+    "physicalPrint.unavailable.body":
+      "Tính năng in vật lý khả dụng sau khi mô hình 3D hoàn tất và tệp GLB đã sẵn sàng.",
+    "physicalPrint.packages.title": "Gói in",
+    "physicalPrint.packages.body":
+      "Giá và thời gian sản xuất được tải từ danh mục hiện tại của backend.",
+    "physicalPrint.packages.select": "Chọn một gói",
+    "physicalPrint.packages.loading": "Đang tải các gói in...",
+    "physicalPrint.packages.error":
+      "Không thể tải các gói in. Hãy thử lại.",
+    "physicalPrint.packages.retry": "Tải lại gói in",
+    "physicalPrint.estimatedSize": "Kích thước ước tính",
+    "physicalPrint.quality": "Chất lượng",
+    "physicalPrint.productionTime": "Thời gian sản xuất",
+    "physicalPrint.basePrice": "Giá cơ bản",
+    "physicalPrint.handlingFee": "Phí xử lý",
+    "physicalPrint.finalPrice": "Giá cuối",
+    "physicalPrint.total": "Tổng cộng",
+    "physicalPrint.shipping.title": "Thông tin giao hàng",
+    "physicalPrint.shipping.body":
+      "Thông tin này chỉ được gửi cùng đơn hàng và không được lưu trong bộ nhớ trình duyệt.",
+    "physicalPrint.shipping.name": "Tên người nhận",
+    "physicalPrint.shipping.namePlaceholder": "Họ tên đầy đủ của người nhận",
+    "physicalPrint.shipping.phone": "Số điện thoại",
+    "physicalPrint.shipping.phonePlaceholder": "Số điện thoại liên hệ giao hàng",
+    "physicalPrint.shipping.address": "Địa chỉ giao hàng",
+    "physicalPrint.shipping.addressPlaceholder":
+      "Đường, phường/xã, quận/huyện, tỉnh/thành phố",
+    "physicalPrint.shipping.note": "Ghi chú khách hàng",
+    "physicalPrint.shipping.notePlaceholder":
+      "Ghi chú sản xuất hoặc giao hàng không bắt buộc",
+    "physicalPrint.shipping.optional": "không bắt buộc",
+    "physicalPrint.summary.title": "Tóm tắt đơn hàng",
+    "physicalPrint.summary.package": "Gói đã chọn",
+    "physicalPrint.validation.banner":
+      "Hãy kiểm tra các trường giao hàng được đánh dấu trước khi tiếp tục.",
+    "physicalPrint.validation.name": "Vui lòng nhập tên người nhận.",
+    "physicalPrint.validation.phone": "Vui lòng nhập số điện thoại.",
+    "physicalPrint.validation.phoneInvalid":
+      "Nhập số điện thoại có từ 8 đến 15 chữ số.",
+    "physicalPrint.validation.address": "Vui lòng nhập địa chỉ giao hàng.",
+    "physicalPrint.orderPrint": "Đặt in",
+    "physicalPrint.creatingOrder": "Đang tạo đơn hàng...",
+    "physicalPrint.redirecting": "Đang chuyển đến payOS...",
+    "physicalPrint.retryCheckout": "Thử lại thanh toán",
+    "physicalPrint.pendingOrder": "Đơn hàng đang chờ",
+    "physicalPrint.paymentNote":
+      "Thanh toán được payOS xác minh và backend xác nhận. Việc quay lại từ trang thanh toán không tự động đánh dấu đơn hàng là đã thanh toán.",
+    "physicalPrint.errors.orderCreation":
+      "Không thể tạo đơn in đang chờ. Hãy kiểm tra thông tin và thử lại.",
+    "physicalPrint.errors.checkoutCreation":
+      "Đơn hàng đã được tạo nhưng không thể mở trang thanh toán payOS. Hãy thử lại thanh toán mà không tạo đơn mới.",
+    "physicalPrint.errors.missingCheckoutUrl":
+      "Backend không trả về URL thanh toán payOS. Hãy thử lại thanh toán cho đơn này.",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",

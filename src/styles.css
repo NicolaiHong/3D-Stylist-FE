@@ -1030,12 +1030,6 @@ textarea {
     --studio-preview-stage-height: clamp(360px, calc(100vh - 18rem), 520px);
   }
 
-  .studio-workspace {
-    position: sticky;
-    top: 1.5rem;
-    align-self: start;
-  }
-
   .studio-metadata-panel {
     align-self: start;
     max-height: none;
