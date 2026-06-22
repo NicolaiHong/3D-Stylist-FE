@@ -20,6 +20,7 @@ import {
 import type { FigureStatus } from "../../figures/figures.types";
 import { formatI18nCurrency } from "../../../i18n/formatters";
 import { useI18n } from "../../../i18n/useI18n";
+import { getApiErrorMessage } from "../../../services/apiClient";
 import { physicalPrintApi } from "../physical-print.api";
 import type {
   CreatePhysicalPrintOrderPayload,
@@ -235,12 +236,14 @@ export function PhysicalPrintSection({
       setCreatedOrder(result.order);
       setActionState("redirecting");
       window.location.assign(checkoutUrl);
-    } catch {
+    } catch (checkoutFailure) {
       if (
         activeFigureIdRef.current === requestFigureId &&
         actionRequestIdRef.current === requestId
       ) {
-        setCheckoutError(t("physicalPrint.errors.checkoutCreation"));
+        setCheckoutError(
+          `${t("physicalPrint.errors.checkoutCreation")} ${getApiErrorMessage(checkoutFailure)}`,
+        );
         setActionState("idle");
       }
     }
