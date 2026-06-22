@@ -66,10 +66,13 @@ export async function getPhysicalPrintOrders(
 
 export async function createPhysicalPrintPayosCheckout(
   orderId: string,
+  intent: "create" | "retry" = "create",
 ): Promise<PhysicalPrintCheckoutResult> {
   const { data } = await apiClient.post<
     ApiResponse<PhysicalPrintCheckoutResult>
-  >(`/physical-print/orders/${orderId}/payos-checkout`, {});
+  >(`/physical-print/orders/${orderId}/payos-checkout`, {}, {
+    params: { intent },
+  });
 
   return unwrapData(data);
 }

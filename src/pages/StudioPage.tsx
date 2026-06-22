@@ -42,6 +42,7 @@ import { formatI18nDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
 
 const STUDIO_POLL_INTERVAL_MS = 3000;
+const STUDIO_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 const MAX_VARIATION_INSTRUCTION_LENGTH = 600;
 const MAX_PREVIEW_VARIATION_INSTRUCTION_LENGTH = 1000;
 const MAX_RETEXTURE_INSTRUCTION_LENGTH = 600;
@@ -1174,6 +1175,8 @@ export function StudioPage() {
   >(null);
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const pollingStartedAtRef = useRef<number | null>(null);
+  const pollingFigureIdRef = useRef<string | null>(null);
 
   const selectedFigure = useMemo(
     () => figures.find((figure) => figure.id === selectedFigureId) ?? null,
@@ -1285,10 +1288,24 @@ export function StudioPage() {
 
   useEffect(() => {
     if (!selectedFigure || !isPollingStatus(selectedFigure.status)) {
+      pollingStartedAtRef.current = null;
+      pollingFigureIdRef.current = null;
       return;
     }
 
+    if (pollingFigureIdRef.current !== selectedFigure.id) {
+      pollingFigureIdRef.current = selectedFigure.id;
+      pollingStartedAtRef.current = Date.now();
+    }
+
     const intervalId = window.setInterval(() => {
+      const startedAt = pollingStartedAtRef.current ?? Date.now();
+
+      if (Date.now() - startedAt > STUDIO_POLL_TIMEOUT_MS) {
+        window.clearInterval(intervalId);
+        return;
+      }
+
       void refreshSelectedFigure(false);
     }, STUDIO_POLL_INTERVAL_MS);
 
