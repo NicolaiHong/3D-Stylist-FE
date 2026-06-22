@@ -12,6 +12,9 @@ import { CreditsPage } from "../pages/CreditsPage";
 import { CheckoutPage } from "../pages/CheckoutPage";
 import { PaymentsPage } from "../pages/PaymentsPage";
 import { PaymentResultPage } from "../pages/PaymentResultPage";
+import { PhysicalPrintCheckoutStatusPage } from "../pages/PhysicalPrintCheckoutStatusPage";
+import { PhysicalPrintOrderDetailPage } from "../pages/PhysicalPrintOrderDetailPage";
+import { PhysicalPrintOrdersPage } from "../pages/PhysicalPrintOrdersPage";
 import { AdminPage } from "../pages/AdminPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { OnboardingPage } from "../pages/OnboardingPage";
@@ -44,6 +47,22 @@ export function AppRoutes() {
         />
         <Route path="/credits/checkout/:orderId" element={<CheckoutPage />} />
         <Route path="/credits/payment/:status" element={<PaymentResultPage />} />
+        <Route
+          path="/physical-print/orders"
+          element={<PhysicalPrintOrdersPage />}
+        />
+        <Route
+          path="/physical-print/orders/:orderId"
+          element={<PhysicalPrintOrderDetailPage />}
+        />
+        <Route
+          path="/physical-print/checkout/return"
+          element={<PhysicalPrintCheckoutStatusPage mode="return" />}
+        />
+        <Route
+          path="/physical-print/checkout/cancel"
+          element={<PhysicalPrintCheckoutStatusPage mode="cancel" />}
+        />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route element={<ProtectedRoute allowedRoles={[AUTH_ROLES.ADMIN]} />}>

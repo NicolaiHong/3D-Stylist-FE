@@ -16,7 +16,7 @@ test("pending payOS orders expose the reconciliation action", () => {
 
 test("payOS reconciliation sends only the local order id", () => {
   const method = adminApiSource.match(
-    /async reconcilePayosOrder\([\s\S]*?\n\s*},\n/,
+    /async reconcilePayosOrder\([\s\S]*?\r?\n\s*},\r?\n/,
   )?.[0];
 
   assert.ok(method, "reconcilePayosOrder API method is missing");
@@ -28,7 +28,7 @@ test("payOS reconciliation sends only the local order id", () => {
 
 test("payOS reconciliation has no frontend-controlled grant fields", () => {
   const method = adminApiSource.match(
-    /async reconcilePayosOrder\([\s\S]*?\n\s*},\n/,
+    /async reconcilePayosOrder\([\s\S]*?\r?\n\s*},\r?\n/,
   )?.[0];
 
   assert.ok(method, "reconcilePayosOrder API method is missing");

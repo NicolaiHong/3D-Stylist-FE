@@ -3,6 +3,24 @@ export type PhysicalPrintPackageCode =
   | "STANDARD_PRINT"
   | "PREMIUM_PRINT";
 
+export type PhysicalPrintPaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "REFUNDED";
+
+export type PhysicalPrintFulfillmentStatus =
+  | "NOT_STARTED"
+  | "WAITING_FULFILLMENT"
+  | "ASSIGNED_TO_PRINT_PARTNER"
+  | "PRINTING"
+  | "PRINTED"
+  | "SHIPPED"
+  | "COMPLETED"
+  | "CANCELLED";
+
 export interface PhysicalPrintPackage {
   code: PhysicalPrintPackageCode;
   name: string;
@@ -41,8 +59,8 @@ export interface PhysicalPrintOrder {
     finalPriceVnd: number;
     currency: string;
   };
-  paymentStatus: string;
-  fulfillmentStatus: string;
+  paymentStatus: PhysicalPrintPaymentStatus;
+  fulfillmentStatus: PhysicalPrintFulfillmentStatus;
   shipping: {
     name: string;
     phone: string;
@@ -53,8 +71,52 @@ export interface PhysicalPrintOrder {
   createdAt: string;
   updatedAt: string;
   paidAt: string | null;
+  assignedAt: string | null;
+  printedAt: string | null;
   shippedAt: string | null;
   completedAt: string | null;
+  cancelledAt: string | null;
+}
+
+export interface PhysicalPrintOrderListItem {
+  id: string;
+  figureId: string;
+  package: {
+    code: PhysicalPrintPackageCode;
+    name: string;
+    estimatedSizeLabel: string;
+    productionTimeLabel: string;
+  };
+  price: {
+    finalPriceVnd: number;
+    currency: string;
+  };
+  paymentStatus: PhysicalPrintPaymentStatus;
+  fulfillmentStatus: PhysicalPrintFulfillmentStatus;
+  trackingCode: string | null;
+  createdAt: string;
+  paidAt: string | null;
+  shippedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+}
+
+export interface PhysicalPrintOrderListResult {
+  orders: PhysicalPrintOrderListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface PhysicalPrintOrderListFilters {
+  page?: number;
+  limit?: number;
+  paymentStatus?: PhysicalPrintPaymentStatus;
+  fulfillmentStatus?: PhysicalPrintFulfillmentStatus;
+  packageCode?: PhysicalPrintPackageCode;
 }
 
 export interface PhysicalPrintCheckoutResult {

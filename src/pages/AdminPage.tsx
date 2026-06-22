@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { adminApi } from "../features/admin/admin.api";
+import { AdminDashboardCharts } from "../features/admin/components/AdminDashboardCharts";
 import { PhysicalPrintOrdersPanel } from "../features/admin/components/PhysicalPrintOrdersPanel";
 import {
   ADMIN_RANGES,
@@ -1663,6 +1664,13 @@ export function AdminPage() {
               />
             ))}
           </section>
+
+          <AdminDashboardCharts
+            isLoading={isLoading}
+            products={productsResult.products}
+            range={range}
+            stats={stats}
+          />
 
           <section className="grid gap-5 lg:grid-cols-12">
             <HealthPanel health={health} isLoading={isLoading} />

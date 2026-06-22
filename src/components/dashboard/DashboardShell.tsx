@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  PackageCheck,
   ReceiptText,
   ShieldCheck,
   Shirt,
@@ -52,6 +53,11 @@ const userNavigationItems: NavigationItem[] = [
   { labelKey: "shell.nav.studio", to: "/studio", icon: Sparkles },
   { labelKey: "shell.nav.credits", to: "/credits", icon: Database },
   { labelKey: "shell.nav.payments", to: "/payments", icon: ReceiptText },
+  {
+    labelKey: "shell.nav.printOrders",
+    to: "/physical-print/orders",
+    icon: PackageCheck,
+  },
   { labelKey: "shell.nav.profile", to: "/profile", icon: UserRound },
   {
     labelKey: "shell.nav.admin",
