@@ -35,6 +35,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "shell.nav.studio": "Studio",
     "shell.nav.credits": "Credits",
     "shell.nav.payments": "Payments",
+    "shell.nav.printOrders": "Print orders",
     "shell.nav.profile": "Profile",
     "shell.nav.admin": "Admin",
     "shell.nav.soon": "Soon",
@@ -624,6 +625,104 @@ export const messages: Record<Language, Record<string, string>> = {
       "The order was created, but payOS checkout could not be opened. Retry checkout without creating another order.",
     "physicalPrint.errors.missingCheckoutUrl":
       "The backend did not return a payOS checkout URL. Retry checkout for this order.",
+    "physicalPrint.tracking.eyebrow": "Physical print tracking",
+    "physicalPrint.tracking.ordersTitle": "My Print Orders",
+    "physicalPrint.tracking.ordersBody":
+      "Track payment verification, production, shipping, and completion for your physical 3D prints.",
+    "physicalPrint.tracking.orderTitle": "Physical Print Order",
+    "physicalPrint.tracking.paymentStatus": "Payment status",
+    "physicalPrint.tracking.fulfillmentStatus": "Fulfillment status",
+    "physicalPrint.tracking.trackingCode": "Tracking code",
+    "physicalPrint.tracking.shippingInformation": "Shipping information",
+    "physicalPrint.tracking.package": "Package",
+    "physicalPrint.tracking.total": "Total",
+    "physicalPrint.tracking.retryCheckout": "Retry checkout",
+    "physicalPrint.tracking.viewOrder": "View order",
+    "physicalPrint.tracking.viewMyOrders": "View my print orders",
+    "physicalPrint.tracking.backToStudio": "Back to Studio",
+    "physicalPrint.tracking.refreshStatus": "Refresh status",
+    "physicalPrint.tracking.createdAt": "Created",
+    "physicalPrint.tracking.paidAt": "Paid",
+    "physicalPrint.tracking.notAvailable": "Not available yet",
+    "physicalPrint.tracking.all": "All",
+    "physicalPrint.tracking.previous": "Previous",
+    "physicalPrint.tracking.next": "Next",
+    "physicalPrint.tracking.page": "Page {page} of {totalPages}",
+    "physicalPrint.tracking.pagination": "Print order pages",
+    "physicalPrint.tracking.orderCount": "{count} print orders",
+    "physicalPrint.tracking.emptyTitle": "No physical print orders yet",
+    "physicalPrint.tracking.emptyBody":
+      "Create a physical print order from a completed 3D model in Studio.",
+    "physicalPrint.tracking.notFoundTitle": "Print order not found",
+    "physicalPrint.tracking.notFoundBody":
+      "This order does not exist or is not available to this account.",
+    "physicalPrint.tracking.cancelledNotice":
+      "This order has been cancelled. Its status is read-only in the customer tracking view.",
+    "physicalPrint.tracking.errors.loadTitle":
+      "Print orders could not be loaded",
+    "physicalPrint.tracking.payment.pending": "Awaiting payment",
+    "physicalPrint.tracking.payment.paid": "Payment confirmed",
+    "physicalPrint.tracking.payment.failed": "Payment failed",
+    "physicalPrint.tracking.payment.cancelled": "Payment cancelled",
+    "physicalPrint.tracking.payment.expired": "Payment expired",
+    "physicalPrint.tracking.payment.refunded": "Refunded",
+    "physicalPrint.tracking.fulfillment.notStarted": "Not started",
+    "physicalPrint.tracking.fulfillment.waitingFulfillment":
+      "Waiting for fulfillment",
+    "physicalPrint.tracking.fulfillment.assignedToPartner":
+      "Assigned to print partner",
+    "physicalPrint.tracking.fulfillment.printing": "Printing",
+    "physicalPrint.tracking.fulfillment.printed": "Printed",
+    "physicalPrint.tracking.fulfillment.shipped": "Shipped",
+    "physicalPrint.tracking.fulfillment.completed": "Completed",
+    "physicalPrint.tracking.fulfillment.cancelled": "Cancelled",
+    "physicalPrint.tracking.packageCode.mini_print": "Mini Print",
+    "physicalPrint.tracking.packageCode.standard_print": "Standard Print",
+    "physicalPrint.tracking.packageCode.premium_print": "Premium Print",
+    "physicalPrint.tracking.timeline.title": "Order timeline",
+    "physicalPrint.tracking.timeline.body":
+      "Timestamps appear when the backend records each milestone.",
+    "physicalPrint.tracking.timeline.created": "Order created",
+    "physicalPrint.tracking.timeline.payment": "Payment confirmed",
+    "physicalPrint.tracking.timeline.waiting": "Waiting fulfillment",
+    "physicalPrint.tracking.timeline.printing": "Printing",
+    "physicalPrint.tracking.timeline.printed": "Printed",
+    "physicalPrint.tracking.timeline.shipped": "Shipped",
+    "physicalPrint.tracking.timeline.completed": "Completed",
+    "physicalPrint.tracking.timeline.pending": "Pending",
+    "physicalPrint.tracking.timeline.inProgress": "In progress",
+    "physicalPrint.tracking.checkout.eyebrow": "payOS checkout status",
+    "physicalPrint.tracking.checkout.returnTitle":
+      "We received your checkout return",
+    "physicalPrint.tracking.checkout.returnBody":
+      "The backend reconciled the payOS result. The order detail below is the authoritative status.",
+    "physicalPrint.tracking.checkout.cancelTitle": "Checkout was cancelled",
+    "physicalPrint.tracking.checkout.cancelBody":
+      "No payment is confirmed from the browser cancel page. You can retry only while the order remains pending.",
+    "physicalPrint.tracking.checkout.paidTitle": "Payment confirmed",
+    "physicalPrint.tracking.checkout.paidBody":
+      "Your physical print order is paid and is waiting for fulfillment.",
+    "physicalPrint.tracking.checkout.failedTitle": "Payment failed",
+    "physicalPrint.tracking.checkout.failedBody":
+      "payOS did not confirm this payment. Review the order status before starting another checkout.",
+    "physicalPrint.tracking.checkout.expiredTitle": "Payment expired",
+    "physicalPrint.tracking.checkout.expiredBody":
+      "The payOS payment link expired and this order can no longer be retried.",
+    "physicalPrint.tracking.checkout.refundedTitle": "Payment refunded",
+    "physicalPrint.tracking.checkout.refundedBody":
+      "The backend reports this physical print payment as refunded.",
+    "physicalPrint.tracking.checkout.pendingBody":
+      "The browser return is not payment authority. We are checking the backend order status.",
+    "physicalPrint.tracking.checkout.verifying":
+      "We are still verifying your payment. Please refresh in a few seconds.",
+    "physicalPrint.tracking.checkout.unknownTitle":
+      "Order status is unavailable",
+    "physicalPrint.tracking.checkout.unknownBody":
+      "No safe order identifier was returned. Open your print order history to continue.",
+    "physicalPrint.tracking.checkout.authorityNote":
+      "Payment and fulfillment statuses come from the backend. This page cannot mark an order paid and does not call the payOS webhook.",
+    "physicalPrint.tracking.checkout.queryHint":
+      "Return hint: {result}. The fetched backend order status takes precedence.",
 
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -1002,6 +1101,46 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.credits.ledger": "Credit ledger",
     "admin.credits.purchased": "Purchased in range",
     "admin.credits.consumed": "Consumed in range",
+    "admin.charts.eyebrow": "Live Analytics",
+    "admin.charts.title": "Operational Analytics",
+    "admin.charts.description":
+      "Compact visual summaries derived only from the admin data already returned by the current APIs.",
+    "admin.charts.empty.title": "Not enough data for this chart yet.",
+    "admin.charts.empty.description":
+      "The chart will populate after matching admin activity is returned.",
+    "admin.charts.trend.title": "Revenue & Orders Trend",
+    "admin.charts.trend.description":
+      "Paid value and order count grouped by date from the latest returned billing orders inside the selected range.",
+    "admin.charts.trend.sampleRevenue": "Paid value in sample",
+    "admin.charts.trend.sampleOrders": "Orders in sample",
+    "admin.charts.trend.aria":
+      "Recent paid order value bars with an order count line.",
+    "admin.charts.trend.ordersTooltip": "{date}: {count} orders",
+    "admin.charts.trend.disclaimer":
+      "Based on up to {count} recent orders returned by the dashboard API; this is an operational sample, not an audited finance report.",
+    "admin.charts.legend.paidRevenue": "Paid order value",
+    "admin.charts.legend.orders": "Order count",
+    "admin.charts.payment.title": "Payment Status Mix",
+    "admin.charts.payment.description":
+      "Selected-range payment transactions grouped by current status.",
+    "admin.charts.payment.aria":
+      "Donut chart showing the distribution of payment transaction statuses.",
+    "admin.charts.payment.total": "Transactions",
+    "admin.charts.payment.paid": "Paid",
+    "admin.charts.payment.pending": "Pending",
+    "admin.charts.payment.failed": "Failed",
+    "admin.charts.payment.cancelled": "Cancelled",
+    "admin.charts.payment.expired": "Expired",
+    "admin.charts.mix.title": "Product / Credit Mix",
+    "admin.charts.mix.description":
+      "Active catalog composition alongside selected-range credit movement.",
+    "admin.charts.mix.catalog": "Active catalog",
+    "admin.charts.mix.activeProducts": "{count} active",
+    "admin.charts.mix.subscriptionPlans": "Subscription plans",
+    "admin.charts.mix.creditPacks": "Credit packs",
+    "admin.charts.mix.creditActivity": "Credit activity",
+    "admin.charts.mix.purchased": "Purchased credits",
+    "admin.charts.mix.consumed": "Consumed credits",
     "admin.catalog.title": "Product Catalog",
     "admin.catalog.description":
       "Read-only status for the six core billing products.",
@@ -1233,6 +1372,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "shell.nav.studio": "Studio",
     "shell.nav.credits": "Tín dụng",
     "shell.nav.payments": "Thanh toán",
+    "shell.nav.printOrders": "Đơn in",
     "shell.nav.profile": "Hồ sơ",
     "shell.nav.admin": "Quản trị",
     "shell.nav.soon": "Sắp có",
@@ -1825,6 +1965,104 @@ export const messages: Record<Language, Record<string, string>> = {
       "Đơn hàng đã được tạo nhưng không thể mở trang thanh toán payOS. Hãy thử lại thanh toán mà không tạo đơn mới.",
     "physicalPrint.errors.missingCheckoutUrl":
       "Backend không trả về URL thanh toán payOS. Hãy thử lại thanh toán cho đơn này.",
+    "physicalPrint.tracking.eyebrow": "Theo dõi in vật lý",
+    "physicalPrint.tracking.ordersTitle": "Đơn in của tôi",
+    "physicalPrint.tracking.ordersBody":
+      "Theo dõi xác minh thanh toán, sản xuất, vận chuyển và hoàn tất các sản phẩm in 3D vật lý.",
+    "physicalPrint.tracking.orderTitle": "Đơn in 3D vật lý",
+    "physicalPrint.tracking.paymentStatus": "Trạng thái thanh toán",
+    "physicalPrint.tracking.fulfillmentStatus": "Trạng thái thực hiện",
+    "physicalPrint.tracking.trackingCode": "Mã vận đơn",
+    "physicalPrint.tracking.shippingInformation": "Thông tin giao hàng",
+    "physicalPrint.tracking.package": "Gói",
+    "physicalPrint.tracking.total": "Tổng cộng",
+    "physicalPrint.tracking.retryCheckout": "Thử lại thanh toán",
+    "physicalPrint.tracking.viewOrder": "Xem đơn hàng",
+    "physicalPrint.tracking.viewMyOrders": "Xem các đơn in của tôi",
+    "physicalPrint.tracking.backToStudio": "Quay lại Studio",
+    "physicalPrint.tracking.refreshStatus": "Làm mới trạng thái",
+    "physicalPrint.tracking.createdAt": "Đã tạo",
+    "physicalPrint.tracking.paidAt": "Đã thanh toán",
+    "physicalPrint.tracking.notAvailable": "Chưa có",
+    "physicalPrint.tracking.all": "Tất cả",
+    "physicalPrint.tracking.previous": "Trang trước",
+    "physicalPrint.tracking.next": "Trang sau",
+    "physicalPrint.tracking.page": "Trang {page}/{totalPages}",
+    "physicalPrint.tracking.pagination": "Các trang đơn in",
+    "physicalPrint.tracking.orderCount": "{count} đơn in",
+    "physicalPrint.tracking.emptyTitle": "Chưa có đơn in vật lý",
+    "physicalPrint.tracking.emptyBody":
+      "Tạo đơn in vật lý từ một mô hình 3D đã hoàn tất trong Studio.",
+    "physicalPrint.tracking.notFoundTitle": "Không tìm thấy đơn in",
+    "physicalPrint.tracking.notFoundBody":
+      "Đơn hàng này không tồn tại hoặc không thuộc tài khoản hiện tại.",
+    "physicalPrint.tracking.cancelledNotice":
+      "Đơn hàng này đã bị hủy. Trạng thái chỉ có thể xem trong trang theo dõi khách hàng.",
+    "physicalPrint.tracking.errors.loadTitle": "Không thể tải các đơn in",
+    "physicalPrint.tracking.payment.pending": "Đang chờ thanh toán",
+    "physicalPrint.tracking.payment.paid": "Đã xác nhận thanh toán",
+    "physicalPrint.tracking.payment.failed": "Thanh toán thất bại",
+    "physicalPrint.tracking.payment.cancelled": "Thanh toán đã hủy",
+    "physicalPrint.tracking.payment.expired": "Thanh toán hết hạn",
+    "physicalPrint.tracking.payment.refunded": "Đã hoàn tiền",
+    "physicalPrint.tracking.fulfillment.notStarted": "Chưa bắt đầu",
+    "physicalPrint.tracking.fulfillment.waitingFulfillment":
+      "Đang chờ thực hiện",
+    "physicalPrint.tracking.fulfillment.assignedToPartner":
+      "Đã giao cho đối tác in",
+    "physicalPrint.tracking.fulfillment.printing": "Đang in",
+    "physicalPrint.tracking.fulfillment.printed": "Đã in",
+    "physicalPrint.tracking.fulfillment.shipped": "Đã gửi hàng",
+    "physicalPrint.tracking.fulfillment.completed": "Hoàn tất",
+    "physicalPrint.tracking.fulfillment.cancelled": "Đã hủy",
+    "physicalPrint.tracking.packageCode.mini_print": "Gói Mini",
+    "physicalPrint.tracking.packageCode.standard_print": "Gói Standard",
+    "physicalPrint.tracking.packageCode.premium_print": "Gói Premium",
+    "physicalPrint.tracking.timeline.title": "Tiến trình đơn hàng",
+    "physicalPrint.tracking.timeline.body":
+      "Mốc thời gian xuất hiện khi backend ghi nhận từng giai đoạn.",
+    "physicalPrint.tracking.timeline.created": "Đã tạo đơn hàng",
+    "physicalPrint.tracking.timeline.payment": "Đã xác nhận thanh toán",
+    "physicalPrint.tracking.timeline.waiting": "Đang chờ thực hiện",
+    "physicalPrint.tracking.timeline.printing": "Đang in",
+    "physicalPrint.tracking.timeline.printed": "Đã in",
+    "physicalPrint.tracking.timeline.shipped": "Đã gửi hàng",
+    "physicalPrint.tracking.timeline.completed": "Đã hoàn tất",
+    "physicalPrint.tracking.timeline.pending": "Đang chờ",
+    "physicalPrint.tracking.timeline.inProgress": "Đang thực hiện",
+    "physicalPrint.tracking.checkout.eyebrow":
+      "Trạng thái thanh toán payOS",
+    "physicalPrint.tracking.checkout.returnTitle":
+      "Đã nhận lượt quay lại từ thanh toán",
+    "physicalPrint.tracking.checkout.returnBody":
+      "Backend đã đối soát kết quả payOS. Chi tiết đơn hàng bên dưới là trạng thái có thẩm quyền.",
+    "physicalPrint.tracking.checkout.cancelTitle": "Thanh toán đã bị hủy",
+    "physicalPrint.tracking.checkout.cancelBody":
+      "Trang hủy trên trình duyệt không xác nhận thanh toán. Bạn chỉ có thể thử lại khi đơn vẫn đang chờ.",
+    "physicalPrint.tracking.checkout.paidTitle": "Đã xác nhận thanh toán",
+    "physicalPrint.tracking.checkout.paidBody":
+      "Đơn in vật lý đã được thanh toán và đang chờ thực hiện.",
+    "physicalPrint.tracking.checkout.failedTitle": "Thanh toán thất bại",
+    "physicalPrint.tracking.checkout.failedBody":
+      "payOS không xác nhận thanh toán này. Hãy xem trạng thái đơn trước khi bắt đầu lượt thanh toán khác.",
+    "physicalPrint.tracking.checkout.expiredTitle": "Thanh toán đã hết hạn",
+    "physicalPrint.tracking.checkout.expiredBody":
+      "Liên kết thanh toán payOS đã hết hạn và đơn này không thể thử lại.",
+    "physicalPrint.tracking.checkout.refundedTitle": "Đã hoàn tiền",
+    "physicalPrint.tracking.checkout.refundedBody":
+      "Backend báo rằng khoản thanh toán cho đơn in vật lý này đã được hoàn lại.",
+    "physicalPrint.tracking.checkout.pendingBody":
+      "Lượt quay lại trên trình duyệt không có thẩm quyền thanh toán. Chúng tôi đang kiểm tra trạng thái đơn hàng từ backend.",
+    "physicalPrint.tracking.checkout.verifying":
+      "Chúng tôi vẫn đang xác minh thanh toán của bạn. Hãy làm mới sau vài giây.",
+    "physicalPrint.tracking.checkout.unknownTitle":
+      "Chưa có trạng thái đơn hàng",
+    "physicalPrint.tracking.checkout.unknownBody":
+      "Không nhận được mã đơn hàng an toàn. Hãy mở lịch sử đơn in để tiếp tục.",
+    "physicalPrint.tracking.checkout.authorityNote":
+      "Trạng thái thanh toán và thực hiện đến từ backend. Trang này không thể đánh dấu đơn đã thanh toán và không gọi webhook payOS.",
+    "physicalPrint.tracking.checkout.queryHint":
+      "Gợi ý từ lượt quay lại: {result}. Trạng thái đơn hàng lấy từ backend được ưu tiên.",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",
@@ -2203,6 +2441,46 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.credits.ledger": "Sổ cái tín dụng",
     "admin.credits.purchased": "Đã mua trong khoảng",
     "admin.credits.consumed": "Đã dùng trong khoảng",
+    "admin.charts.eyebrow": "Phân tích trực tiếp",
+    "admin.charts.title": "Phân tích vận hành",
+    "admin.charts.description":
+      "Các bản tóm tắt trực quan gọn nhẹ chỉ lấy từ dữ liệu quản trị do API hiện tại trả về.",
+    "admin.charts.empty.title": "Chưa đủ dữ liệu cho biểu đồ này.",
+    "admin.charts.empty.description":
+      "Biểu đồ sẽ hiển thị khi API trả về hoạt động quản trị phù hợp.",
+    "admin.charts.trend.title": "Xu hướng doanh thu và đơn hàng",
+    "admin.charts.trend.description":
+      "Giá trị đã thanh toán và số đơn theo ngày từ các đơn thanh toán mới nhất trong khoảng đã chọn.",
+    "admin.charts.trend.sampleRevenue": "Giá trị đã trả trong mẫu",
+    "admin.charts.trend.sampleOrders": "Số đơn trong mẫu",
+    "admin.charts.trend.aria":
+      "Biểu đồ cột giá trị đơn đã thanh toán cùng đường số lượng đơn.",
+    "admin.charts.trend.ordersTooltip": "{date}: {count} đơn",
+    "admin.charts.trend.disclaimer":
+      "Dựa trên tối đa {count} đơn gần đây do API dashboard trả về; đây là mẫu vận hành, không phải báo cáo tài chính đã kiểm toán.",
+    "admin.charts.legend.paidRevenue": "Giá trị đơn đã trả",
+    "admin.charts.legend.orders": "Số lượng đơn",
+    "admin.charts.payment.title": "Phân bổ trạng thái thanh toán",
+    "admin.charts.payment.description":
+      "Giao dịch thanh toán trong khoảng đã chọn, nhóm theo trạng thái hiện tại.",
+    "admin.charts.payment.aria":
+      "Biểu đồ donut thể hiện phân bổ trạng thái giao dịch thanh toán.",
+    "admin.charts.payment.total": "Giao dịch",
+    "admin.charts.payment.paid": "Đã thanh toán",
+    "admin.charts.payment.pending": "Đang chờ",
+    "admin.charts.payment.failed": "Thất bại",
+    "admin.charts.payment.cancelled": "Đã hủy",
+    "admin.charts.payment.expired": "Hết hạn",
+    "admin.charts.mix.title": "Cơ cấu sản phẩm / tín dụng",
+    "admin.charts.mix.description":
+      "Cơ cấu danh mục đang hoạt động cùng biến động tín dụng trong khoảng đã chọn.",
+    "admin.charts.mix.catalog": "Danh mục đang hoạt động",
+    "admin.charts.mix.activeProducts": "{count} đang hoạt động",
+    "admin.charts.mix.subscriptionPlans": "Gói thuê bao",
+    "admin.charts.mix.creditPacks": "Gói tín dụng",
+    "admin.charts.mix.creditActivity": "Hoạt động tín dụng",
+    "admin.charts.mix.purchased": "Tín dụng đã mua",
+    "admin.charts.mix.consumed": "Tín dụng đã dùng",
     "admin.catalog.title": "Danh mục sản phẩm",
     "admin.catalog.description":
       "Trạng thái chỉ đọc cho sáu sản phẩm thanh toán cốt lõi.",

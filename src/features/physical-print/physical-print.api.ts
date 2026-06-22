@@ -3,6 +3,8 @@ import type {
   CreatePhysicalPrintOrderPayload,
   PhysicalPrintCheckoutResult,
   PhysicalPrintOrder,
+  PhysicalPrintOrderListFilters,
+  PhysicalPrintOrderListResult,
   PhysicalPrintPackage,
 } from "./physical-print.types";
 
@@ -50,6 +52,18 @@ export async function getPhysicalPrintOrder(
   return unwrapData(data).order;
 }
 
+export async function getPhysicalPrintOrders(
+  filters: PhysicalPrintOrderListFilters = {},
+): Promise<PhysicalPrintOrderListResult> {
+  const { data } = await apiClient.get<
+    ApiResponse<PhysicalPrintOrderListResult>
+  >("/physical-print/orders", {
+    params: filters,
+  });
+
+  return unwrapData(data);
+}
+
 export async function createPhysicalPrintPayosCheckout(
   orderId: string,
 ): Promise<PhysicalPrintCheckoutResult> {
@@ -63,6 +77,7 @@ export async function createPhysicalPrintPayosCheckout(
 export const physicalPrintApi = {
   getPhysicalPrintPackages,
   createPhysicalPrintOrder,
+  getPhysicalPrintOrders,
   getPhysicalPrintOrder,
   createPhysicalPrintPayosCheckout,
 };
