@@ -355,6 +355,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.created": "Created",
     "dashboard.figure.viewImage": "View image",
     "dashboard.figure.viewImageAria": "View image for {prompt}",
+    "dashboard.figure.open3dStudio": "Open 3D Studio",
+    "dashboard.figure.open3dStudioAria": "Open 3D Studio for {prompt}",
     "dashboard.figure.downloadImage": "Download image",
     "dashboard.figure.downloadImageAria": "Download image for {prompt}",
     "dashboard.figure.openModel": "Open model link",
@@ -376,8 +378,9 @@ export const messages: Record<Language, Record<string, string>> = {
       "Generation submitted. Result will appear in Studio when ready.",
     "dashboard.notice.backendSource":
       "Status and available assets are confirmed by the system.",
+    "dashboard.notice.openingStudio3d": "3D model ready. Opening Studio...",
     "dashboard.notice.openStudioStatus": "Open Studio status",
-    "dashboard.notice.openStudio": "Open Studio",
+    "dashboard.notice.openStudio": "Open 3D Studio",
     "dashboard.setup.eyebrow": "Studio request",
     "dashboard.setup.title": "Generation setup",
     "dashboard.setup.body":
@@ -501,6 +504,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.modelPending": "3D model is still processing.",
     "studio.modelPendingBody":
       "Geometry has not finished yet. Refresh later or continue with the 2D preview.",
+    "studio.modelPreparingFallback":
+      "The 3D model is still preparing. Showing the image preview for now.",
     "studio.modelUnavailable": "3D model unavailable",
     "studio.modelUnavailableBody":
       "This generation finished without a stored 3D model. The 2D preview remains available.",
@@ -516,6 +521,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.viewer.unavailable": "In-app 3D viewer unavailable",
     "studio.viewer.unavailableBody":
       "The model is stored, but an app-owned viewer URL is not available. Refresh the figure or continue in 2D.",
+    "studio.previewFocusLabel": "Studio preview area",
     "studio.openGlb": "Open model link",
     "studio.downloadGlb": "Download GLB when allowed",
     "studio.glbRestricted":
@@ -1695,6 +1701,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.created": "Đã tạo",
     "dashboard.figure.viewImage": "Xem ảnh",
     "dashboard.figure.viewImageAria": "Xem ảnh cho {prompt}",
+    "dashboard.figure.open3dStudio": "Mở Studio 3D",
+    "dashboard.figure.open3dStudioAria": "Mở Studio 3D cho {prompt}",
     "dashboard.figure.downloadImage": "Tải ảnh",
     "dashboard.figure.downloadImageAria": "Tải ảnh cho {prompt}",
     "dashboard.figure.openModel": "Mở liên kết mô hình",
@@ -1715,8 +1723,9 @@ export const messages: Record<Language, Record<string, string>> = {
       "Đã gửi tạo hình. Kết quả sẽ xuất hiện trong Studio khi sẵn sàng.",
     "dashboard.notice.backendSource":
       "Trạng thái và tài sản sẵn sàng được hệ thống xác nhận.",
+    "dashboard.notice.openingStudio3d": "Mô hình 3D đã sẵn sàng. Đang mở Studio...",
     "dashboard.notice.openStudioStatus": "Mở trạng thái Studio",
-    "dashboard.notice.openStudio": "Mở Studio",
+    "dashboard.notice.openStudio": "Mở Studio 3D",
     "dashboard.setup.eyebrow": "Yêu cầu studio",
     "dashboard.setup.title": "Thiết lập tạo mẫu",
     "dashboard.setup.body":
@@ -1840,6 +1849,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.modelPending": "Mô hình 3D vẫn đang được xử lý.",
     "studio.modelPendingBody":
       "Hình học chưa hoàn tất. Hãy làm mới sau hoặc tiếp tục với bản xem trước 2D.",
+    "studio.modelPreparingFallback":
+      "Mô hình 3D vẫn đang chuẩn bị. Tạm thời hiển thị bản xem trước ảnh.",
     "studio.modelUnavailable": "Mô hình 3D không khả dụng",
     "studio.modelUnavailableBody":
       "Bản tạo này đã hoàn tất nhưng không có mô hình 3D được lưu. Bản xem trước 2D vẫn khả dụng.",
@@ -1856,6 +1867,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.viewer.unavailable": "Trình xem 3D trong ứng dụng không khả dụng",
     "studio.viewer.unavailableBody":
       "Mô hình đã được lưu nhưng chưa có URL xem thuộc ứng dụng. Hãy làm mới bản tạo hoặc tiếp tục ở chế độ 2D.",
+    "studio.previewFocusLabel": "Khu vực xem trước Studio",
     "studio.openGlb": "Mở liên kết mô hình",
     "studio.downloadGlb": "Tải GLB khi được phép",
     "studio.glbRestricted":

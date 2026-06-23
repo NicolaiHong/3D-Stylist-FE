@@ -57,6 +57,18 @@ function isPollingStatus(status: FigureStatus) {
   return status === "queued" || status === "processing";
 }
 
+function getStudioRouteSearchParams(
+  figureId: string,
+  viewMode: StudioViewMode,
+  focus?: "preview" | null,
+) {
+  return {
+    figureId,
+    view: viewMode,
+    ...(focus === "preview" ? { focus: "preview" } : {}),
+  };
+}
+
 function getPreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
 }
@@ -1092,6 +1104,25 @@ function StudioPreview({
   if (!modelAssetReady) {
     const isPending = isPollingStatus(figure.status);
 
+    if (previewUrl) {
+      return (
+        <div className="relative h-full min-h-0 w-full">
+          <img
+            alt={promptSnippet}
+            className="h-full max-h-full w-full max-w-full object-contain"
+            src={previewUrl}
+          />
+          <div
+            aria-live="polite"
+            className="absolute inset-x-3 bottom-3 rounded-md border border-[#f3bf26]/30 bg-[#14100a]/90 px-3 py-2 text-xs font-semibold leading-5 text-[#ffeac0] shadow-lg shadow-black/25"
+            role="status"
+          >
+            {t("studio.modelPreparingFallback")}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center">
         <Box className="h-12 w-12 text-[#3b494c]" />
@@ -1149,6 +1180,12 @@ export function StudioPage() {
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedFigureId = searchParams.get("figureId");
+  const requestedViewParam = searchParams.get("view");
+  const requestedViewMode: StudioViewMode | null =
+    requestedViewParam === "3d" || requestedViewParam === "2d"
+      ? requestedViewParam
+      : null;
+  const shouldFocusPreview = searchParams.get("focus") === "preview";
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [figures, setFigures] = useState<FigureDto[]>([]);
   const [selectedFigureId, setSelectedFigureId] = useState<string | null>(null);
@@ -1177,6 +1214,8 @@ export function StudioPage() {
   const isMountedRef = useRef(true);
   const pollingStartedAtRef = useRef<number | null>(null);
   const pollingFigureIdRef = useRef<string | null>(null);
+  const previewRegionRef = useRef<HTMLDivElement | null>(null);
+  const handledPreviewFocusRequestRef = useRef<string | null>(null);
 
   const selectedFigure = useMemo(
     () => figures.find((figure) => figure.id === selectedFigureId) ?? null,
@@ -1287,6 +1326,51 @@ export function StudioPage() {
   }, [figures, requestedFigureId]);
 
   useEffect(() => {
+    if (!requestedViewMode) {
+      return;
+    }
+
+    setViewMode(requestedViewMode);
+  }, [requestedViewMode]);
+
+  useEffect(() => {
+    if (!shouldFocusPreview || !selectedFigure) {
+      return;
+    }
+
+    if (requestedFigureId && selectedFigure.id !== requestedFigureId) {
+      return;
+    }
+
+    const focusRequestKey = `${selectedFigure.id}:${requestedViewMode ?? viewMode}:preview`;
+
+    if (handledPreviewFocusRequestRef.current === focusRequestKey) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (!isMountedRef.current || !previewRegionRef.current) {
+        return;
+      }
+
+      previewRegionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      previewRegionRef.current.focus({ preventScroll: true });
+      handledPreviewFocusRequestRef.current = focusRequestKey;
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [
+    requestedFigureId,
+    requestedViewMode,
+    selectedFigure,
+    shouldFocusPreview,
+    viewMode,
+  ]);
+
+  useEffect(() => {
     if (!selectedFigure || !isPollingStatus(selectedFigure.status)) {
       pollingStartedAtRef.current = null;
       pollingFigureIdRef.current = null;
@@ -1323,7 +1407,24 @@ export function StudioPage() {
 
   function handleSelectFigure(figureId: string) {
     setSelectedFigureId(figureId);
-    setSearchParams({ figureId }, { replace: true });
+    setSearchParams(getStudioRouteSearchParams(figureId, viewMode), {
+      replace: true,
+    });
+  }
+
+  function handleViewModeChange(nextViewMode: StudioViewMode) {
+    setViewMode(nextViewMode);
+
+    if (selectedFigureId) {
+      setSearchParams(
+        getStudioRouteSearchParams(
+          selectedFigureId,
+          nextViewMode,
+          shouldFocusPreview ? "preview" : null,
+        ),
+        { replace: true },
+      );
+    }
   }
 
   async function handleRefresh() {
@@ -1378,7 +1479,9 @@ export function StudioPage() {
         ...currentFigures.filter((figure) => figure.id !== childFigure.id),
       ]);
       setSelectedFigureId(childFigure.id);
-      setSearchParams({ figureId: childFigure.id }, { replace: true });
+      setSearchParams(getStudioRouteSearchParams(childFigure.id, "2d"), {
+        replace: true,
+      });
       setViewMode("2d");
       void loadBillingSummary();
     } catch (regenerateError) {
@@ -1428,7 +1531,9 @@ export function StudioPage() {
         ...currentFigures.filter((figure) => figure.id !== childFigure.id),
       ]);
       setSelectedFigureId(childFigure.id);
-      setSearchParams({ figureId: childFigure.id }, { replace: true });
+      setSearchParams(getStudioRouteSearchParams(childFigure.id, "2d"), {
+        replace: true,
+      });
       setViewMode("2d");
       void loadBillingSummary();
     } catch (variationError) {
@@ -1481,7 +1586,10 @@ export function StudioPage() {
       ]);
       setRetextureSuccessFigureId(childFigure.id);
       setSelectedFigureId(childFigure.id);
-      setSearchParams({ figureId: childFigure.id }, { replace: true });
+      setSearchParams(
+        getStudioRouteSearchParams(childFigure.id, "3d", "preview"),
+        { replace: true },
+      );
       setViewMode("3d");
       void loadBillingSummary();
     } catch (createRetextureError) {
@@ -1567,10 +1675,15 @@ export function StudioPage() {
                     }
                     selectedFigure={selectedFigure}
                     viewMode={viewMode}
-                    onViewModeChange={setViewMode}
+                    onViewModeChange={handleViewModeChange}
                   />
 
-                  <div className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden">
+                  <div
+                    aria-label={t("studio.previewFocusLabel")}
+                    className="studio-grid studio-preview-stage relative w-full min-w-0 overflow-hidden focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff]"
+                    ref={previewRegionRef}
+                    tabIndex={-1}
+                  >
                     <div className="relative flex h-full min-h-0 min-w-0 max-w-full items-center justify-center">
                       <StudioPreview
                         figure={selectedFigure}

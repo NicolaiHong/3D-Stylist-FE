@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Link } from "react-router-dom";
+import { createSearchParams, Link, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowDown,
@@ -54,6 +54,7 @@ import { useI18n } from "../i18n/useI18n";
 
 const GENERATION_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+const DASHBOARD_STUDIO_AUTO_OPEN_DELAY_MS = 500;
 const MAX_GENERATION_PROMPT_LENGTH = 600;
 const MAX_REFERENCE_IMAGE_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const PENDING_PAYMENT_BANNER_DISMISSED_PREFIX =
@@ -244,7 +245,7 @@ function getFigureAssetAvailability(figure: FigureDto, t: Translate) {
     availability.push(t("dashboard.figure.imageReady"));
   }
 
-  if (figure.modelUrl) {
+  if (figure.modelAssetReady === true) {
     availability.push(t("dashboard.figure.modelReady"));
   }
 
@@ -279,6 +280,25 @@ function composeGenerationPrompt(
 
 function getFigureAssetKey(figure: FigureDto, kind: FigureAssetKind) {
   return `${figure.id}:${kind}`;
+}
+
+function isStudio3dReadyFigure(figure: FigureDto | null) {
+  return (
+    Boolean(figure?.id) &&
+    figure?.status === "success" &&
+    figure.modelAssetReady === true
+  );
+}
+
+function getStudio3dRoute(figureId: string) {
+  return {
+    pathname: "/studio",
+    search: createSearchParams({
+      figureId,
+      view: "3d",
+      focus: "preview",
+    }).toString(),
+  };
 }
 
 function getDownloadFileName(figure: FigureDto, kind: FigureAssetKind) {
@@ -333,7 +353,14 @@ async function downloadUrlWithFallback(url: string, fileName: string) {
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
   } catch {
-    window.open(url, "_blank", "noopener,noreferrer");
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.rel = "noreferrer";
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
   }
 }
 
@@ -455,6 +482,7 @@ function FigureCard({
   );
   const previewUrl = getFigurePreviewUrl(figure);
   const assetAvailability = getFigureAssetAvailability(figure, t);
+  const canOpenStudio = isStudio3dReadyFigure(figure);
   const canViewImage = figure.status === "success" && Boolean(previewUrl);
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
@@ -489,12 +517,28 @@ function FigureCard({
           </p>
         ) : null}
         <div className="flex flex-wrap gap-2">
+          {canOpenStudio ? (
+            <Link
+              aria-label={t("dashboard.figure.open3dStudioAria", {
+                prompt: promptSnippet,
+              })}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              to={getStudio3dRoute(figure.id)}
+            >
+              <Box className="h-3.5 w-3.5" />
+              {t("dashboard.figure.open3dStudio")}
+            </Link>
+          ) : null}
           {canViewImage ? (
             <button
               aria-label={t("dashboard.figure.viewImageAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 ${
+                canOpenStudio
+                  ? "border border-white/[0.12] text-[#e5e2e1] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline-[#00e5ff]"
+                  : "bg-[#00e5ff] text-[#001f24] hover:bg-[#9cf0ff] focus-visible:outline-[#9cf0ff]"
+              }`}
               type="button"
               onClick={() => onView(figure)}
             >
@@ -719,6 +763,7 @@ function ActiveFigurePanel({
     t("dashboard.figure.untitled"),
   );
   const previewUrl = getFigurePreviewUrl(figure);
+  const canOpenStudio = isStudio3dReadyFigure(figure);
   const isImageDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
@@ -758,12 +803,28 @@ function ActiveFigurePanel({
           </p>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-3">
+          {canOpenStudio ? (
+            <Link
+              aria-label={t("dashboard.figure.open3dStudioAria", {
+                prompt: promptSnippet,
+              })}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              to={getStudio3dRoute(figure.id)}
+            >
+              <Box className="h-3.5 w-3.5" />
+              {t("dashboard.figure.open3dStudio")}
+            </Link>
+          ) : null}
           {previewUrl ? (
             <button
               aria-label={t("dashboard.figure.viewImageAria", {
                 prompt: promptSnippet,
               })}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-3 py-2 text-xs font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9cf0ff]"
+              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 ${
+                canOpenStudio
+                  ? "border border-white/[0.12] text-[#e5e2e1] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline-[#00e5ff]"
+                  : "bg-[#00e5ff] text-[#001f24] hover:bg-[#9cf0ff] focus-visible:outline-[#9cf0ff]"
+              }`}
               type="button"
               onClick={() => onView(figure)}
             >
@@ -1070,7 +1131,13 @@ function ReferenceImagePanel({
   );
 }
 
-function GenerationResultNotice({ figure }: { figure: FigureDto }) {
+function GenerationResultNotice({
+  figure,
+  isAutoOpeningStudio,
+}: {
+  figure: FigureDto;
+  isAutoOpeningStudio: boolean;
+}) {
   const { t } = useI18n();
   const isFailed = figure.status === "failed" || figure.status === "canceled";
   const message =
@@ -1083,6 +1150,28 @@ function GenerationResultNotice({ figure }: { figure: FigureDto }) {
     ? t("dashboard.notice.openStudioStatus")
     : t("dashboard.notice.openStudio");
 
+  if (isAutoOpeningStudio) {
+    return (
+      <section
+        aria-live="polite"
+        className="flex flex-col gap-3 rounded-lg border border-[#2cebcf]/35 bg-[#2cebcf]/10 p-4 sm:flex-row sm:items-center sm:justify-between"
+        role="status"
+      >
+        <span className="flex gap-3">
+          <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-[#2cebcf]" />
+          <span>
+            <span className="block text-sm font-bold text-white">
+              {t("dashboard.notice.openingStudio3d")}
+            </span>
+            <span className="mt-1 block text-xs leading-5 text-[#bac9cc]">
+              {t("dashboard.notice.backendSource")}
+            </span>
+          </span>
+        </span>
+      </section>
+    );
+  }
+
   return (
     <Link
       className={`group flex flex-col gap-3 rounded-lg border p-4 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] sm:flex-row sm:items-center sm:justify-between ${
@@ -1090,7 +1179,7 @@ function GenerationResultNotice({ figure }: { figure: FigureDto }) {
           ? "border-[#ffb4ab]/30 bg-[#93000a]/20"
           : "border-[#2cebcf]/35 bg-[#2cebcf]/10 hover:border-[#00e5ff]/65 hover:bg-[#00e5ff]/12"
       }`}
-      to={`/studio?figureId=${encodeURIComponent(figure.id)}`}
+      to={getStudio3dRoute(figure.id)}
     >
       <span className="flex gap-3">
         {isFailed ? (
@@ -1493,6 +1582,7 @@ function GenerationSetupDialog({
 
 export function DashboardPage() {
   const { language, t } = useI18n();
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const pendingBannerUserScope = getPendingPaymentBannerScope(user);
   const displayName =
@@ -1539,12 +1629,32 @@ export function DashboardPage() {
     Record<string, boolean>
   >({});
   const [pendingBannerDontShow, setPendingBannerDontShow] = useState(false);
+  const [autoOpeningStudioFigureId, setAutoOpeningStudioFigureId] = useState<
+    string | null
+  >(null);
   const isMountedRef = useRef(true);
   const pollingStartedAtRef = useRef<number | null>(null);
   const pollingFigureIdRef = useRef<string | null>(null);
+  const hasAutoOpenedStudioRef = useRef(false);
+  const autoOpenFigureIdRef = useRef<string | null>(null);
+  const autoOpenStudioTimeoutRef = useRef<number | null>(null);
   const generateButtonRef = useRef<HTMLButtonElement | null>(null);
   const referenceImageFileInputRef = useRef<HTMLInputElement | null>(null);
   const referenceImageObjectUrlRef = useRef<string | null>(null);
+
+  const clearAutoOpenStudioTimeout = useCallback(() => {
+    if (autoOpenStudioTimeoutRef.current !== null) {
+      window.clearTimeout(autoOpenStudioTimeoutRef.current);
+      autoOpenStudioTimeoutRef.current = null;
+    }
+  }, []);
+
+  const resetStudioAutoOpenGuard = useCallback(() => {
+    clearAutoOpenStudioTimeout();
+    hasAutoOpenedStudioRef.current = false;
+    autoOpenFigureIdRef.current = null;
+    setAutoOpeningStudioFigureId(null);
+  }, [clearAutoOpenStudioTimeout]);
 
   const loadBillingSummary = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -1610,8 +1720,9 @@ export function DashboardPage() {
 
     return () => {
       isMountedRef.current = false;
+      clearAutoOpenStudioTimeout();
     };
-  }, [loadBillingSummary, loadFigures]);
+  }, [clearAutoOpenStudioTimeout, loadBillingSummary, loadFigures]);
 
   useEffect(() => {
     return () => {
@@ -1717,6 +1828,50 @@ export function DashboardPage() {
       }
     };
   }, [activeFigure, loadBillingSummary, loadFigures, t]);
+
+  useEffect(() => {
+    if (!activeFigure || !isStudio3dReadyFigure(activeFigure)) {
+      return;
+    }
+
+    const figureId = activeFigure.id;
+
+    if (
+      autoOpenFigureIdRef.current === figureId &&
+      hasAutoOpenedStudioRef.current
+    ) {
+      return;
+    }
+
+    if (autoOpenFigureIdRef.current === figureId) {
+      return;
+    }
+
+    clearAutoOpenStudioTimeout();
+    autoOpenFigureIdRef.current = figureId;
+    setAutoOpeningStudioFigureId(figureId);
+
+    autoOpenStudioTimeoutRef.current = window.setTimeout(() => {
+      if (!isMountedRef.current || autoOpenFigureIdRef.current !== figureId) {
+        return;
+      }
+
+      hasAutoOpenedStudioRef.current = true;
+      autoOpenStudioTimeoutRef.current = null;
+      navigate(getStudio3dRoute(figureId));
+    }, DASHBOARD_STUDIO_AUTO_OPEN_DELAY_MS);
+
+    return () => {
+      if (
+        autoOpenFigureIdRef.current === figureId &&
+        !hasAutoOpenedStudioRef.current
+      ) {
+        clearAutoOpenStudioTimeout();
+        autoOpenFigureIdRef.current = null;
+        setAutoOpeningStudioFigureId(null);
+      }
+    };
+  }, [activeFigure, clearAutoOpenStudioTimeout, navigate]);
 
   const pendingOrder = summary?.pendingOrders[0] ?? null;
   const isPendingOrderWaitingForAdminVerification =
@@ -1981,6 +2136,7 @@ export function DashboardPage() {
 
     setIsGenerating(true);
     setGenerationError(null);
+    resetStudioAutoOpenGuard();
     handleCloseGenerationSetup();
 
     try {
@@ -2043,6 +2199,7 @@ export function DashboardPage() {
 
     setIsGenerating(true);
     setGenerationError(null);
+    resetStudioAutoOpenGuard();
     handleCloseGenerationSetup();
 
     try {
@@ -2432,7 +2589,12 @@ export function DashboardPage() {
 
                   {activeFigure ? (
                     <>
-                      <GenerationResultNotice figure={activeFigure} />
+                      <GenerationResultNotice
+                        figure={activeFigure}
+                        isAutoOpeningStudio={
+                          autoOpeningStudioFigureId === activeFigure.id
+                        }
+                      />
                       <ActiveFigurePanel
                         downloadingAssetKey={downloadingAssetKey}
                         figure={activeFigure}
