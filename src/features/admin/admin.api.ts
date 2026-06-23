@@ -5,7 +5,6 @@ import type {
   AdminMarkPaidResult,
   AdminOrder,
   AdminOrdersFilters,
-  AdminPhysicalPrintAssignmentPayload,
   AdminPhysicalPrintOrderDetail,
   AdminPhysicalPrintOrderListItem,
   AdminPhysicalPrintOrdersFilters,
@@ -235,17 +234,6 @@ export const adminApi = {
     const { data } = await apiClient.patch<
       ApiSuccessResponse<{ order: AdminPhysicalPrintOrderDetail }>
     >(`/admin/physical-print-orders/${orderId}/status`, payload);
-
-    return data.data.order;
-  },
-
-  async assignPhysicalPrintOrder(
-    orderId: string,
-    payload: AdminPhysicalPrintAssignmentPayload,
-  ): Promise<AdminPhysicalPrintOrderDetail> {
-    const { data } = await apiClient.patch<
-      ApiSuccessResponse<{ order: AdminPhysicalPrintOrderDetail }>
-    >(`/admin/physical-print-orders/${orderId}/assign`, payload);
 
     return data.data.order;
   },

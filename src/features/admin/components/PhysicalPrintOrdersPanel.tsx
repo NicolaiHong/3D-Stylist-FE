@@ -24,7 +24,6 @@ import type {
   AdminPhysicalPrintOrderListItem,
   AdminPhysicalPrintPaymentStatus,
   AdminPhysicalPrintStatusPayload,
-  AdminUser,
 } from "../admin.types";
 
 type PaymentFilter = AdminPhysicalPrintPaymentStatus | "all";
@@ -59,7 +58,6 @@ const allowedTransitions: Record<
   NOT_STARTED: [],
   WAITING_FULFILLMENT: [
     "WAITING_FULFILLMENT",
-    "ASSIGNED_TO_PRINT_PARTNER",
     "PRINTING",
     "CANCELLED",
   ],
@@ -162,13 +160,10 @@ export function PhysicalPrintOrdersPanel() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isAssigning, setIsAssigning] = useState(false);
   const [targetStatus, setTargetStatus] =
     useState<AdminEditablePhysicalPrintFulfillmentStatus | null>(null);
   const [trackingCode, setTrackingCode] = useState("");
   const [internalNote, setInternalNote] = useState("");
-  const [assignedStaffId, setAssignedStaffId] = useState("");
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const requestIdRef = useRef(0);
 
   const paymentLabels: Record<PaymentFilter, string> = {
@@ -256,15 +251,7 @@ export function PhysicalPrintOrdersPanel() {
     setActionSuccess(null);
 
     try {
-      const [detail, admins] = await Promise.all([
-        adminApi.getPhysicalPrintOrder(orderId),
-        adminApi.getAdminUsers({
-          page: 1,
-          limit: 100,
-          role: "admin",
-          status: "active",
-        }),
-      ]);
+      const detail = await adminApi.getPhysicalPrintOrder(orderId);
 
       setSelectedOrder(detail);
       setTargetStatus(
@@ -274,8 +261,6 @@ export function PhysicalPrintOrdersPanel() {
       );
       setTrackingCode(detail.trackingCode ?? "");
       setInternalNote(detail.internalNote ?? "");
-      setAssignedStaffId(detail.assignedStaffId ?? "");
-      setAdminUsers(admins.items);
     } catch (error) {
       setDetailError(getApiErrorMessage(error));
     } finally {
@@ -284,7 +269,7 @@ export function PhysicalPrintOrdersPanel() {
   }
 
   function closeDetail() {
-    if (isUpdating || isAssigning) {
+    if (isUpdating) {
       return;
     }
 
@@ -330,34 +315,6 @@ export function PhysicalPrintOrdersPanel() {
       setActionError(getApiErrorMessage(error));
     } finally {
       setIsUpdating(false);
-    }
-  }
-
-  async function assignAdmin() {
-    if (!selectedOrder || !assignedStaffId) {
-      return;
-    }
-
-    setIsAssigning(true);
-    setActionError(null);
-    setActionSuccess(null);
-
-    try {
-      const updated = await adminApi.assignPhysicalPrintOrder(
-        selectedOrder.id,
-        {
-          assignedStaffId,
-          internalNote: internalNote.trim(),
-        },
-      );
-      setSelectedOrder(updated);
-      setInternalNote(updated.internalNote ?? "");
-      setActionSuccess(t("admin.physicalPrint.success.assign"));
-      await loadOrders(false);
-    } catch (error) {
-      setActionError(getApiErrorMessage(error));
-    } finally {
-      setIsAssigning(false);
     }
   }
 
@@ -590,7 +547,7 @@ export function PhysicalPrintOrdersPanel() {
                 aria-label={t("admin.physicalPrint.close")}
                 autoFocus
                 className="flex h-11 w-11 items-center justify-center rounded-md border border-white/10 text-[#bac9cc] hover:border-[#00e5ff]/35 hover:text-white disabled:opacity-60"
-                disabled={isUpdating || isAssigning}
+                disabled={isUpdating}
                 type="button"
                 onClick={closeDetail}
               >
@@ -787,54 +744,6 @@ export function PhysicalPrintOrdersPanel() {
                         <Truck className="h-4 w-4" />
                       )}
                       {t("admin.physicalPrint.updateStatus")}
-                    </button>
-                  </section>
-
-                  <section className="rounded-md border border-[#3b494c]/70 bg-[#201f1f] p-4">
-                    <h4 className="font-display text-lg font-semibold text-white">
-                      {t("admin.physicalPrint.assign")}
-                    </h4>
-                    <p className="mt-2 text-xs leading-5 text-[#849396]">
-                      {t("admin.physicalPrint.assignDescription")}
-                    </p>
-                    <label className="mt-4 grid gap-1.5 text-xs font-bold uppercase text-[#849396]">
-                      {t("admin.physicalPrint.assignee")}
-                      <select
-                        className="min-h-11 rounded-md border border-[#3b494c] bg-[#0e0e0e] px-3 py-2 text-sm font-semibold normal-case text-white outline-none focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff]"
-                        value={assignedStaffId}
-                        onChange={(event) =>
-                          setAssignedStaffId(event.target.value)
-                        }
-                      >
-                        <option value="">
-                          {t("admin.physicalPrint.unassigned")}
-                        </option>
-                        {adminUsers.map((admin) => (
-                          <option key={admin.id} value={admin.id}>
-                            {admin.displayName || admin.email || admin.id}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <button
-                      className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 bg-[#00e5ff]/10 px-4 py-2 text-sm font-bold text-[#c3f5ff] transition hover:bg-[#00e5ff]/15 disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={
-                        isAssigning ||
-                        !assignedStaffId ||
-                        selectedOrder.paymentStatus !== "PAID" ||
-                        ["SHIPPED", "COMPLETED", "CANCELLED"].includes(
-                          selectedOrder.fulfillmentStatus,
-                        )
-                      }
-                      type="button"
-                      onClick={() => void assignAdmin()}
-                    >
-                      {isAssigning ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Package className="h-4 w-4" />
-                      )}
-                      {t("admin.physicalPrint.assign")}
                     </button>
                   </section>
 

@@ -57,6 +57,29 @@ test("admin fulfillment UI cannot mark a physical order paid", () => {
   );
 });
 
+test("assignment is not part of the MVP admin fulfillment workflow", () => {
+  assert.doesNotMatch(panelSource, /assignPhysicalPrintOrder|assignAdmin/);
+  assert.doesNotMatch(panelSource, /assignedStaffId|assignedPartnerId/);
+  assert.doesNotMatch(adminApiSource, /physical-print-orders\/\$\{orderId\}\/assign/);
+
+  const waitingTransitions = panelSource.match(
+    /WAITING_FULFILLMENT:\s*\[[\s\S]*?\],/,
+  )?.[0];
+
+  assert.ok(waitingTransitions, "WAITING_FULFILLMENT transitions are missing");
+  assert.match(waitingTransitions, /"PRINTING"/);
+  assert.doesNotMatch(waitingTransitions, /"ASSIGNED_TO_PRINT_PARTNER"/);
+});
+
+test("status update does not require an assignment field", () => {
+  const payload = panelSource.match(
+    /const payload: AdminPhysicalPrintStatusPayload = \{[\s\S]*?\n\s*\};/,
+  )?.[0];
+
+  assert.ok(payload, "status update payload is missing");
+  assert.doesNotMatch(payload, /assignedStaffId|assignedPartnerId/);
+});
+
 test("admin physical print UI uses no model delivery URL or Meshy call", () => {
   assert.doesNotMatch(
     panelSource,

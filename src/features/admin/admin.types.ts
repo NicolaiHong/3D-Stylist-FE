@@ -408,9 +408,3 @@ export interface AdminPhysicalPrintStatusPayload {
   internalNote?: string;
   trackingCode?: string;
 }
-
-export interface AdminPhysicalPrintAssignmentPayload {
-  assignedStaffId?: string;
-  assignedPartnerId?: string;
-  internalNote?: string;
-}
