@@ -113,7 +113,10 @@ export function PhysicalPrintCheckoutStatusPage({
 
     try {
       const checkout =
-        await physicalPrintApi.createPhysicalPrintPayosCheckout(order.id);
+        await physicalPrintApi.createPhysicalPrintPayosCheckout(
+          order.id,
+          "retry",
+        );
       window.location.assign(checkout.payment.checkoutUrl);
     } catch (retryError) {
       setError(getApiErrorMessage(retryError));
