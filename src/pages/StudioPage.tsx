@@ -35,7 +35,9 @@ import type {
   FigureDto,
   FigureStatus,
 } from "../features/figures/figures.types";
+import { PhysicalPrintNudge } from "../features/physical-print/components/PhysicalPrintNudge";
 import { PhysicalPrintSection } from "../features/physical-print/components/PhysicalPrintSection";
+import { markPhysicalPrintNudgeHandled } from "../features/physical-print/physical-print-nudge-session";
 import { getApiErrorMessage } from "../services/apiClient";
 import { getDisplayLabel } from "../i18n/displayMaps";
 import { formatI18nDateTime } from "../i18n/formatters";
@@ -1215,12 +1217,39 @@ export function StudioPage() {
   const pollingStartedAtRef = useRef<number | null>(null);
   const pollingFigureIdRef = useRef<string | null>(null);
   const previewRegionRef = useRef<HTMLDivElement | null>(null);
+  const physicalPrintSectionRef = useRef<HTMLDivElement | null>(null);
   const handledPreviewFocusRequestRef = useRef<string | null>(null);
+  const [
+    physicalPrintNudgeSuppressedFigureIds,
+    setPhysicalPrintNudgeSuppressedFigureIds,
+  ] = useState<Set<string>>(() => new Set());
 
   const selectedFigure = useMemo(
     () => figures.find((figure) => figure.id === selectedFigureId) ?? null,
     [figures, selectedFigureId],
   );
+  const isPhysicalPrintEligible =
+    selectedFigure !== null &&
+    selectedFigure.status === "success" &&
+    selectedFigure.modelAssetReady === true;
+  const isPhysicalPrintNudgeEligible =
+    selectedFigure !== null &&
+    isPhysicalPrintEligible &&
+    viewMode === "3d" &&
+    !physicalPrintNudgeSuppressedFigureIds.has(selectedFigure.id);
+
+  const suppressPhysicalPrintNudge = useCallback((figureId: string) => {
+    markPhysicalPrintNudgeHandled(figureId);
+    setPhysicalPrintNudgeSuppressedFigureIds((currentFigureIds) => {
+      if (currentFigureIds.has(figureId)) {
+        return currentFigureIds;
+      }
+
+      const nextFigureIds = new Set(currentFigureIds);
+      nextFigureIds.add(figureId);
+      return nextFigureIds;
+    });
+  }, []);
 
   const loadFigures = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -1397,6 +1426,37 @@ export function StudioPage() {
   }, [refreshSelectedFigure, selectedFigure]);
 
   useEffect(() => {
+    if (!selectedFigure || !isPhysicalPrintEligible) {
+      return;
+    }
+
+    const section = physicalPrintSectionRef.current;
+
+    if (!section || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+
+    const figureId = selectedFigure.id;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+
+        if (entry?.isIntersecting && entry.intersectionRatio >= 0.2) {
+          suppressPhysicalPrintNudge(figureId);
+        }
+      },
+      { threshold: [0.2] },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [
+    isPhysicalPrintEligible,
+    selectedFigure,
+    suppressPhysicalPrintNudge,
+  ]);
+
+  useEffect(() => {
     setVariationInstruction("");
     setPreviewVariationInstruction("");
     setRetextureInstruction("");
@@ -1425,6 +1485,27 @@ export function StudioPage() {
         { replace: true },
       );
     }
+  }
+
+  function handlePhysicalPrintInteraction() {
+    if (selectedFigure) {
+      suppressPhysicalPrintNudge(selectedFigure.id);
+    }
+  }
+
+  function handlePhysicalPrintNudgeTry() {
+    if (!selectedFigure || !physicalPrintSectionRef.current) {
+      return;
+    }
+
+    suppressPhysicalPrintNudge(selectedFigure.id);
+    physicalPrintSectionRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    physicalPrintSectionRef.current
+      .querySelector<HTMLElement>("#physical-print-title")
+      ?.focus({ preventScroll: true });
   }
 
   async function handleRefresh() {
@@ -1700,12 +1781,20 @@ export function StudioPage() {
                   />
                 </section>
 
-                <PhysicalPrintSection
-                  modelAssetReady={selectedFigure.modelAssetReady === true}
-                  selectedFigureId={selectedFigure.id}
-                  selectedFigurePrompt={selectedFigure.prompt}
-                  selectedFigureStatus={selectedFigure.status}
-                />
+                <div
+                  className="physical-print-scroll-target"
+                  id="physical-print-section"
+                  ref={physicalPrintSectionRef}
+                  onFocusCapture={handlePhysicalPrintInteraction}
+                  onPointerDownCapture={handlePhysicalPrintInteraction}
+                >
+                  <PhysicalPrintSection
+                    modelAssetReady={selectedFigure.modelAssetReady === true}
+                    selectedFigureId={selectedFigure.id}
+                    selectedFigurePrompt={selectedFigure.prompt}
+                    selectedFigureStatus={selectedFigure.status}
+                  />
+                </div>
               </div>
 
               <StudioMetadataPanel
@@ -1737,6 +1826,14 @@ export function StudioPage() {
             </div>
           ) : null}
         </div>
+
+        {selectedFigure ? (
+          <PhysicalPrintNudge
+            figureId={selectedFigure.id}
+            isEligible={isPhysicalPrintNudgeEligible}
+            onTry={handlePhysicalPrintNudgeTry}
+          />
+        ) : null}
       </main>
     </DashboardShell>
   );

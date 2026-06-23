@@ -355,6 +355,7 @@ export function PhysicalPrintSection({
             <h2
               className="mt-2 font-display text-2xl font-semibold text-white"
               id="physical-print-title"
+              tabIndex={-1}
             >
               {t("physicalPrint.title")}
             </h2>

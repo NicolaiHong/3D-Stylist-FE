@@ -631,6 +631,12 @@ export const messages: Record<Language, Record<string, string>> = {
       "The order was created, but payOS checkout could not be opened. Retry checkout without creating another order.",
     "physicalPrint.errors.missingCheckoutUrl":
       "The backend did not return a payOS checkout URL. Retry checkout for this order.",
+    "physicalPrint.nudge.badge": "Physical 3D Print",
+    "physicalPrint.nudge.title": "Turn this model into a real display piece?",
+    "physicalPrint.nudge.body":
+      "You can choose a print package and continue to checkout when you're ready.",
+    "physicalPrint.nudge.dismiss": "Dismiss",
+    "physicalPrint.nudge.try": "Let's try",
     "physicalPrint.tracking.eyebrow": "Physical print tracking",
     "physicalPrint.tracking.ordersTitle": "My Print Orders",
     "physicalPrint.tracking.ordersBody":
@@ -1977,6 +1983,13 @@ export const messages: Record<Language, Record<string, string>> = {
       "Đơn hàng đã được tạo nhưng không thể mở trang thanh toán payOS. Hãy thử lại thanh toán mà không tạo đơn mới.",
     "physicalPrint.errors.missingCheckoutUrl":
       "Backend không trả về URL thanh toán payOS. Hãy thử lại thanh toán cho đơn này.",
+    "physicalPrint.nudge.badge": "In 3D vật lý",
+    "physicalPrint.nudge.title":
+      "Biến mẫu này thành sản phẩm trưng bày thật?",
+    "physicalPrint.nudge.body":
+      "Bạn có thể chọn gói in và tiếp tục thanh toán khi sẵn sàng.",
+    "physicalPrint.nudge.dismiss": "Bỏ qua",
+    "physicalPrint.nudge.try": "Xem gói in",
     "physicalPrint.tracking.eyebrow": "Theo dõi in vật lý",
     "physicalPrint.tracking.ordersTitle": "Đơn in của tôi",
     "physicalPrint.tracking.ordersBody":
