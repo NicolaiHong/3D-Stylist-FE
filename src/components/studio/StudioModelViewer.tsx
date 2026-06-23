@@ -9,7 +9,15 @@ import {
   type ReactNode,
 } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { Box3, Group, Mesh, PerspectiveCamera, Vector3 } from "three";
+import {
+  ACESFilmicToneMapping,
+  Box3,
+  Group,
+  Mesh,
+  PerspectiveCamera,
+  SRGBColorSpace,
+  Vector3,
+} from "three";
 import { OrbitControls as OrbitControlsImpl } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -18,6 +26,18 @@ import { useI18n } from "../../i18n/useI18n";
 
 const MODEL_HEIGHT = 2.95;
 const VIEWER_FOV = 37;
+const AMBIENT_LIGHT_INTENSITY = 0.62;
+const HEMISPHERE_LIGHT_INTENSITY = 0.88;
+const KEY_LIGHT_INTENSITY = 1.38;
+const FILL_LIGHT_INTENSITY = 0.68;
+const BACK_RIM_LIGHT_INTENSITY = 1.08;
+const REAR_SOFT_LIGHT_INTENSITY = 0.42;
+const WARM_SHAPE_LIGHT_INTENSITY = 0.36;
+const KEY_LIGHT_POSITION: [number, number, number] = [3.2, 5.4, 4.6];
+const FILL_LIGHT_POSITION: [number, number, number] = [-4.2, 3.3, 2.4];
+const BACK_RIM_LIGHT_POSITION: [number, number, number] = [-3.4, 4.1, -5.2];
+const REAR_SOFT_LIGHT_POSITION: [number, number, number] = [0.8, 1.8, -2.8];
+const WARM_SHAPE_LIGHT_POSITION: [number, number, number] = [2.2, 1.4, 2.1];
 
 interface ModelFrame {
   center: [number, number, number];
@@ -269,6 +289,46 @@ function ViewerEnvironment({ frame }: { frame: ModelFrame }) {
   );
 }
 
+function StudioLighting() {
+  // Keep rear-side readability without flattening the dark Studio stage.
+  return (
+    <>
+      <ambientLight intensity={AMBIENT_LIGHT_INTENSITY} />
+      <hemisphereLight
+        color="#dff9ff"
+        groundColor="#102026"
+        intensity={HEMISPHERE_LIGHT_INTENSITY}
+      />
+      <directionalLight
+        castShadow
+        color="#ffffff"
+        intensity={KEY_LIGHT_INTENSITY}
+        position={KEY_LIGHT_POSITION}
+      />
+      <directionalLight
+        color="#9eeeff"
+        intensity={FILL_LIGHT_INTENSITY}
+        position={FILL_LIGHT_POSITION}
+      />
+      <directionalLight
+        color="#7defff"
+        intensity={BACK_RIM_LIGHT_INTENSITY}
+        position={BACK_RIM_LIGHT_POSITION}
+      />
+      <pointLight
+        color="#7defff"
+        intensity={REAR_SOFT_LIGHT_INTENSITY}
+        position={REAR_SOFT_LIGHT_POSITION}
+      />
+      <pointLight
+        color="#ffeac0"
+        intensity={WARM_SHAPE_LIGHT_INTENSITY}
+        position={WARM_SHAPE_LIGHT_POSITION}
+      />
+    </>
+  );
+}
+
 interface ViewerSceneProps {
   modelUrl: string;
   onReady: () => void;
@@ -290,25 +350,7 @@ function ViewerScene({ modelUrl, onReady }: ViewerSceneProps) {
 
   return (
     <>
-      <ambientLight intensity={1} />
-      <hemisphereLight
-        color="#c3f5ff"
-        groundColor="#121819"
-        intensity={0.64}
-      />
-      <directionalLight
-        castShadow
-        color="#ffffff"
-        intensity={2.55}
-        position={[3.2, 5.4, 4.6]}
-      />
-      <directionalLight
-        color="#12dff3"
-        intensity={0.62}
-        position={[-3.6, 2.8, -2.6]}
-      />
-      <pointLight color="#12dff3" intensity={0.78} position={[-2.8, 1.9, 2.4]} />
-      <pointLight color="#ffeac0" intensity={0.55} position={[2.3, 1.5, 2]} />
+      <StudioLighting />
 
       <Suspense fallback={<ModelLoadingMesh />}>
         <ViewerEnvironment frame={frame} />
@@ -464,7 +506,16 @@ export default function StudioModelViewer({
               onUnavailable={() => setIsUnavailable(true)}
             />
           }
-          gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+          gl={{
+            alpha: true,
+            antialias: true,
+            powerPreference: "high-performance",
+          }}
+          onCreated={({ gl }) => {
+            gl.outputColorSpace = SRGBColorSpace;
+            gl.toneMapping = ACESFilmicToneMapping;
+            gl.toneMappingExposure = 1.05;
+          }}
           shadows
         >
           <ViewerScene modelUrl={modelUrl} onReady={() => setIsReady(true)} />
