@@ -15,7 +15,10 @@ import {
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { PhysicalPrintStatusPill } from "../features/physical-print/components/PhysicalPrintStatusPill";
 import { physicalPrintApi } from "../features/physical-print/physical-print.api";
-import { canRetryPhysicalPrintCheckout } from "../features/physical-print/physical-print.presentation";
+import {
+  canRetryPhysicalPrintCheckout,
+  getPhysicalPrintCheckoutAction,
+} from "../features/physical-print/physical-print.presentation";
 import type {
   PhysicalPrintFulfillmentStatus,
   PhysicalPrintOrder,
@@ -55,10 +58,18 @@ function buildTimeline(
   t: (key: string) => string,
 ): TimelineItem[] {
   const rank = fulfillmentRank[order.fulfillmentStatus];
-  const isPaid = order.paymentStatus === "PAID";
-  const stageState = (stage: number): TimelineState => {
-    if (!isPaid || rank < 0) {
+  const isPaid = order.paidAt !== null;
+  const isFulfillmentCancelled = order.fulfillmentStatus === "CANCELLED";
+  const stageState = (
+    stage: number,
+    timestamp: string | null,
+  ): TimelineState => {
+    if (!isPaid) {
       return "pending";
+    }
+
+    if (isFulfillmentCancelled) {
+      return timestamp ? "complete" : "pending";
     }
 
     if (rank > stage) {
@@ -66,7 +77,7 @@ function buildTimeline(
     }
 
     if (rank === stage) {
-      return "current";
+      return stage === fulfillmentRank.COMPLETED ? "complete" : "current";
     }
 
     return "pending";
@@ -83,37 +94,41 @@ function buildTimeline(
       key: "payment",
       label: t("physicalPrint.tracking.timeline.payment"),
       timestamp: order.paidAt,
-      state: isPaid ? "complete" : "current",
+      state: isPaid
+        ? "complete"
+        : order.paymentStatus === "PENDING"
+          ? "current"
+          : "pending",
     },
     {
       key: "waiting",
       label: t("physicalPrint.tracking.timeline.waiting"),
-      timestamp: order.assignedAt ?? order.paidAt,
-      state: stageState(1),
+      timestamp: order.paidAt,
+      state: stageState(1, order.paidAt),
     },
     {
       key: "printing",
       label: t("physicalPrint.tracking.timeline.printing"),
-      timestamp: null,
-      state: stageState(2),
+      timestamp: order.printingAt,
+      state: stageState(2, order.printingAt),
     },
     {
       key: "printed",
       label: t("physicalPrint.tracking.timeline.printed"),
       timestamp: order.printedAt,
-      state: stageState(3),
+      state: stageState(3, order.printedAt),
     },
     {
       key: "shipped",
       label: t("physicalPrint.tracking.timeline.shipped"),
       timestamp: order.shippedAt,
-      state: stageState(4),
+      state: stageState(4, order.shippedAt),
     },
     {
       key: "completed",
       label: t("physicalPrint.tracking.timeline.completed"),
       timestamp: order.completedAt,
-      state: stageState(5),
+      state: stageState(5, order.completedAt),
     },
   ];
 }
@@ -232,6 +247,7 @@ export function PhysicalPrintOrderDetailPage() {
   }
 
   const canRetry = canRetryPhysicalPrintCheckout(order);
+  const checkoutAction = getPhysicalPrintCheckoutAction(order);
 
   return (
     <DashboardShell>
@@ -417,8 +433,7 @@ export function PhysicalPrintOrderDetailPage() {
             </ol>
           </section>
 
-          {order.cancelledAt ||
-          order.paymentStatus === "CANCELLED" ||
+          {order.paymentStatus === "CANCELLED" ||
           order.fulfillmentStatus === "CANCELLED" ? (
             <section className="rounded-lg border border-[#ffb4ab]/30 bg-[#93000a]/20 p-4 text-sm text-[#ffdad6]">
               {t("physicalPrint.tracking.cancelledNotice")}
@@ -451,7 +466,11 @@ export function PhysicalPrintOrderDetailPage() {
                 ) : (
                   <RotateCcw className="h-4 w-4" />
                 )}
-                {t("physicalPrint.tracking.retryCheckout")}
+                {t(
+                  checkoutAction === "pay_again"
+                    ? "physicalPrint.tracking.payAgain"
+                    : "physicalPrint.tracking.continuePayment",
+                )}
               </button>
             ) : null}
             <Link

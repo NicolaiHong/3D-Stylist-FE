@@ -388,6 +388,7 @@ export interface AdminPhysicalPrintOrderDetail {
   updatedAt: string;
   paidAt: string | null;
   assignedAt: string | null;
+  printingAt: string | null;
   printedAt: string | null;
   shippedAt: string | null;
   completedAt: string | null;

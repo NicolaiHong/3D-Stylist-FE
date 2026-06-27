@@ -7,6 +7,14 @@ const apiSource = readFileSync(
   "src/features/physical-print/physical-print.api.ts",
   "utf8",
 );
+const presentationSource = readFileSync(
+  "src/features/physical-print/physical-print.presentation.ts",
+  "utf8",
+);
+const typesSource = readFileSync(
+  "src/features/physical-print/physical-print.types.ts",
+  "utf8",
+);
 const listSource = readFileSync(
   "src/pages/PhysicalPrintOrdersPage.tsx",
   "utf8",
@@ -52,13 +60,55 @@ test("retry checkout uses the existing order and sends an empty body", () => {
     apiSource,
     /`\/physical-print\/orders\/\$\{orderId\}\/payos-checkout`, \{\}/,
   );
-  assert.match(detailSource, /createPhysicalPrintPayosCheckout\(order\.id\)/);
+  assert.match(
+    detailSource,
+    /createPhysicalPrintPayosCheckout\(\s*order\.id,\s*"retry"/,
+  );
   assert.match(
     checkoutStatusSource,
-    /createPhysicalPrintPayosCheckout\(order\.id\)/,
+    /createPhysicalPrintPayosCheckout\(\s*order\.id,\s*"retry"/,
   );
   assert.doesNotMatch(detailSource, /createPhysicalPrintOrder/);
   assert.doesNotMatch(checkoutStatusSource, /createPhysicalPrintOrder/);
+});
+
+test("checkout eligibility distinguishes continue, pay again, and blocked states", () => {
+  assert.match(
+    presentationSource,
+    /order\.fulfillmentStatus !== "NOT_STARTED"[\s\S]*return null/,
+  );
+  assert.match(
+    presentationSource,
+    /order\.paymentStatus === "PENDING"[\s\S]*return "continue"/,
+  );
+
+  const retryableStatuses =
+    presentationSource.match(
+      /\["FAILED", "CANCELLED", "EXPIRED"\] as PhysicalPrintPaymentStatus\[\]/,
+    )?.[0] ?? "";
+
+  assert.ok(retryableStatuses);
+  assert.doesNotMatch(retryableStatuses, /PAID|REFUNDED|PENDING/);
+  assert.match(detailSource, /physicalPrint\.tracking\.continuePayment/);
+  assert.match(detailSource, /physicalPrint\.tracking\.payAgain/);
+  assert.match(checkoutStatusSource, /physicalPrint\.tracking\.continuePayment/);
+  assert.match(checkoutStatusSource, /physicalPrint\.tracking\.payAgain/);
+});
+
+test("user timeline uses backend milestone timestamps without assignment fallback", () => {
+  assert.match(typesSource, /printingAt: string \| null/);
+  assert.match(
+    detailSource,
+    /key: "waiting"[\s\S]*timestamp: order\.paidAt/,
+  );
+  assert.match(
+    detailSource,
+    /key: "printing"[\s\S]*timestamp: order\.printingAt/,
+  );
+  assert.doesNotMatch(detailSource, /order\.assignedAt \?\? order\.paidAt/);
+  assert.match(detailSource, /timestamp: order\.printedAt/);
+  assert.match(detailSource, /timestamp: order\.shippedAt/);
+  assert.match(detailSource, /timestamp: order\.completedAt/);
 });
 
 test("tracking UI cannot mark paid or call the webhook", () => {
