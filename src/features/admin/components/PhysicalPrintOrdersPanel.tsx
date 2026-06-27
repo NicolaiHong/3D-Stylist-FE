@@ -642,6 +642,7 @@ export function PhysicalPrintOrdersPanel() {
                         ["createdAt", selectedOrder.createdAt],
                         ["paidAt", selectedOrder.paidAt],
                         ["assignedAt", selectedOrder.assignedAt],
+                        ["printingAt", selectedOrder.printingAt],
                         ["printedAt", selectedOrder.printedAt],
                         ["shippedAt", selectedOrder.shippedAt],
                         ["completedAt", selectedOrder.completedAt],

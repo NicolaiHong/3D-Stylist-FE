@@ -81,8 +81,23 @@ export function getPhysicalPrintFulfillmentTone(
 export function canRetryPhysicalPrintCheckout(
   order: Pick<PhysicalPrintOrder, "paymentStatus" | "fulfillmentStatus">,
 ): boolean {
+  return getPhysicalPrintCheckoutAction(order) !== null;
+}
+
+export function getPhysicalPrintCheckoutAction(
+  order: Pick<PhysicalPrintOrder, "paymentStatus" | "fulfillmentStatus">,
+): "continue" | "pay_again" | null {
+  if (order.fulfillmentStatus !== "NOT_STARTED") {
+    return null;
+  }
+
+  if (order.paymentStatus === "PENDING") {
+    return "continue";
+  }
+
   return (
-    order.paymentStatus === "PENDING" &&
-    order.fulfillmentStatus === "NOT_STARTED"
-  );
+    ["FAILED", "CANCELLED", "EXPIRED"] as PhysicalPrintPaymentStatus[]
+  ).includes(order.paymentStatus)
+    ? "pay_again"
+    : null;
 }

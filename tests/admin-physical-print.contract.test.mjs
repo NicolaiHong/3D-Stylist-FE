@@ -8,6 +8,10 @@ const panelSource = readFileSync(
   "utf8",
 );
 const adminApiSource = readFileSync("src/features/admin/admin.api.ts", "utf8");
+const adminTypesSource = readFileSync(
+  "src/features/admin/admin.types.ts",
+  "utf8",
+);
 
 test("admin page loads the physical print fulfillment panel", () => {
   assert.match(adminPageSource, /<PhysicalPrintOrdersPanel\s*\/>/);
@@ -78,6 +82,11 @@ test("status update does not require an assignment field", () => {
 
   assert.ok(payload, "status update payload is missing");
   assert.doesNotMatch(payload, /assignedStaffId|assignedPartnerId/);
+});
+
+test("admin detail exposes and renders the backend-owned printing milestone", () => {
+  assert.match(adminTypesSource, /printingAt: string \| null/);
+  assert.match(panelSource, /\["printingAt", selectedOrder\.printingAt\]/);
 });
 
 test("admin physical print UI uses no model delivery URL or Meshy call", () => {

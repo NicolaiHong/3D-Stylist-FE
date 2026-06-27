@@ -649,6 +649,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.package": "Package",
     "physicalPrint.tracking.total": "Total",
     "physicalPrint.tracking.retryCheckout": "Retry checkout",
+    "physicalPrint.tracking.continuePayment": "Continue payment",
+    "physicalPrint.tracking.payAgain": "Pay again",
     "physicalPrint.tracking.viewOrder": "View order",
     "physicalPrint.tracking.viewMyOrders": "View my print orders",
     "physicalPrint.tracking.backToStudio": "Back to Studio",
@@ -710,16 +712,16 @@ export const messages: Record<Language, Record<string, string>> = {
       "The backend reconciled the payOS result. The order detail below is the authoritative status.",
     "physicalPrint.tracking.checkout.cancelTitle": "Checkout was cancelled",
     "physicalPrint.tracking.checkout.cancelBody":
-      "No payment is confirmed from the browser cancel page. You can retry only while the order remains pending.",
+      "No payment is confirmed from the browser cancel page. Pay again becomes available after the backend confirms cancellation.",
     "physicalPrint.tracking.checkout.paidTitle": "Payment confirmed",
     "physicalPrint.tracking.checkout.paidBody":
       "Your physical print order is paid and is waiting for fulfillment.",
     "physicalPrint.tracking.checkout.failedTitle": "Payment failed",
     "physicalPrint.tracking.checkout.failedBody":
-      "payOS did not confirm this payment. Review the order status before starting another checkout.",
+      "payOS did not confirm this payment. You can pay again on the same physical print order.",
     "physicalPrint.tracking.checkout.expiredTitle": "Payment expired",
     "physicalPrint.tracking.checkout.expiredBody":
-      "The payOS payment link expired and this order can no longer be retried.",
+      "The payOS payment link expired. You can pay again on the same physical print order.",
     "physicalPrint.tracking.checkout.refundedTitle": "Payment refunded",
     "physicalPrint.tracking.checkout.refundedBody":
       "The backend reports this physical print payment as refunded.",
@@ -1241,6 +1243,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.createdAt": "Created",
     "admin.physicalPrint.paidAt": "Paid",
     "admin.physicalPrint.assignedAt": "Assigned",
+    "admin.physicalPrint.printingAt": "Printing",
     "admin.physicalPrint.printedAt": "Printed",
     "admin.physicalPrint.shippedAt": "Shipped",
     "admin.physicalPrint.completedAt": "Completed",
@@ -2002,6 +2005,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.package": "Gói",
     "physicalPrint.tracking.total": "Tổng cộng",
     "physicalPrint.tracking.retryCheckout": "Thử lại thanh toán",
+    "physicalPrint.tracking.continuePayment": "Tiếp tục thanh toán",
+    "physicalPrint.tracking.payAgain": "Thanh toán lại",
     "physicalPrint.tracking.viewOrder": "Xem đơn hàng",
     "physicalPrint.tracking.viewMyOrders": "Xem các đơn in của tôi",
     "physicalPrint.tracking.backToStudio": "Quay lại Studio",
@@ -2063,16 +2068,16 @@ export const messages: Record<Language, Record<string, string>> = {
       "Backend đã đối soát kết quả payOS. Chi tiết đơn hàng bên dưới là trạng thái có thẩm quyền.",
     "physicalPrint.tracking.checkout.cancelTitle": "Thanh toán đã bị hủy",
     "physicalPrint.tracking.checkout.cancelBody":
-      "Trang hủy trên trình duyệt không xác nhận thanh toán. Bạn chỉ có thể thử lại khi đơn vẫn đang chờ.",
+      "Trang hủy trên trình duyệt không xác nhận thanh toán. Nút thanh toán lại sẽ xuất hiện sau khi backend xác nhận trạng thái hủy.",
     "physicalPrint.tracking.checkout.paidTitle": "Đã xác nhận thanh toán",
     "physicalPrint.tracking.checkout.paidBody":
       "Đơn in vật lý đã được thanh toán và đang chờ thực hiện.",
     "physicalPrint.tracking.checkout.failedTitle": "Thanh toán thất bại",
     "physicalPrint.tracking.checkout.failedBody":
-      "payOS không xác nhận thanh toán này. Hãy xem trạng thái đơn trước khi bắt đầu lượt thanh toán khác.",
+      "payOS không xác nhận thanh toán này. Bạn có thể thanh toán lại trên chính đơn in vật lý hiện tại.",
     "physicalPrint.tracking.checkout.expiredTitle": "Thanh toán đã hết hạn",
     "physicalPrint.tracking.checkout.expiredBody":
-      "Liên kết thanh toán payOS đã hết hạn và đơn này không thể thử lại.",
+      "Liên kết thanh toán payOS đã hết hạn. Bạn có thể thanh toán lại trên chính đơn in vật lý hiện tại.",
     "physicalPrint.tracking.checkout.refundedTitle": "Đã hoàn tiền",
     "physicalPrint.tracking.checkout.refundedBody":
       "Backend báo rằng khoản thanh toán cho đơn in vật lý này đã được hoàn lại.",
@@ -2594,6 +2599,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.createdAt": "Đã tạo",
     "admin.physicalPrint.paidAt": "Đã thanh toán",
     "admin.physicalPrint.assignedAt": "Đã phân công",
+    "admin.physicalPrint.printingAt": "Bắt đầu in",
     "admin.physicalPrint.printedAt": "Đã in",
     "admin.physicalPrint.shippedAt": "Đã gửi hàng",
     "admin.physicalPrint.completedAt": "Đã hoàn tất",

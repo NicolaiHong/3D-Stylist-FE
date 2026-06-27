@@ -14,7 +14,10 @@ import {
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { PhysicalPrintStatusPill } from "../features/physical-print/components/PhysicalPrintStatusPill";
 import { physicalPrintApi } from "../features/physical-print/physical-print.api";
-import { canRetryPhysicalPrintCheckout } from "../features/physical-print/physical-print.presentation";
+import {
+  canRetryPhysicalPrintCheckout,
+  getPhysicalPrintCheckoutAction,
+} from "../features/physical-print/physical-print.presentation";
 import type { PhysicalPrintOrder } from "../features/physical-print/physical-print.types";
 import { formatI18nCurrency } from "../i18n/formatters";
 import { useI18n } from "../i18n/useI18n";
@@ -164,6 +167,9 @@ export function PhysicalPrintCheckoutStatusPage({
             ? "physicalPrint.tracking.checkout.cancelBody"
             : "physicalPrint.tracking.checkout.returnBody");
   const canRetry = order ? canRetryPhysicalPrintCheckout(order) : false;
+  const checkoutAction = order
+    ? getPhysicalPrintCheckoutAction(order)
+    : null;
 
   return (
     <DashboardShell>
@@ -310,7 +316,11 @@ export function PhysicalPrintCheckoutStatusPage({
                 ) : (
                   <RotateCcw className="h-4 w-4" />
                 )}
-                {t("physicalPrint.tracking.retryCheckout")}
+                {t(
+                  checkoutAction === "pay_again"
+                    ? "physicalPrint.tracking.payAgain"
+                    : "physicalPrint.tracking.continuePayment",
+                )}
               </button>
             ) : null}
           </div>
