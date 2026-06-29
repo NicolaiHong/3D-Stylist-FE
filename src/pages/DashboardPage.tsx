@@ -104,7 +104,6 @@ type StyleIntent = (typeof STYLE_INTENTS)[number];
 type StyleIntentId = StyleIntent["id"];
 type ModelSource = "default" | "personal";
 type ModelGender = "male" | "female" | "unisex";
-type GenerationOutputType = "2d" | "3d";
 
 const MODEL_GENDERS: Array<{ id: ModelGender; labelKey: string }> = [
   { id: "male", labelKey: "dashboard.setup.gender.male" },
@@ -112,22 +111,6 @@ const MODEL_GENDERS: Array<{ id: ModelGender; labelKey: string }> = [
   { id: "unisex", labelKey: "dashboard.setup.gender.unisex" },
 ];
 
-const GENERATION_OUTPUT_TYPES: Array<{
-  id: GenerationOutputType;
-  labelKey: string;
-  helperKey: string;
-}> = [
-  {
-    id: "2d",
-    labelKey: "dashboard.setup.output.2d",
-    helperKey: "dashboard.setup.output.2dHelper",
-  },
-  {
-    id: "3d",
-    labelKey: "dashboard.setup.output.3d",
-    helperKey: "dashboard.setup.output.3dHelper",
-  },
-];
 const REFERENCE_IMAGE_KINDS: Array<{
   id: ReferenceImageKind;
   labelKey: string;
@@ -264,15 +247,12 @@ function composeGenerationPrompt(
   prompt: string,
   styleIntent: StyleIntent | undefined,
   modelGender: ModelGender,
-  outputType: GenerationOutputType,
 ) {
   const details = [
     styleIntent ? `Style direction: ${styleIntent.promptText}.` : null,
     "Model source: default studio mannequin.",
     `Model gender: ${modelGender}.`,
-    `Output request: ${
-      outputType === "3d" ? "3D GLB model preview" : "2D fashion preview"
-    }.`,
+    "Output request: 3D GLB model preview.",
   ].filter((detail): detail is string => Boolean(detail));
 
   return `${prompt}\n\n${details.join("\n")}`;
@@ -1211,7 +1191,6 @@ function GenerationSetupDialog({
   isReferenceImageUploading,
   modelGender,
   modelSource,
-  outputType,
   promptCharacterCount,
   referenceImageConsentAccepted,
   referenceImageError,
@@ -1225,7 +1204,6 @@ function GenerationSetupDialog({
   onGenerate,
   onGenerateWithReference,
   onModelGenderChange,
-  onOutputTypeChange,
   onReferenceImageConsentChange,
   onReferenceImageFileChange,
   onReferenceImageKindChange,
@@ -1239,7 +1217,6 @@ function GenerationSetupDialog({
   isReferenceImageUploading: boolean;
   modelGender: ModelGender;
   modelSource: ModelSource;
-  outputType: GenerationOutputType;
   promptCharacterCount: number;
   referenceImageConsentAccepted: boolean;
   referenceImageError: string | null;
@@ -1253,7 +1230,6 @@ function GenerationSetupDialog({
   onGenerate: () => void;
   onGenerateWithReference: () => void;
   onModelGenderChange: (gender: ModelGender) => void;
-  onOutputTypeChange: (outputType: GenerationOutputType) => void;
   onReferenceImageConsentChange: (accepted: boolean) => void;
   onReferenceImageFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onReferenceImageKindChange: (kind: ReferenceImageKind) => void;
@@ -1261,11 +1237,6 @@ function GenerationSetupDialog({
 }) {
   const { t } = useI18n();
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const outputTypeLabel =
-    t(
-      GENERATION_OUTPUT_TYPES.find((option) => option.id === outputType)
-        ?.labelKey ?? "dashboard.setup.output.2d",
-    );
   const selectedReferenceKindLabel = selectedReferenceImage
     ? (REFERENCE_IMAGE_KINDS.find(
         (kind) => kind.id === selectedReferenceImage.referenceKind,
@@ -1386,43 +1357,6 @@ function GenerationSetupDialog({
               onReferenceKindChange={onReferenceImageKindChange}
               onRemove={onRemoveReferenceImage}
             />
-
-            <section>
-              <h3 className="text-sm font-bold text-white">
-                {t("dashboard.setup.outputType")}
-              </h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {GENERATION_OUTPUT_TYPES.map((option) => {
-                  const isSelected = option.id === outputType;
-
-                  return (
-                    <button
-                      aria-pressed={isSelected}
-                      className={`rounded-lg border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] ${
-                        isSelected
-                          ? "border-[#00e5ff]/65 bg-[#00e5ff]/10"
-                          : "border-white/[0.12] bg-white/[0.025] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10"
-                      }`}
-                      key={option.id}
-                      type="button"
-                      onClick={() => onOutputTypeChange(option.id)}
-                    >
-                      <span className="flex items-center gap-2 text-sm font-bold text-[#e5e2e1]">
-                        {option.id === "3d" ? (
-                          <Box className="h-4 w-4" />
-                        ) : (
-                          <ImageIcon className="h-4 w-4" />
-                        )}
-                        {t(option.labelKey)}
-                      </span>
-                      <span className="mt-2 block text-xs leading-5 text-[#849396]">
-                        {t(option.helperKey)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
           </div>
 
           <aside className="h-fit rounded-lg border border-[#3b494c]/70 bg-[#0e0e0e] p-4">
@@ -1496,14 +1430,6 @@ function GenerationSetupDialog({
                 </dt>
                 <dd className="mt-1 font-semibold capitalize text-[#e5e2e1]">
                   {t(`dashboard.setup.gender.${modelGender}`)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-[#849396]">
-                  {t("dashboard.setup.outputType")}
-                </dt>
-                <dd className="mt-1 font-semibold text-[#e5e2e1]">
-                  {outputTypeLabel}
                 </dd>
               </div>
             </dl>
@@ -1595,7 +1521,6 @@ export function DashboardPage() {
     useState<StyleIntentId | null>(null);
   const [modelSource] = useState<ModelSource>("default");
   const [modelGender, setModelGender] = useState<ModelGender>("unisex");
-  const [outputType, setOutputType] = useState<GenerationOutputType>("2d");
   const [referenceKind, setReferenceKind] =
     useState<ReferenceImageKind>("generic_reference");
   const [referenceImageConsentAccepted, setReferenceImageConsentAccepted] =
@@ -1912,7 +1837,6 @@ export function DashboardPage() {
     trimmedPrompt,
     selectedStyleIntent,
     modelGender,
-    outputType,
   );
   const setupDetailsCharacterCount =
     composedPrompt.length - trimmedPrompt.length;
@@ -2839,7 +2763,6 @@ export function DashboardPage() {
           isReferenceImageUploading={isReferenceImageUploading}
           modelGender={modelGender}
           modelSource={modelSource}
-          outputType={outputType}
           promptCharacterCount={trimmedPrompt.length}
           referenceImageConsentAccepted={referenceImageConsentAccepted}
           referenceImageError={referenceImageError}
@@ -2854,10 +2777,6 @@ export function DashboardPage() {
           onGenerateWithReference={() => void handleGenerateWithReference()}
           onModelGenderChange={(gender) => {
             setModelGender(gender);
-            setGenerationError(null);
-          }}
-          onOutputTypeChange={(selectedOutputType) => {
-            setOutputType(selectedOutputType);
             setGenerationError(null);
           }}
           onReferenceImageConsentChange={handleReferenceImageConsentChange}
