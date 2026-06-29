@@ -165,7 +165,8 @@ export const messages: Record<Language, Record<string, string>> = {
       "Return to login and try sign in again.",
     "auth.oauthError.genericSuggestion2":
       "Continue with Google if another sign-in service could not complete sign in.",
-    "auth.oauthError.genericSuggestion3": "Use email/password login to continue.",
+    "auth.oauthError.genericSuggestion3":
+      "Use email/password login to continue.",
     "auth.oauthError.continueWithGoogle": "Continue with Google",
     "auth.oauthError.backToLogin": "Back to Login",
     "auth.oauthError.passwordPrompt": "Prefer a password account?",
@@ -194,8 +195,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "Optional, but helpful for future outfit previews.",
     "onboarding.identity.placeholder": "Alex Morgan",
     "onboarding.lifestyle.occupation": "Occupation or lifestyle",
-    "onboarding.lifestyle.placeholder":
-      "Product designer, student, founder...",
+    "onboarding.lifestyle.placeholder": "Product designer, student, founder...",
     "onboarding.vibe.title": "Outfit vibe",
     "onboarding.vibe.help": "Pick the default mood for future styling.",
     "onboarding.vibe.dailyCasual": "Daily casual",
@@ -248,8 +248,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "onboarding.action.continue": "Continue",
     "onboarding.status.draftSaved": "Draft saved.",
     "onboarding.status.saved": "Saved.",
-    "onboarding.validation.unsupportedType":
-      "Use a JPG, PNG, or WebP image.",
+    "onboarding.validation.unsupportedType": "Use a JPG, PNG, or WebP image.",
     "onboarding.validation.fileTooLarge": "Choose an image under 5MB.",
     "onboarding.validation.displayNameRequired": "Display name is required.",
     "onboarding.validation.displayNameLength":
@@ -349,7 +348,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "landing.plan.feature.80": "80 included HD generations",
     "landing.plan.feature.export": "Model download and basic export",
     "landing.plan.feature.standardQueue": "Standard queue and basic export",
-    "landing.plan.feature.fasterQueue": "Faster queue and better material detail",
+    "landing.plan.feature.fasterQueue":
+      "Faster queue and better material detail",
     "landing.plan.feature.priorityQueue":
       "Priority render and high-detail materials",
     "landing.plan.popular": "Popular",
@@ -436,7 +436,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.generating": "Generating...",
     "dashboard.figure.completeNoAssets":
       "Generation complete. Preview will appear when the result is ready.",
-    "dashboard.figure.failedFallback": "Generation failed. Please try again later.",
+    "dashboard.figure.failedFallback":
+      "Generation failed. Please try again later.",
     "dashboard.figure.canceled": "Generation canceled.",
     "dashboard.figure.status.queued":
       "Request accepted. Waiting for generation to start.",
@@ -447,7 +448,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.figure.status.failed":
       "Generation did not complete. Your balance has been refreshed. Check credits before submitting another request.",
     "dashboard.figure.status.canceled": "Generation was canceled.",
-    "dashboard.figure.status.draft": "Generation draft is waiting to be submitted.",
+    "dashboard.figure.status.draft":
+      "Generation draft is waiting to be submitted.",
     "dashboard.figure.prompt": "Design brief",
     "dashboard.figure.created": "Created",
     "dashboard.figure.viewImage": "View image",
@@ -507,8 +509,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.currentBalance": "Current balance",
     "dashboard.setup.promptLength": "Design brief length",
     "dashboard.setup.noneSelected": "None selected",
-    "dashboard.setup.composedRequest":
-      "Composed request: {count}/{max} chars",
+    "dashboard.setup.composedRequest": "Composed request: {count}/{max} chars",
     "dashboard.setup.submitting": "Submitting",
     "dashboard.setup.generateNow": "Generate now",
     "dashboard.reference.title": "Reference image",
@@ -597,11 +598,11 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.noGenerationsOption": "No generations yet",
     "studio.refreshAssets": "Refresh Studio assets",
     "studio.empty.title": "No generated assets yet.",
-    "studio.empty.body": "Generate an outfit from Dashboard to preview it here.",
+    "studio.empty.body":
+      "Generate an outfit from Dashboard to preview it here.",
     "studio.empty.goDashboard": "Go to Dashboard",
     "studio.preview2dPending": "2D preview pending",
-    "studio.preview2dPendingBody":
-      "The preview image is not ready yet.",
+    "studio.preview2dPendingBody": "The preview image is not ready yet.",
     "studio.modelPending": "3D model is still processing.",
     "studio.modelPendingBody":
       "Geometry has not finished yet. Refresh later or continue with the 2D preview.",
@@ -675,7 +676,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.eyebrow": "Physical 3D print",
     "physicalPrint.title": "Turn this model into a display piece",
     "physicalPrint.subtitle":
-      "Choose a print package, provide shipping details, and continue to the backend-created payOS checkout.",
+      "Choose a print package, add shipping details, and continue to secure payOS checkout.",
     "physicalPrint.selectedDesign": "Selected design",
     "physicalPrint.modelReady": "GLB ready",
     "physicalPrint.unavailable.title": "Physical print unavailable",
@@ -683,7 +684,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "Physical print is available after the 3D model is complete and the GLB file is ready.",
     "physicalPrint.packages.title": "Print packages",
     "physicalPrint.packages.body":
-      "Prices and production details are loaded from the current backend catalog.",
+      "Prices and production details are loaded for the current order.",
     "physicalPrint.packages.select": "Select a package",
     "physicalPrint.packages.loading": "Loading print packages...",
     "physicalPrint.packages.error":
@@ -725,13 +726,13 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.retryCheckout": "Retry checkout",
     "physicalPrint.pendingOrder": "Pending order",
     "physicalPrint.paymentNote":
-      "Payment is verified by payOS and confirmed by the backend. Returning from checkout does not automatically mark the order as paid.",
+      "payOS verifies the payment, and the order updates after confirmation. Returning from checkout does not mark it paid by itself.",
     "physicalPrint.errors.orderCreation":
       "The pending print order could not be created. Review the details and try again.",
     "physicalPrint.errors.checkoutCreation":
       "The order was created, but payOS checkout could not be opened. Retry checkout without creating another order.",
     "physicalPrint.errors.missingCheckoutUrl":
-      "The backend did not return a payOS checkout URL. Retry checkout for this order.",
+      "We could not open the payOS checkout link. Retry checkout for this order.",
     "physicalPrint.nudge.badge": "Physical 3D Print",
     "physicalPrint.nudge.title": "Turn this model into a real display piece?",
     "physicalPrint.nudge.body":
@@ -796,7 +797,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.packageCode.premium_print": "Premium Print",
     "physicalPrint.tracking.timeline.title": "Order timeline",
     "physicalPrint.tracking.timeline.body":
-      "Timestamps appear when the backend records each milestone.",
+      "Timestamps appear as each milestone is recorded.",
     "physicalPrint.tracking.timeline.created": "Order created",
     "physicalPrint.tracking.timeline.payment": "Payment confirmed",
     "physicalPrint.tracking.timeline.waiting": "Waiting fulfillment",
@@ -810,10 +811,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.checkout.returnTitle":
       "We received your checkout return",
     "physicalPrint.tracking.checkout.returnBody":
-      "The backend reconciled the payOS result. The order detail below is the authoritative status.",
+      "We checked the payOS result. The order detail below shows the latest confirmed status.",
     "physicalPrint.tracking.checkout.cancelTitle": "Checkout was cancelled",
     "physicalPrint.tracking.checkout.cancelBody":
-      "No payment is confirmed from the browser cancel page. Pay again becomes available after the backend confirms cancellation.",
+      "The cancel page does not confirm a payment. Pay again becomes available after the cancellation is recorded.",
     "physicalPrint.tracking.checkout.paidTitle": "Payment confirmed",
     "physicalPrint.tracking.checkout.paidBody":
       "Your physical print order is paid and is waiting for fulfillment.",
@@ -825,9 +826,9 @@ export const messages: Record<Language, Record<string, string>> = {
       "The payOS payment link expired. You can pay again on the same physical print order.",
     "physicalPrint.tracking.checkout.refundedTitle": "Payment refunded",
     "physicalPrint.tracking.checkout.refundedBody":
-      "The backend reports this physical print payment as refunded.",
+      "This physical print payment is marked as refunded.",
     "physicalPrint.tracking.checkout.pendingBody":
-      "The browser return is not payment authority. We are checking the backend order status.",
+      "The return page is not payment confirmation. We are checking the latest order status.",
     "physicalPrint.tracking.checkout.verifying":
       "We are still verifying your payment. Please refresh in a few seconds.",
     "physicalPrint.tracking.checkout.unknownTitle":
@@ -835,15 +836,14 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.checkout.unknownBody":
       "No safe order identifier was returned. Open your print order history to continue.",
     "physicalPrint.tracking.checkout.authorityNote":
-      "Payment and fulfillment statuses come from the backend. This page cannot mark an order paid and does not call the payOS webhook.",
+      "Payment and fulfillment statuses are confirmed by the system. This page can only display status; it cannot mark an order paid.",
     "physicalPrint.tracking.checkout.queryHint":
-      "Return hint: {result}. The fetched backend order status takes precedence.",
+      "Return status: {result}. The latest order status is shown above.",
 
     "paywall.eyebrow": "Model export access",
     "paywall.code": "PAYWALL_REQUIRED",
     "paywall.title": "Paid plan required",
-    "paywall.body":
-      "A paid plan is required for model download/export.",
+    "paywall.body": "A paid plan is required for model download/export.",
     "paywall.viewPlans": "View plans",
     "paywall.continuePreviewing": "Continue previewing",
     "paywall.close": "Close",
@@ -869,24 +869,21 @@ export const messages: Record<Language, Record<string, string>> = {
       "Current plan cancelled. You can now continue with your new plan.",
     "credits.plans.title": "Subscription plans",
     "credits.plans.emptyTitle": "No plans available",
-    "credits.plans.emptyBody":
-      "Refresh after plans are available.",
+    "credits.plans.emptyBody": "Refresh after plans are available.",
     "credits.plans.manualMonthly": "Monthly plan",
     "credits.plans.current": "Current",
     "credits.plans.cadence": "/ month",
     "credits.plan.includedGenerations": "{count} included HD generations",
     "credits.plan.export": "Model download and basic export",
     "credits.plan.benefit.pro": "Priority render and high-detail materials",
-    "credits.plan.benefit.creator":
-      "Faster queue and better material detail",
+    "credits.plan.benefit.creator": "Faster queue and better material detail",
     "credits.plan.benefit.default": "Standard queue and basic export",
     "credits.actions.inCart": "In cart",
     "credits.actions.addToCart": "Add to cart",
     "credits.actions.buyNow": "Buy now",
     "credits.packs.title": "Credit packs",
     "credits.packs.emptyTitle": "No credit packs available",
-    "credits.packs.emptyBody":
-      "Refresh after credit packs are available.",
+    "credits.packs.emptyBody": "Refresh after credit packs are available.",
     "credits.packs.rule": "1 credit = 1 HD generation",
     "credits.packs.body":
       "Adds {count} credits after admin verifies the VietQR transfer. Credit packs do not unlock export by themselves.",
@@ -999,7 +996,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.header.payos.eyebrow": "Automatic payment",
     "checkout.header.payos.title": "Pay with payOS",
     "checkout.header.payos.body":
-      "Open the hosted payOS checkout for automatic confirmation after a verified payment webhook.",
+      "Open the hosted payOS checkout for automatic confirmation after a verified payment.",
     "checkout.method.warning":
       "Use one payment method per order. Do not pay both methods for the same order.",
     "checkout.method.payos.title": "payOS automatic checkout",
@@ -1037,14 +1034,13 @@ export const messages: Record<Language, Record<string, string>> = {
       "This only reports your transfer. Credits or plan access start after admin verification. This app does not auto-detect bank transfers.",
     "checkout.payos.title": "payOS checkout",
     "checkout.payos.body":
-      "payOS payments are confirmed automatically by the payment webhook. Admin verification is not required.",
-    "checkout.payos.warning":
-      "Do not pay both methods for the same order.",
+      "payOS confirms successful payments automatically. Admin verification is not required.",
+    "checkout.payos.warning": "Do not pay both methods for the same order.",
     "checkout.payos.button": "Open payOS checkout",
     "checkout.payos.unavailable": "payOS unavailable",
     "checkout.payos.fallback": "Manual VietQR remains available.",
     "checkout.payos.webhookNotice":
-      "Browser return pages are display-only. Access starts only after the backend confirms paid status.",
+      "Return pages are display-only. Access starts only after the system confirms paid status.",
     "checkout.payos.disabledHelp":
       "payOS is disabled or unavailable for this order. Return to payment methods or use manual VietQR fallback.",
     "checkout.manual.reportNotice":
@@ -1086,7 +1082,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "This order is marked paid. Open credits to refresh your current billing state.",
     "paymentResult.pending.title": "Payment status check",
     "paymentResult.pending.description":
-      "We received the payment return page, but this order is not marked paid yet. Credits or plan access stay unchanged until payment is confirmed by the server.",
+      "We received the payment return page, but this order is not marked paid yet. Credits or plan access stay unchanged until payment is confirmed by the system.",
     "paymentResult.failed.title": "Payment was not completed",
     "paymentResult.failed.description":
       "The payment result was not successful. You can return to credits or view this checkout if the order is still valid.",
@@ -1201,9 +1197,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.reconcilePayos": "Check payOS status",
     "admin.health.title": "System Health",
     "admin.health.description":
-      "Configuration presence only. Secret values stay server-side.",
-    "admin.health.api": "API",
-    "admin.health.database": "Database",
+      "Operational readiness only. Sensitive values are never shown here.",
+    "admin.health.api": "App service",
+    "admin.health.database": "Data store",
     "admin.health.vietqr": "VietQR",
     "admin.health.payos": "payOS",
     "admin.health.manualMarkPaid": "Manual mark-paid",
@@ -1219,7 +1215,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.charts.eyebrow": "Live Analytics",
     "admin.charts.title": "Operational Analytics",
     "admin.charts.description":
-      "Compact visual summaries derived only from the admin data already returned by the current APIs.",
+      "Compact visual summaries derived only from the current admin data.",
     "admin.charts.empty.title": "Not enough data for this chart yet.",
     "admin.charts.empty.description":
       "The chart will populate after matching admin activity is returned.",
@@ -1232,7 +1228,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "Recent paid order value bars with an order count line.",
     "admin.charts.trend.ordersTooltip": "{date}: {count} orders",
     "admin.charts.trend.disclaimer":
-      "Based on up to {count} recent orders returned by the dashboard API; this is an operational sample, not an audited finance report.",
+      "Based on up to {count} recent orders in the admin overview; this is an operational sample, not an audited finance report.",
     "admin.charts.legend.paidRevenue": "Paid order value",
     "admin.charts.legend.orders": "Order count",
     "admin.charts.payment.title": "Payment Status Mix",
@@ -1303,12 +1299,16 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.missingProducts": "{count} missing core products",
     "admin.kpi.catalogCoverage": "Core catalog coverage",
     "admin.success.markPaid": "Order {orderId} returned {status}.",
-    "admin.success.payosFinalized": "Order {orderId} was finalized from verified payOS status.",
+    "admin.success.payosFinalized":
+      "Order {orderId} was finalized from verified payOS status.",
     "admin.success.payosAlreadyPaid": "Order {orderId} was already finalized.",
     "admin.success.payosPending": "Order {orderId} is still pending at payOS.",
-    "admin.success.payosRejected": "Order {orderId} was not finalized because payOS did not confirm a valid paid payment.",
-    "admin.error.payosUnavailable": "payOS status is temporarily unavailable. No payment or entitlement was changed.",
-    "admin.error.payosRejected": "payOS reconciliation was rejected because the verified payment details did not match this order.",
+    "admin.success.payosRejected":
+      "Order {orderId} was not finalized because payOS did not confirm a valid paid payment.",
+    "admin.error.payosUnavailable":
+      "payOS status is temporarily unavailable. No payment or entitlement was changed.",
+    "admin.error.payosRejected":
+      "payOS reconciliation was rejected because the verified payment details did not match this order.",
     "admin.orders.title": "Recent Orders",
     "admin.orders.description":
       "{count} matching orders. Manual mark-paid requires checking the bank app or statement outside this system. This app does not reconcile transfers automatically.",
@@ -1322,7 +1322,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.eyebrow": "Fulfillment",
     "admin.physicalPrint.title": "Physical Print Orders",
     "admin.physicalPrint.description":
-      "{count} physical orders. Payment status is read-only and controlled by provider reconciliation.",
+      "{count} physical orders. Payment status is read-only and updates from confirmed payment results.",
     "admin.physicalPrint.paymentStatus": "Payment Status",
     "admin.physicalPrint.fulfillmentStatus": "Fulfillment Status",
     "admin.physicalPrint.package": "Package",
@@ -1351,9 +1351,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.cancelledAt": "Cancelled",
     "admin.physicalPrint.statusControl": "Fulfillment control",
     "admin.physicalPrint.paymentReadOnly":
-      "Payment status cannot be edited here. payOS reconciliation remains the payment authority.",
+      "Payment status cannot be edited here. payOS results stay read-only in this panel.",
     "admin.physicalPrint.assignDescription":
-      "Assign an active admin user. Print-partner assignment remains available through the backend contract, but no partner directory is exposed in this panel.",
+      "Assign an active admin user. Print-partner assignment is supported later, but no partner directory is exposed in this panel.",
     "admin.physicalPrint.assignee": "Assigned admin",
     "admin.physicalPrint.unassigned": "Select an admin",
     "admin.physicalPrint.noTracking": "No tracking code",
@@ -1362,8 +1362,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.loadingDetail": "Loading order detail",
     "admin.physicalPrint.close": "Close physical print detail",
     "admin.physicalPrint.orderSummary": "Order summary",
-    "admin.physicalPrint.searchLabel":
-      "Search physical print orders",
+    "admin.physicalPrint.searchLabel": "Search physical print orders",
     "admin.physicalPrint.searchPlaceholder":
       "Phone, tracking code, or full order ID",
     "admin.physicalPrint.applyFilters": "Apply filters",
@@ -1376,8 +1375,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.payment.expired": "Expired",
     "admin.physicalPrint.payment.refunded": "Refunded",
     "admin.physicalPrint.fulfillment.notStarted": "Not started",
-    "admin.physicalPrint.fulfillment.waitingFulfillment":
-      "Waiting Fulfillment",
+    "admin.physicalPrint.fulfillment.waitingFulfillment": "Waiting Fulfillment",
     "admin.physicalPrint.fulfillment.assignedToPartner":
       "Assigned to Print Partner",
     "admin.physicalPrint.fulfillment.printing": "Printing",
@@ -1385,18 +1383,14 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.fulfillment.shipped": "Shipped",
     "admin.physicalPrint.fulfillment.completed": "Completed",
     "admin.physicalPrint.fulfillment.cancelled": "Cancelled",
-    "admin.physicalPrint.errors.load":
-      "Could not load physical print orders",
+    "admin.physicalPrint.errors.load": "Could not load physical print orders",
     "admin.physicalPrint.errors.detail":
       "Could not load physical print order detail",
     "admin.physicalPrint.errors.update":
       "Could not update physical print fulfillment",
-    "admin.physicalPrint.success.status":
-      "Fulfillment status updated.",
-    "admin.physicalPrint.success.assign":
-      "Physical print order assigned.",
-    "admin.footer.console":
-      "3D Stylist admin console - VietQR operations",
+    "admin.physicalPrint.success.status": "Fulfillment status updated.",
+    "admin.physicalPrint.success.assign": "Physical print order assigned.",
+    "admin.footer.console": "3D Stylist admin console - VietQR operations",
     "admin.footer.manualMarkPaid": "Manual mark-paid: {state}",
     "admin.footer.pagination": "Pagination: page {page} of {totalPages}",
 
@@ -1509,7 +1503,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "notFound.backToDashboard": "Quay lại bảng điều khiển",
 
     "auth.hero.eyebrow": "3D Stylist",
-    "auth.hero.title": "Công nghệ thời trang AI cho ý tưởng trang phục sắc nét hơn.",
+    "auth.hero.title":
+      "Công nghệ thời trang AI cho ý tưởng trang phục sắc nét hơn.",
     "auth.hero.subtitle":
       "Một lớp studio tập trung cho phong cách cá nhân, tín hiệu dáng mặc và định hướng tủ đồ sẵn sàng duyệt.",
     "auth.hero.metricPreviews": "bản xem trước dáng người",
@@ -1571,7 +1566,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthSuccess.failedTitle": "Đăng nhập thất bại",
     "auth.oauthSuccess.successTitle": "Xác thực thành công",
     "auth.oauthSuccess.verifyingTitle": "Đang xác minh đăng nhập",
-    "auth.oauthSuccess.subtitle": "Đang chuẩn bị không gian làm việc 3D Stylist...",
+    "auth.oauthSuccess.subtitle":
+      "Đang chuẩn bị không gian làm việc 3D Stylist...",
     "auth.oauthSuccess.sessionReady": "Phiên đã sẵn sàng",
     "auth.oauthSuccess.secureConnection": "Kết nối an toàn",
     "auth.oauthSuccess.profileLoaded":
@@ -1594,7 +1590,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "auth.oauthError.genericDescription":
       "Dịch vụ đăng nhập không thể hoàn tất đăng nhập. Hãy thử phương thức đăng nhập khác.",
     "auth.oauthError.emailAlertTitle": "Cần có địa chỉ email.",
-    "auth.oauthError.sessionAlertTitle": "Quá trình bàn giao phiên bị gián đoạn.",
+    "auth.oauthError.sessionAlertTitle":
+      "Quá trình bàn giao phiên bị gián đoạn.",
     "auth.oauthError.genericAlertTitle": "Lần đăng nhập chưa hoàn tất.",
     "auth.oauthError.emailAlertDescription":
       "3D Stylist cần địa chỉ email để liên kết tài khoản an toàn.",
@@ -1663,8 +1660,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "onboarding.vibe.weekend": "Cuối tuần",
     "onboarding.vibe.weekendBody": "Thoải mái, có styling, không xuề xòa.",
     "onboarding.vibe.experimental": "Thử nghiệm",
-    "onboarding.vibe.experimentalBody":
-      "Phom, màu và tương phản bất ngờ hơn.",
+    "onboarding.vibe.experimentalBody": "Phom, màu và tương phản bất ngờ hơn.",
     "onboarding.style.title": "Sở thích phong cách",
     "onboarding.style.help": "Chọn 2 đến 5 hướng.",
     "onboarding.style.minimal": "Tối giản",
@@ -1703,16 +1699,14 @@ export const messages: Record<Language, Record<string, string>> = {
     "onboarding.action.continue": "Tiếp tục",
     "onboarding.status.draftSaved": "Đã lưu nháp.",
     "onboarding.status.saved": "Đã lưu.",
-    "onboarding.validation.unsupportedType":
-      "Dùng ảnh JPG, PNG hoặc WebP.",
+    "onboarding.validation.unsupportedType": "Dùng ảnh JPG, PNG hoặc WebP.",
     "onboarding.validation.fileTooLarge": "Chọn ảnh dưới 5MB.",
     "onboarding.validation.displayNameRequired": "Tên hiển thị là bắt buộc.",
     "onboarding.validation.displayNameLength":
       "Giữ tên hiển thị dưới 80 ký tự.",
     "onboarding.validation.occupationRequired":
       "Nghề nghiệp hoặc lối sống là bắt buộc.",
-    "onboarding.validation.occupationLength":
-      "Giữ nghề nghiệp dưới 100 ký tự.",
+    "onboarding.validation.occupationLength": "Giữ nghề nghiệp dưới 100 ký tự.",
     "onboarding.validation.vibeRequired": "Chọn một mood trang phục.",
     "onboarding.validation.styleMin": "Chọn ít nhất 2 hướng phong cách.",
     "onboarding.validation.styleMax": "Chọn tối đa 5 hướng phong cách.",
@@ -1930,7 +1924,8 @@ export const messages: Record<Language, Record<string, string>> = {
       "Đã gửi tạo hình. Kết quả sẽ xuất hiện trong Studio khi sẵn sàng.",
     "dashboard.notice.backendSource":
       "Trạng thái và tài sản sẵn sàng được hệ thống xác nhận.",
-    "dashboard.notice.openingStudio3d": "Mô hình 3D đã sẵn sàng. Đang mở Studio...",
+    "dashboard.notice.openingStudio3d":
+      "Mô hình 3D đã sẵn sàng. Đang mở Studio...",
     "dashboard.notice.openStudioStatus": "Mở trạng thái Studio",
     "dashboard.notice.openStudio": "Mở Studio 3D",
     "dashboard.setup.eyebrow": "Yêu cầu studio",
@@ -1961,8 +1956,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "dashboard.setup.currentBalance": "Số dư hiện tại",
     "dashboard.setup.promptLength": "Độ dài mô tả thiết kế",
     "dashboard.setup.noneSelected": "Chưa chọn",
-    "dashboard.setup.composedRequest":
-      "Yêu cầu đã ghép: {count}/{max} ký tự",
+    "dashboard.setup.composedRequest": "Yêu cầu đã ghép: {count}/{max} ký tự",
     "dashboard.setup.submitting": "Đang gửi",
     "dashboard.setup.generateNow": "Tạo ngay",
     "dashboard.reference.title": "Ảnh tham chiếu",
@@ -2055,8 +2049,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "Tạo một mẫu trang phục từ Bảng điều khiển để xem trước tại đây.",
     "studio.empty.goDashboard": "Đến Bảng điều khiển",
     "studio.preview2dPending": "Đang chờ bản xem trước 2D",
-    "studio.preview2dPendingBody":
-      "Ảnh xem trước chưa sẵn sàng.",
+    "studio.preview2dPendingBody": "Ảnh xem trước chưa sẵn sàng.",
     "studio.modelPending": "Mô hình 3D vẫn đang được xử lý.",
     "studio.modelPendingBody":
       "Hình học chưa hoàn tất. Hãy làm mới sau hoặc tiếp tục với bản xem trước 2D.",
@@ -2068,8 +2061,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "studio.viewer.aria": "Trình xem mô hình 3D đã tạo có thể tương tác",
     "studio.viewer.loading": "Đang tải mô hình 3D tương tác...",
     "studio.viewer.ready": "Trình xem 3D đã sẵn sàng",
-    "studio.viewer.interaction":
-      "Kéo để xoay. Cuộn hoặc chụm để thu phóng.",
+    "studio.viewer.interaction": "Kéo để xoay. Cuộn hoặc chụm để thu phóng.",
     "studio.viewer.error": "Không thể tải mô hình 3D",
     "studio.viewer.errorBody":
       "Hãy thử tải lại trình xem hoặc quay về bản xem trước 2D. Quyền xuất không được dùng làm phương án dự phòng.",
@@ -2131,7 +2123,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.eyebrow": "In 3D vật lý",
     "physicalPrint.title": "Biến mô hình này thành sản phẩm trưng bày",
     "physicalPrint.subtitle":
-      "Chọn gói in, nhập thông tin giao hàng và tiếp tục đến trang thanh toán payOS do backend tạo.",
+      "Chọn gói in, nhập thông tin giao hàng và tiếp tục đến trang thanh toán payOS an toàn.",
     "physicalPrint.selectedDesign": "Thiết kế đã chọn",
     "physicalPrint.modelReady": "GLB sẵn sàng",
     "physicalPrint.unavailable.title": "Chưa thể đặt in vật lý",
@@ -2139,11 +2131,10 @@ export const messages: Record<Language, Record<string, string>> = {
       "Tính năng in vật lý khả dụng sau khi mô hình 3D hoàn tất và tệp GLB đã sẵn sàng.",
     "physicalPrint.packages.title": "Gói in",
     "physicalPrint.packages.body":
-      "Giá và thời gian sản xuất được tải từ danh mục hiện tại của backend.",
+      "Giá và thời gian sản xuất được tải cho đơn hàng hiện tại.",
     "physicalPrint.packages.select": "Chọn một gói",
     "physicalPrint.packages.loading": "Đang tải các gói in...",
-    "physicalPrint.packages.error":
-      "Không thể tải các gói in. Hãy thử lại.",
+    "physicalPrint.packages.error": "Không thể tải các gói in. Hãy thử lại.",
     "physicalPrint.packages.retry": "Tải lại gói in",
     "physicalPrint.estimatedSize": "Kích thước ước tính",
     "physicalPrint.quality": "Chất lượng",
@@ -2158,7 +2149,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.shipping.name": "Tên người nhận",
     "physicalPrint.shipping.namePlaceholder": "Họ tên đầy đủ của người nhận",
     "physicalPrint.shipping.phone": "Số điện thoại",
-    "physicalPrint.shipping.phonePlaceholder": "Số điện thoại liên hệ giao hàng",
+    "physicalPrint.shipping.phonePlaceholder":
+      "Số điện thoại liên hệ giao hàng",
     "physicalPrint.shipping.address": "Địa chỉ giao hàng",
     "physicalPrint.shipping.addressPlaceholder":
       "Đường, phường/xã, quận/huyện, tỉnh/thành phố",
@@ -2181,16 +2173,15 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.retryCheckout": "Thử lại thanh toán",
     "physicalPrint.pendingOrder": "Đơn hàng đang chờ",
     "physicalPrint.paymentNote":
-      "Thanh toán được payOS xác minh và backend xác nhận. Việc quay lại từ trang thanh toán không tự động đánh dấu đơn hàng là đã thanh toán.",
+      "payOS xác minh thanh toán, và đơn hàng sẽ cập nhật sau khi được xác nhận. Việc quay lại từ trang thanh toán không tự đánh dấu đơn là đã thanh toán.",
     "physicalPrint.errors.orderCreation":
       "Không thể tạo đơn in đang chờ. Hãy kiểm tra thông tin và thử lại.",
     "physicalPrint.errors.checkoutCreation":
       "Đơn hàng đã được tạo nhưng không thể mở trang thanh toán payOS. Hãy thử lại thanh toán mà không tạo đơn mới.",
     "physicalPrint.errors.missingCheckoutUrl":
-      "Backend không trả về URL thanh toán payOS. Hãy thử lại thanh toán cho đơn này.",
+      "Không thể mở liên kết thanh toán payOS. Hãy thử lại thanh toán cho đơn này.",
     "physicalPrint.nudge.badge": "In 3D vật lý",
-    "physicalPrint.nudge.title":
-      "Biến mẫu này thành sản phẩm trưng bày thật?",
+    "physicalPrint.nudge.title": "Biến mẫu này thành sản phẩm trưng bày thật?",
     "physicalPrint.nudge.body":
       "Bạn có thể chọn gói in và tiếp tục thanh toán khi sẵn sàng.",
     "physicalPrint.nudge.dismiss": "Bỏ qua",
@@ -2252,7 +2243,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.packageCode.premium_print": "Gói Premium",
     "physicalPrint.tracking.timeline.title": "Tiến trình đơn hàng",
     "physicalPrint.tracking.timeline.body":
-      "Mốc thời gian xuất hiện khi backend ghi nhận từng giai đoạn.",
+      "Mốc thời gian xuất hiện khi từng giai đoạn được ghi nhận.",
     "physicalPrint.tracking.timeline.created": "Đã tạo đơn hàng",
     "physicalPrint.tracking.timeline.payment": "Đã xác nhận thanh toán",
     "physicalPrint.tracking.timeline.waiting": "Đang chờ thực hiện",
@@ -2262,15 +2253,14 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.timeline.completed": "Đã hoàn tất",
     "physicalPrint.tracking.timeline.pending": "Đang chờ",
     "physicalPrint.tracking.timeline.inProgress": "Đang thực hiện",
-    "physicalPrint.tracking.checkout.eyebrow":
-      "Trạng thái thanh toán payOS",
+    "physicalPrint.tracking.checkout.eyebrow": "Trạng thái thanh toán payOS",
     "physicalPrint.tracking.checkout.returnTitle":
       "Đã nhận lượt quay lại từ thanh toán",
     "physicalPrint.tracking.checkout.returnBody":
-      "Backend đã đối soát kết quả payOS. Chi tiết đơn hàng bên dưới là trạng thái có thẩm quyền.",
+      "Chúng tôi đã kiểm tra kết quả payOS. Chi tiết đơn hàng bên dưới hiển thị trạng thái mới nhất đã xác nhận.",
     "physicalPrint.tracking.checkout.cancelTitle": "Thanh toán đã bị hủy",
     "physicalPrint.tracking.checkout.cancelBody":
-      "Trang hủy trên trình duyệt không xác nhận thanh toán. Nút thanh toán lại sẽ xuất hiện sau khi backend xác nhận trạng thái hủy.",
+      "Trang hủy không xác nhận thanh toán. Nút thanh toán lại sẽ xuất hiện sau khi trạng thái hủy được ghi nhận.",
     "physicalPrint.tracking.checkout.paidTitle": "Đã xác nhận thanh toán",
     "physicalPrint.tracking.checkout.paidBody":
       "Đơn in vật lý đã được thanh toán và đang chờ thực hiện.",
@@ -2282,9 +2272,9 @@ export const messages: Record<Language, Record<string, string>> = {
       "Liên kết thanh toán payOS đã hết hạn. Bạn có thể thanh toán lại trên chính đơn in vật lý hiện tại.",
     "physicalPrint.tracking.checkout.refundedTitle": "Đã hoàn tiền",
     "physicalPrint.tracking.checkout.refundedBody":
-      "Backend báo rằng khoản thanh toán cho đơn in vật lý này đã được hoàn lại.",
+      "Khoản thanh toán cho đơn in vật lý này được đánh dấu là đã hoàn tiền.",
     "physicalPrint.tracking.checkout.pendingBody":
-      "Lượt quay lại trên trình duyệt không có thẩm quyền thanh toán. Chúng tôi đang kiểm tra trạng thái đơn hàng từ backend.",
+      "Trang quay lại không phải xác nhận thanh toán. Chúng tôi đang kiểm tra trạng thái đơn hàng mới nhất.",
     "physicalPrint.tracking.checkout.verifying":
       "Chúng tôi vẫn đang xác minh thanh toán của bạn. Hãy làm mới sau vài giây.",
     "physicalPrint.tracking.checkout.unknownTitle":
@@ -2292,15 +2282,14 @@ export const messages: Record<Language, Record<string, string>> = {
     "physicalPrint.tracking.checkout.unknownBody":
       "Không nhận được mã đơn hàng an toàn. Hãy mở lịch sử đơn in để tiếp tục.",
     "physicalPrint.tracking.checkout.authorityNote":
-      "Trạng thái thanh toán và thực hiện đến từ backend. Trang này không thể đánh dấu đơn đã thanh toán và không gọi webhook payOS.",
+      "Trạng thái thanh toán và thực hiện được hệ thống xác nhận. Trang này chỉ hiển thị trạng thái; không thể đánh dấu đơn là đã thanh toán.",
     "physicalPrint.tracking.checkout.queryHint":
-      "Gợi ý từ lượt quay lại: {result}. Trạng thái đơn hàng lấy từ backend được ưu tiên.",
+      "Trạng thái quay lại: {result}. Trạng thái đơn hàng mới nhất được hiển thị ở trên.",
 
     "paywall.eyebrow": "Quyền xuất mô hình",
     "paywall.code": "PAYWALL_REQUIRED",
     "paywall.title": "Cần gói trả phí",
-    "paywall.body":
-      "Cần gói trả phí để tải xuống hoặc xuất mô hình.",
+    "paywall.body": "Cần gói trả phí để tải xuống hoặc xuất mô hình.",
     "paywall.viewPlans": "Xem gói",
     "paywall.continuePreviewing": "Tiếp tục xem trước",
     "paywall.close": "Đóng",
@@ -2326,8 +2315,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "Gói hiện tại đã hủy. Bạn có thể tiếp tục với gói mới.",
     "credits.plans.title": "Gói thuê bao",
     "credits.plans.emptyTitle": "Chưa có gói khả dụng",
-    "credits.plans.emptyBody":
-      "Làm mới sau khi danh sách gói khả dụng.",
+    "credits.plans.emptyBody": "Làm mới sau khi danh sách gói khả dụng.",
     "credits.plans.manualMonthly": "Gói hằng tháng",
     "credits.plans.current": "Hiện tại",
     "credits.plans.cadence": "/ tháng",
@@ -2342,8 +2330,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.actions.buyNow": "Mua ngay",
     "credits.packs.title": "Gói tín dụng",
     "credits.packs.emptyTitle": "Chưa có gói tín dụng khả dụng",
-    "credits.packs.emptyBody":
-      "Làm mới sau khi gói tín dụng khả dụng.",
+    "credits.packs.emptyBody": "Làm mới sau khi gói tín dụng khả dụng.",
     "credits.packs.rule": "1 tín dụng = 1 lượt tạo bản xem trước HD",
     "credits.packs.body":
       "Cộng {count} tín dụng sau khi quản trị xác minh chuyển khoản VietQR. Gói tín dụng không tự mở khóa quyền xuất file.",
@@ -2456,7 +2443,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "checkout.header.payos.eyebrow": "Thanh toán tự động",
     "checkout.header.payos.title": "Thanh toán bằng payOS",
     "checkout.header.payos.body":
-      "Mở trang payOS được lưu trữ để xác nhận tự động sau webhook thanh toán đã xác minh.",
+      "Mở trang thanh toán payOS để xác nhận tự động sau khi thanh toán được xác minh.",
     "checkout.method.warning":
       "Chỉ dùng một phương thức cho mỗi đơn hàng. Không thanh toán cả hai phương thức cho cùng một đơn.",
     "checkout.method.payos.title": "Thanh toán payOS tự động",
@@ -2494,14 +2481,14 @@ export const messages: Record<Language, Record<string, string>> = {
       "Thao tác này chỉ báo rằng bạn đã chuyển khoản. Tín dụng hoặc gói chỉ bắt đầu sau khi quản trị xác minh. Ứng dụng không tự phát hiện chuyển khoản ngân hàng.",
     "checkout.payos.title": "Thanh toán payOS",
     "checkout.payos.body":
-      "Thanh toán payOS được xác nhận tự động qua webhook thanh toán. Không cần quản trị viên xác minh.",
+      "payOS tự động xác nhận các khoản thanh toán thành công. Không cần quản trị viên xác minh.",
     "checkout.payos.warning":
       "Không thanh toán cả hai phương thức cho cùng một đơn.",
     "checkout.payos.button": "Mở thanh toán payOS",
     "checkout.payos.unavailable": "payOS không khả dụng",
     "checkout.payos.fallback": "VietQR thủ công vẫn khả dụng.",
     "checkout.payos.webhookNotice":
-      "Trang quay lại của trình duyệt chỉ để hiển thị. Quyền truy cập chỉ bắt đầu sau khi backend xác nhận trạng thái đã thanh toán.",
+      "Trang quay lại chỉ để hiển thị. Quyền truy cập chỉ bắt đầu sau khi hệ thống xác nhận trạng thái đã thanh toán.",
     "checkout.payos.disabledHelp":
       "payOS đang tắt hoặc không khả dụng cho đơn này. Quay lại phương thức thanh toán hoặc dùng VietQR thủ công dự phòng.",
     "checkout.manual.reportNotice":
@@ -2626,8 +2613,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.range.7d": "7 ngày",
     "admin.range.30d": "30 ngày",
     "admin.range.all": "Toàn thời gian",
-    "admin.empty.refreshHint":
-      "Làm mới sau khi có hoạt động thanh toán mới.",
+    "admin.empty.refreshHint": "Làm mới sau khi có hoạt động thanh toán mới.",
     "admin.empty.users": "Không tìm thấy người dùng",
     "admin.empty.orders": "Không có đơn khớp bộ lọc",
     "admin.empty.transactions": "Chưa có giao dịch thanh toán",
@@ -2653,14 +2639,15 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.table.unnamedUser": "Người dùng chưa đặt tên",
     "admin.table.unknownProduct": "Sản phẩm không rõ",
     "admin.table.noCode": "Không có mã",
-    "admin.table.verifyTransfer": "Xác minh chuyển khoản và đánh dấu đã thanh toán",
+    "admin.table.verifyTransfer":
+      "Xác minh chuyển khoản và đánh dấu đã thanh toán",
     "admin.table.noAction": "Không có thao tác",
     "admin.table.reconcilePayos": "Kiểm tra trạng thái payOS",
     "admin.health.title": "Sức khỏe hệ thống",
     "admin.health.description":
-      "Chỉ hiển thị trạng thái cấu hình. Giá trị bí mật vẫn ở server.",
-    "admin.health.api": "API",
-    "admin.health.database": "Cơ sở dữ liệu",
+      "Chỉ hiển thị độ sẵn sàng vận hành. Giá trị nhạy cảm không xuất hiện tại đây.",
+    "admin.health.api": "Dịch vụ ứng dụng",
+    "admin.health.database": "Kho dữ liệu",
     "admin.health.vietqr": "VietQR",
     "admin.health.payos": "payOS",
     "admin.health.manualMarkPaid": "Đánh dấu đã thanh toán thủ công",
@@ -2676,10 +2663,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.charts.eyebrow": "Phân tích trực tiếp",
     "admin.charts.title": "Phân tích vận hành",
     "admin.charts.description":
-      "Các bản tóm tắt trực quan gọn nhẹ chỉ lấy từ dữ liệu quản trị do API hiện tại trả về.",
+      "Các bản tóm tắt trực quan gọn nhẹ chỉ lấy từ dữ liệu quản trị hiện tại.",
     "admin.charts.empty.title": "Chưa đủ dữ liệu cho biểu đồ này.",
     "admin.charts.empty.description":
-      "Biểu đồ sẽ hiển thị khi API trả về hoạt động quản trị phù hợp.",
+      "Biểu đồ sẽ hiển thị khi có hoạt động quản trị phù hợp.",
     "admin.charts.trend.title": "Xu hướng doanh thu và đơn hàng",
     "admin.charts.trend.description":
       "Giá trị đã thanh toán và số đơn theo ngày từ các đơn thanh toán mới nhất trong khoảng đã chọn.",
@@ -2689,7 +2676,7 @@ export const messages: Record<Language, Record<string, string>> = {
       "Biểu đồ cột giá trị đơn đã thanh toán cùng đường số lượng đơn.",
     "admin.charts.trend.ordersTooltip": "{date}: {count} đơn",
     "admin.charts.trend.disclaimer":
-      "Dựa trên tối đa {count} đơn gần đây do API dashboard trả về; đây là mẫu vận hành, không phải báo cáo tài chính đã kiểm toán.",
+      "Dựa trên tối đa {count} đơn gần đây trong tổng quan quản trị; đây là mẫu vận hành, không phải báo cáo tài chính đã kiểm toán.",
     "admin.charts.legend.paidRevenue": "Giá trị đơn đã trả",
     "admin.charts.legend.orders": "Số lượng đơn",
     "admin.charts.payment.title": "Phân bổ trạng thái thanh toán",
@@ -2722,7 +2709,8 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.catalog.credits": "Tín dụng",
     "admin.catalog.missing": "Thiếu sản phẩm cốt lõi: {products}",
     "admin.dialog.eyebrow": "Xác minh thủ công",
-    "admin.dialog.title": "Xác minh chuyển khoản này và đánh dấu đã thanh toán?",
+    "admin.dialog.title":
+      "Xác minh chuyển khoản này và đánh dấu đã thanh toán?",
     "admin.dialog.closeAria": "Đóng hộp thoại đánh dấu đã thanh toán",
     "admin.dialog.description":
       "Trước tiên hãy kiểm tra ứng dụng ngân hàng hoặc sao kê bên ngoài. Ứng dụng này không tự đối soát chuyển khoản ngân hàng. Xác nhận số tiền và nội dung chuyển khoản khớp trước khi tiếp tục.",
@@ -2760,12 +2748,17 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.kpi.missingProducts": "{count} sản phẩm cốt lõi bị thiếu",
     "admin.kpi.catalogCoverage": "Độ phủ danh mục cốt lõi",
     "admin.success.markPaid": "Đơn {orderId} trả về {status}.",
-    "admin.success.payosFinalized": "Đơn {orderId} đã được hoàn tất từ trạng thái payOS đã xác minh.",
-    "admin.success.payosAlreadyPaid": "Đơn {orderId} đã được hoàn tất trước đó.",
+    "admin.success.payosFinalized":
+      "Đơn {orderId} đã được hoàn tất từ trạng thái payOS đã xác minh.",
+    "admin.success.payosAlreadyPaid":
+      "Đơn {orderId} đã được hoàn tất trước đó.",
     "admin.success.payosPending": "Đơn {orderId} vẫn đang chờ xử lý tại payOS.",
-    "admin.success.payosRejected": "Đơn {orderId} chưa được hoàn tất vì payOS không xác nhận một khoản thanh toán hợp lệ.",
-    "admin.error.payosUnavailable": "Tạm thời không thể kiểm tra payOS. Không có thanh toán hay quyền lợi nào bị thay đổi.",
-    "admin.error.payosRejected": "Đối soát payOS bị từ chối vì thông tin thanh toán đã xác minh không khớp với đơn này.",
+    "admin.success.payosRejected":
+      "Đơn {orderId} chưa được hoàn tất vì payOS không xác nhận một khoản thanh toán hợp lệ.",
+    "admin.error.payosUnavailable":
+      "Tạm thời không thể kiểm tra payOS. Không có thanh toán hay quyền lợi nào bị thay đổi.",
+    "admin.error.payosRejected":
+      "Đối soát payOS bị từ chối vì thông tin thanh toán đã xác minh không khớp với đơn này.",
     "admin.orders.title": "Đơn gần đây",
     "admin.orders.description":
       "{count} đơn khớp. Đánh dấu đã thanh toán thủ công yêu cầu kiểm tra ứng dụng ngân hàng hoặc sao kê bên ngoài hệ thống. Ứng dụng không tự đối soát chuyển khoản.",
@@ -2775,11 +2768,12 @@ export const messages: Record<Language, Record<string, string>> = {
       "Bản ghi thanh toán cho các phương thức đang bật. VietQR thủ công vẫn là luồng cơ sở.",
     "admin.transactions.statusFilter": "Trạng thái thanh toán",
     "admin.users.title": "Người dùng gần đây",
-    "admin.users.description": "{count} tài khoản khớp. Chỉ các trường an toàn.",
+    "admin.users.description":
+      "{count} tài khoản khớp. Chỉ các trường an toàn.",
     "admin.physicalPrint.eyebrow": "Thực hiện đơn",
     "admin.physicalPrint.title": "Đơn in 3D vật lý",
     "admin.physicalPrint.description":
-      "{count} đơn vật lý. Trạng thái thanh toán chỉ đọc và do đối soát nhà cung cấp kiểm soát.",
+      "{count} đơn vật lý. Trạng thái thanh toán chỉ đọc và cập nhật từ kết quả thanh toán đã xác nhận.",
     "admin.physicalPrint.paymentStatus": "Trạng thái thanh toán",
     "admin.physicalPrint.fulfillmentStatus": "Trạng thái thực hiện",
     "admin.physicalPrint.package": "Gói",
@@ -2808,9 +2802,9 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.cancelledAt": "Đã hủy",
     "admin.physicalPrint.statusControl": "Điều khiển thực hiện",
     "admin.physicalPrint.paymentReadOnly":
-      "Không thể sửa trạng thái thanh toán tại đây. Đối soát payOS vẫn là thẩm quyền thanh toán.",
+      "Không thể sửa trạng thái thanh toán tại đây. Kết quả payOS chỉ được hiển thị để theo dõi.",
     "admin.physicalPrint.assignDescription":
-      "Phân công một người dùng quản trị đang hoạt động. Backend vẫn hỗ trợ phân công đối tác in, nhưng bảng này không hiển thị danh mục đối tác.",
+      "Phân công một người dùng quản trị đang hoạt động. Phân công đối tác in sẽ được hỗ trợ sau, nhưng bảng này chưa hiển thị danh mục đối tác.",
     "admin.physicalPrint.assignee": "Quản trị viên được phân công",
     "admin.physicalPrint.unassigned": "Chọn quản trị viên",
     "admin.physicalPrint.noTracking": "Chưa có mã vận đơn",
@@ -2819,13 +2813,11 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.loadingDetail": "Đang tải chi tiết đơn",
     "admin.physicalPrint.close": "Đóng chi tiết đơn in vật lý",
     "admin.physicalPrint.orderSummary": "Tóm tắt đơn hàng",
-    "admin.physicalPrint.searchLabel":
-      "Tìm đơn in vật lý",
+    "admin.physicalPrint.searchLabel": "Tìm đơn in vật lý",
     "admin.physicalPrint.searchPlaceholder":
       "Số điện thoại, mã vận đơn hoặc ID đơn đầy đủ",
     "admin.physicalPrint.applyFilters": "Áp dụng bộ lọc",
-    "admin.physicalPrint.empty":
-      "Không có đơn in vật lý khớp các bộ lọc.",
+    "admin.physicalPrint.empty": "Không có đơn in vật lý khớp các bộ lọc.",
     "admin.physicalPrint.payment.pending": "Đang chờ thanh toán",
     "admin.physicalPrint.payment.paid": "Đã thanh toán",
     "admin.physicalPrint.payment.failed": "Thất bại",
@@ -2833,27 +2825,21 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.physicalPrint.payment.expired": "Hết hạn",
     "admin.physicalPrint.payment.refunded": "Đã hoàn tiền",
     "admin.physicalPrint.fulfillment.notStarted": "Chưa bắt đầu",
-    "admin.physicalPrint.fulfillment.waitingFulfillment":
-      "Chờ thực hiện",
-    "admin.physicalPrint.fulfillment.assignedToPartner":
-      "Đã giao đối tác in",
+    "admin.physicalPrint.fulfillment.waitingFulfillment": "Chờ thực hiện",
+    "admin.physicalPrint.fulfillment.assignedToPartner": "Đã giao đối tác in",
     "admin.physicalPrint.fulfillment.printing": "Đang in",
     "admin.physicalPrint.fulfillment.printed": "Đã in",
     "admin.physicalPrint.fulfillment.shipped": "Đã gửi hàng",
     "admin.physicalPrint.fulfillment.completed": "Hoàn tất",
     "admin.physicalPrint.fulfillment.cancelled": "Đã hủy",
-    "admin.physicalPrint.errors.load":
-      "Không tải được đơn in vật lý",
+    "admin.physicalPrint.errors.load": "Không tải được đơn in vật lý",
     "admin.physicalPrint.errors.detail":
       "Không tải được chi tiết đơn in vật lý",
     "admin.physicalPrint.errors.update":
       "Không cập nhật được trạng thái thực hiện",
-    "admin.physicalPrint.success.status":
-      "Đã cập nhật trạng thái thực hiện.",
-    "admin.physicalPrint.success.assign":
-      "Đã phân công đơn in vật lý.",
-    "admin.footer.console":
-      "Console quản trị 3D Stylist - vận hành VietQR",
+    "admin.physicalPrint.success.status": "Đã cập nhật trạng thái thực hiện.",
+    "admin.physicalPrint.success.assign": "Đã phân công đơn in vật lý.",
+    "admin.footer.console": "Console quản trị 3D Stylist - vận hành VietQR",
     "admin.footer.manualMarkPaid": "Đánh dấu thủ công: {state}",
     "admin.footer.pagination": "Phân trang: trang {page} / {totalPages}",
 
