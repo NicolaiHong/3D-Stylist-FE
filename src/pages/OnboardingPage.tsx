@@ -27,6 +27,8 @@ import {
 import { Button } from "../components/common/Button";
 import { Input } from "../components/common/Input";
 import { LoadingScreen } from "../components/common/LoadingScreen";
+import { LanguageSwitch } from "../i18n/LanguageSwitch";
+import { useI18n } from "../i18n/useI18n";
 import { onboardingApi } from "../features/onboarding/onboarding.api";
 import type { OnboardingPayload } from "../features/onboarding/onboarding.api";
 import { profileApi } from "../features/profile/profile.api";
@@ -36,87 +38,87 @@ import { AUTH_ROLES, type AuthUser } from "../features/auth/auth.types";
 import { getApiErrorMessage } from "../services/apiClient";
 
 const STYLE_OPTIONS = [
-  "minimal",
-  "streetwear",
-  "formal",
-  "luxury",
-  "sporty",
-  "vintage",
-  "techwear",
-  "casual",
-  "avant-garde",
+  { value: "minimal", labelKey: "onboarding.style.minimal" },
+  { value: "streetwear", labelKey: "onboarding.style.streetwear" },
+  { value: "formal", labelKey: "onboarding.style.formal" },
+  { value: "luxury", labelKey: "onboarding.style.luxury" },
+  { value: "sporty", labelKey: "onboarding.style.sporty" },
+  { value: "vintage", labelKey: "onboarding.style.vintage" },
+  { value: "techwear", labelKey: "onboarding.style.techwear" },
+  { value: "casual", labelKey: "onboarding.style.casual" },
+  { value: "avant-garde", labelKey: "onboarding.style.avantGarde" },
 ] as const;
 
 const COLOR_OPTIONS = [
-  { value: "black", label: "Black", hex: "#050505" },
-  { value: "white", label: "White", hex: "#f8fafc" },
-  { value: "gray", label: "Gray", hex: "#7c8794" },
-  { value: "navy", label: "Navy", hex: "#172554" },
-  { value: "beige", label: "Beige", hex: "#d6c5a5" },
-  { value: "red", label: "Red", hex: "#c2412d" },
-  { value: "emerald", label: "Emerald", hex: "#047857" },
-  { value: "cobalt", label: "Cobalt", hex: "#2554d8" },
-  { value: "violet", label: "Violet", hex: "#7c3aed" },
-  { value: "rose", label: "Rose", hex: "#e11d48" },
+  { value: "black", labelKey: "onboarding.color.black", hex: "#050505" },
+  { value: "white", labelKey: "onboarding.color.white", hex: "#f8fafc" },
+  { value: "gray", labelKey: "onboarding.color.gray", hex: "#7c8794" },
+  { value: "navy", labelKey: "onboarding.color.navy", hex: "#172554" },
+  { value: "beige", labelKey: "onboarding.color.beige", hex: "#d6c5a5" },
+  { value: "red", labelKey: "onboarding.color.red", hex: "#c2412d" },
+  { value: "emerald", labelKey: "onboarding.color.emerald", hex: "#047857" },
+  { value: "cobalt", labelKey: "onboarding.color.cobalt", hex: "#2554d8" },
+  { value: "violet", labelKey: "onboarding.color.violet", hex: "#7c3aed" },
+  { value: "rose", labelKey: "onboarding.color.rose", hex: "#e11d48" },
 ] as const;
 
 const VIBE_OPTIONS = [
   {
     value: "daily casual",
-    label: "Daily casual",
-    description: "Easy pieces with a clean finish.",
+    labelKey: "onboarding.vibe.dailyCasual",
+    descriptionKey: "onboarding.vibe.dailyCasualBody",
   },
   {
     value: "office-ready",
-    label: "Office-ready",
-    description: "Sharp enough for focused workdays.",
+    labelKey: "onboarding.vibe.officeReady",
+    descriptionKey: "onboarding.vibe.officeReadyBody",
   },
   {
     value: "event statement",
-    label: "Event statement",
-    description: "A stronger silhouette for nights out.",
+    labelKey: "onboarding.vibe.eventStatement",
+    descriptionKey: "onboarding.vibe.eventStatementBody",
   },
   {
     value: "weekend",
-    label: "Weekend",
-    description: "Relaxed, styled, never careless.",
+    labelKey: "onboarding.vibe.weekend",
+    descriptionKey: "onboarding.vibe.weekendBody",
   },
   {
     value: "experimental",
-    label: "Experimental",
-    description: "Unexpected shape, color, and contrast.",
+    labelKey: "onboarding.vibe.experimental",
+    descriptionKey: "onboarding.vibe.experimentalBody",
   },
 ] as const;
 
 const STEPS = [
   {
-    label: "Identity",
-    title: "Name your studio profile.",
-    copy: "A small polish pass before the styling room opens.",
+    labelKey: "onboarding.step.identity",
+    titleKey: "onboarding.step.identityTitle",
+    copyKey: "onboarding.step.identityCopy",
     icon: UserRound,
   },
   {
-    label: "Lifestyle",
-    title: "Tune the studio around your day.",
-    copy: "Keep it practical, but not plain.",
+    labelKey: "onboarding.step.lifestyle",
+    titleKey: "onboarding.step.lifestyleTitle",
+    copyKey: "onboarding.step.lifestyleCopy",
     icon: Briefcase,
   },
   {
-    label: "Style",
-    title: "Set your style direction.",
-    copy: "Choose the signals that feel most like your wardrobe.",
+    labelKey: "onboarding.step.style",
+    titleKey: "onboarding.step.styleTitle",
+    copyKey: "onboarding.step.styleCopy",
     icon: Sparkles,
   },
   {
-    label: "Palette",
-    title: "Choose colors you actually wear.",
-    copy: "The future looks should start from familiar tones.",
+    labelKey: "onboarding.step.palette",
+    titleKey: "onboarding.step.paletteTitle",
+    copyKey: "onboarding.step.paletteCopy",
     icon: Palette,
   },
   {
-    label: "Selfie",
-    title: "Add a face reference when you are ready.",
-    copy: "Optional, but helpful for future outfit previews.",
+    labelKey: "onboarding.step.selfie",
+    titleKey: "onboarding.step.selfieTitle",
+    copyKey: "onboarding.step.selfieCopy",
     icon: Camera,
   },
 ] as const;
@@ -151,8 +153,20 @@ const emptyForm: OnboardingForm = {
   outfitVibe: "",
 };
 
+type TFunction = ReturnType<typeof useI18n>["t"];
+
 function titleCase(value: string) {
   return value.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function styleLabel(value: string, t: TFunction) {
+  const option = STYLE_OPTIONS.find((item) => item.value === value);
+  return option ? t(option.labelKey) : titleCase(value);
+}
+
+function colorLabel(value: string, t: TFunction) {
+  const option = COLOR_OPTIONS.find((item) => item.value === value);
+  return option ? t(option.labelKey) : titleCase(value);
 }
 
 function formFromUser(user: AuthUser): OnboardingForm {
@@ -216,65 +230,69 @@ function createOnboardingPayload(
   return payload;
 }
 
-function validateSelfieFile(file: File): string | null {
+function validateSelfieFile(file: File, t: TFunction): string | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return "Use a JPG, PNG, or WebP image.";
+    return t("onboarding.validation.unsupportedType");
   }
 
   if (file.size > MAX_SELFIE_SIZE_BYTES) {
-    return "Choose an image under 5MB.";
+    return t("onboarding.validation.fileTooLarge");
   }
 
   return null;
 }
 
-function validateStep(stepIndex: number, form: OnboardingForm): OnboardingErrors {
+function validateStep(
+  stepIndex: number,
+  form: OnboardingForm,
+  t: TFunction,
+): OnboardingErrors {
   const nextErrors: OnboardingErrors = {};
   const displayName = form.displayName.trim();
   const occupation = form.occupation.trim();
 
   if (stepIndex === 0) {
     if (!displayName) {
-      nextErrors.displayName = "Display name is required.";
+      nextErrors.displayName = t("onboarding.validation.displayNameRequired");
     } else if (displayName.length > 80) {
-      nextErrors.displayName = "Keep display name under 80 characters.";
+      nextErrors.displayName = t("onboarding.validation.displayNameLength");
     }
   }
 
   if (stepIndex === 1) {
     if (!occupation) {
-      nextErrors.occupation = "Occupation or lifestyle is required.";
+      nextErrors.occupation = t("onboarding.validation.occupationRequired");
     } else if (occupation.length > 100) {
-      nextErrors.occupation = "Keep occupation under 100 characters.";
+      nextErrors.occupation = t("onboarding.validation.occupationLength");
     }
 
     if (!form.outfitVibe) {
-      nextErrors.outfitVibe = "Choose one outfit vibe.";
+      nextErrors.outfitVibe = t("onboarding.validation.vibeRequired");
     }
   }
 
   if (stepIndex === 2) {
     if (form.stylePreferences.length < 2) {
-      nextErrors.stylePreferences = "Choose at least 2 style directions.";
+      nextErrors.stylePreferences = t("onboarding.validation.styleMin");
     } else if (form.stylePreferences.length > MAX_SELECTED_VALUES) {
-      nextErrors.stylePreferences = "Choose up to 5 style directions.";
+      nextErrors.stylePreferences = t("onboarding.validation.styleMax");
     }
   }
 
   if (stepIndex === 3) {
     if (form.preferredColors.length < 1) {
-      nextErrors.preferredColors = "Choose at least 1 color.";
+      nextErrors.preferredColors = t("onboarding.validation.colorMin");
     } else if (form.preferredColors.length > MAX_SELECTED_VALUES) {
-      nextErrors.preferredColors = "Choose up to 5 colors.";
+      nextErrors.preferredColors = t("onboarding.validation.colorMax");
     }
   }
 
   return nextErrors;
 }
 
-function getFirstValidationIssue(form: OnboardingForm) {
+function getFirstValidationIssue(form: OnboardingForm, t: TFunction) {
   for (let index = 0; index < 4; index += 1) {
-    const errors = validateStep(index, form);
+    const errors = validateStep(index, form, t);
 
     if (Object.keys(errors).length > 0) {
       return { index, errors };
@@ -285,6 +303,7 @@ function getFirstValidationIssue(form: OnboardingForm) {
 }
 
 export function OnboardingPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
@@ -330,15 +349,18 @@ export function OnboardingPage() {
   const activeStep = STEPS[currentStep];
   const ActiveStepIcon = activeStep.icon;
   const activePreviewUrl = previewUrl ?? user?.avatarUrl ?? null;
-  const progressText = `Step ${currentStep + 1} of ${STEPS.length}`;
+  const progressText = t("onboarding.progress", {
+    current: currentStep + 1,
+    total: STEPS.length,
+  });
   const isBusy = isSaving || isCompleting || isSkipping || isUploading;
 
   const selectedSummary = useMemo(
     () => [
-      ...form.stylePreferences.slice(0, 3).map(titleCase),
-      ...form.preferredColors.slice(0, 2).map(titleCase),
+      ...form.stylePreferences.slice(0, 3).map((value) => styleLabel(value, t)),
+      ...form.preferredColors.slice(0, 2).map((value) => colorLabel(value, t)),
     ],
-    [form.preferredColors, form.stylePreferences],
+    [form.preferredColors, form.stylePreferences, t],
   );
 
   if (!user) {
@@ -388,8 +410,8 @@ export function OnboardingPage() {
           ...existing,
           [field]:
             field === "stylePreferences"
-              ? "Choose up to 5 style directions."
-              : "Choose up to 5 colors.",
+              ? t("onboarding.validation.styleMax")
+              : t("onboarding.validation.colorMax"),
         }));
         return current;
       }
@@ -421,7 +443,7 @@ export function OnboardingPage() {
 
     try {
       await saveOnboardingDraft();
-      setStatusMessage("Draft saved.");
+      setStatusMessage(t("onboarding.status.draftSaved"));
     } catch (error) {
       setErrors((current) => ({
         ...current,
@@ -433,7 +455,7 @@ export function OnboardingPage() {
   }
 
   async function handleNext() {
-    const nextErrors = validateStep(currentStep, form);
+    const nextErrors = validateStep(currentStep, form, t);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -447,7 +469,7 @@ export function OnboardingPage() {
     try {
       await saveOnboardingDraft();
       setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
-      setStatusMessage("Saved.");
+      setStatusMessage(t("onboarding.status.saved"));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       setErrors({ form: getApiErrorMessage(error) });
@@ -457,7 +479,7 @@ export function OnboardingPage() {
   }
 
   async function handleFinish() {
-    const validationIssue = getFirstValidationIssue(form);
+    const validationIssue = getFirstValidationIssue(form, t);
 
     if (validationIssue) {
       setCurrentStep(validationIssue.index);
@@ -513,7 +535,7 @@ export function OnboardingPage() {
       return;
     }
 
-    const validationError = validateSelfieFile(file);
+    const validationError = validateSelfieFile(file, t);
     setStatusMessage(null);
 
     if (validationError) {
@@ -550,7 +572,7 @@ export function OnboardingPage() {
     if (!selectedFile) {
       setErrors((current) => ({
         ...current,
-        selfie: "Choose an image before uploading.",
+        selfie: t("onboarding.validation.chooseImage"),
       }));
       return;
     }
@@ -563,7 +585,7 @@ export function OnboardingPage() {
       await profileApi.uploadSelfie(selectedFile);
       await refreshUser();
       setSelectedFile(null);
-      setStatusMessage("Selfie uploaded.");
+      setStatusMessage(t("profile.success.selfieUploaded"));
     } catch (error) {
       setErrors((current) => ({
         ...current,
@@ -578,10 +600,10 @@ export function OnboardingPage() {
     return (
       <div className="space-y-5">
         <Input
-          label="Display name"
+          label={t("profile.identity.displayName")}
           name="displayName"
           maxLength={80}
-          placeholder="Alex Morgan"
+          placeholder={t("onboarding.identity.placeholder")}
           value={form.displayName}
           error={errors.displayName}
           icon={<UserRound className="h-4 w-4" />}
@@ -595,10 +617,10 @@ export function OnboardingPage() {
     return (
       <div className="space-y-6">
         <Input
-          label="Occupation or lifestyle"
+          label={t("onboarding.lifestyle.occupation")}
           name="occupation"
           maxLength={100}
-          placeholder="Product designer, student, founder..."
+          placeholder={t("onboarding.lifestyle.placeholder")}
           value={form.occupation}
           error={errors.occupation}
           icon={<Briefcase className="h-4 w-4" />}
@@ -607,15 +629,17 @@ export function OnboardingPage() {
 
         <div className="space-y-3">
           <div>
-            <p className="text-sm font-semibold text-slate-100">Outfit vibe</p>
+            <p className="text-sm font-semibold text-slate-100">
+              {t("onboarding.vibe.title")}
+            </p>
             <p className="mt-1 text-sm text-[#d7e5e2]/58">
-              Pick the default mood for future styling.
+              {t("onboarding.vibe.help")}
             </p>
           </div>
           <div
             className="grid gap-3 sm:grid-cols-2"
             role="group"
-            aria-label="Outfit vibe"
+            aria-label={t("onboarding.vibe.title")}
           >
             {VIBE_OPTIONS.map((option) => {
               const isSelected = form.outfitVibe === option.value;
@@ -634,14 +658,14 @@ export function OnboardingPage() {
                 >
                   <span className="flex items-start justify-between gap-3">
                     <span className="text-base font-bold text-white">
-                      {option.label}
+                      {t(option.labelKey)}
                     </span>
                     {isSelected ? (
                       <Check className="h-5 w-5 shrink-0 text-[#7df9df]" />
                     ) : null}
                   </span>
                   <span className="mt-2 block text-sm leading-6 text-[#d7e5e2]/62">
-                    {option.description}
+                    {t(option.descriptionKey)}
                   </span>
                 </button>
               );
@@ -662,19 +686,19 @@ export function OnboardingPage() {
       <div className="space-y-4">
         <div>
           <p className="text-sm font-semibold text-slate-100">
-            Style preferences
+            {t("onboarding.style.title")}
           </p>
           <p className="mt-1 text-sm text-[#d7e5e2]/58">
-            Choose 2 to 5 directions.
+            {t("onboarding.style.help")}
           </p>
         </div>
         <div
           className="flex flex-wrap gap-3"
           role="group"
-          aria-label="Style preferences"
+          aria-label={t("onboarding.style.title")}
         >
           {STYLE_OPTIONS.map((option) => {
-            const isSelected = form.stylePreferences.includes(option);
+            const isSelected = form.stylePreferences.includes(option.value);
 
             return (
               <button
@@ -684,13 +708,15 @@ export function OnboardingPage() {
                     ? "border-[#2cebcf] bg-[#2cebcf] text-[#06100e] shadow-[0_14px_36px_rgba(44,235,207,0.2)]"
                     : "border-white/10 bg-white/[0.045] text-[#d7e5e2] hover:border-[#2cebcf]/60 hover:bg-[#2cebcf]/10"
                 }`}
-                key={option}
+                key={option.value}
                 type="button"
-                onClick={() => toggleListValue("stylePreferences", option)}
+                onClick={() =>
+                  toggleListValue("stylePreferences", option.value)
+                }
               >
                 <span className="inline-flex items-center gap-2">
                   {isSelected ? <Check className="h-4 w-4" /> : null}
-                  {titleCase(option)}
+                  {t(option.labelKey)}
                 </span>
               </button>
             );
@@ -710,16 +736,16 @@ export function OnboardingPage() {
       <div className="space-y-4">
         <div>
           <p className="text-sm font-semibold text-slate-100">
-            Preferred colors
+            {t("onboarding.color.title")}
           </p>
           <p className="mt-1 text-sm text-[#d7e5e2]/58">
-            Choose 1 to 5 colors.
+            {t("onboarding.color.help")}
           </p>
         </div>
         <div
           className="grid gap-3 sm:grid-cols-2"
           role="group"
-          aria-label="Preferred colors"
+          aria-label={t("onboarding.color.title")}
         >
           {COLOR_OPTIONS.map((option) => {
             const isSelected = form.preferredColors.includes(option.value);
@@ -741,7 +767,7 @@ export function OnboardingPage() {
                   style={{ backgroundColor: option.hex }}
                 />
                 <span className="min-w-0 flex-1 text-sm font-bold text-white">
-                  {option.label}
+                  {t(option.labelKey)}
                 </span>
                 {isSelected ? (
                   <CheckCircle2 className="h-5 w-5 shrink-0 text-[#7df9df]" />
@@ -766,7 +792,7 @@ export function OnboardingPage() {
           <div className="relative aspect-[4/5] bg-[#080d14]">
             {activePreviewUrl ? (
               <img
-                alt="Selfie preview"
+                alt={t("onboarding.selfie.previewAlt")}
                 className="h-full w-full object-cover"
                 src={activePreviewUrl}
               />
@@ -776,7 +802,7 @@ export function OnboardingPage() {
                   <Camera className="h-8 w-8" />
                 </span>
                 <p className="text-sm font-semibold leading-6 text-[#d7e5e2]/72">
-                  Optional, but helpful for future outfit previews.
+                  {t("onboarding.selfie.optionalHelp")}
                 </p>
               </div>
             )}
@@ -802,10 +828,10 @@ export function OnboardingPage() {
             />
             <ImagePlus className="h-6 w-6 text-[#7df9df]" />
             <span className="mt-3 text-base font-bold text-white">
-              Upload a selfie
+              {t("profile.selfie.uploadButton")}
             </span>
             <span className="mt-1 text-sm text-[#d7e5e2]/58">
-              JPG, PNG, or WebP. Max 5MB.
+              {t("onboarding.selfie.dropHelp")}
             </span>
           </label>
 
@@ -828,7 +854,7 @@ export function OnboardingPage() {
                   variant="authSecondary"
                   onClick={() => setSelectedFile(null)}
                 >
-                  Clear
+                  {t("profile.selfie.clearPreview")}
                 </Button>
                 <Button
                   disabled={isCompleting || isSaving}
@@ -838,7 +864,7 @@ export function OnboardingPage() {
                   variant="authPrimary"
                   onClick={() => void handleUploadSelfie()}
                 >
-                  Upload
+                  {t("onboarding.selfie.uploadSelected")}
                 </Button>
               </div>
             </div>
@@ -895,21 +921,24 @@ export function OnboardingPage() {
                 3D Stylist
               </p>
               <p className="truncate text-sm text-[#d7e5e2]/58">
-                Studio setup
+                {t("onboarding.header.subtitle")}
               </p>
             </div>
           </div>
 
-          <Button
-            className="border-white/10 text-[#d7e5e2]"
-            icon={<LogOut className="h-4 w-4" />}
-            isLoading={isAuthLoading}
-            type="button"
-            variant="authSecondary"
-            onClick={() => void logout()}
-          >
-            Sign out
-          </Button>
+          <div className="flex shrink-0 items-center gap-3">
+            <LanguageSwitch />
+            <Button
+              className="border-white/10 text-[#d7e5e2]"
+              icon={<LogOut className="h-4 w-4" />}
+              isLoading={isAuthLoading}
+              type="button"
+              variant="authSecondary"
+              onClick={() => void logout()}
+            >
+              {t("common.logout")}
+            </Button>
+          </div>
         </header>
 
         <section className="grid flex-1 items-center gap-6 py-6 lg:grid-cols-[0.78fr_1.22fr] lg:py-10">
@@ -923,7 +952,7 @@ export function OnboardingPage() {
                   {progressText}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-white">
-                  {activeStep.label}
+                  {t(activeStep.labelKey)}
                 </p>
               </div>
             </div>
@@ -934,26 +963,26 @@ export function OnboardingPage() {
                   className={`h-1.5 rounded-full ${
                     index <= currentStep ? "bg-[#2cebcf]" : "bg-white/12"
                   }`}
-                  key={step.label}
+                  key={step.labelKey}
                 />
               ))}
             </div>
             <p className="sr-only" aria-live="polite">
-              {progressText}: {activeStep.label}
+              {progressText}: {t(activeStep.labelKey)}
             </p>
 
             <div className="mt-8">
               <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl">
-                {activeStep.title}
+                {t(activeStep.titleKey)}
               </h1>
               <p className="mt-4 text-base leading-7 text-[#d7e5e2]/68">
-                {activeStep.copy}
+                {t(activeStep.copyKey)}
               </p>
             </div>
 
             <div className="mt-8 rounded-lg border border-white/10 bg-black/20 p-4">
               <p className="text-xs font-bold uppercase tracking-wide text-[#d7e5e2]/48">
-                Current profile
+                {t("onboarding.profile.title")}
               </p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[#2cebcf]/20 bg-[#2cebcf]/10 text-lg font-bold text-[#7df9df]">
@@ -969,10 +998,13 @@ export function OnboardingPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-white">
-                    {form.displayName.trim() || user.email || "Stylist"}
+                    {form.displayName.trim() ||
+                      user.email ||
+                      t("onboarding.profile.nameFallback")}
                   </p>
                   <p className="truncate text-sm text-[#d7e5e2]/58">
-                    {form.occupation.trim() || "Lifestyle pending"}
+                    {form.occupation.trim() ||
+                      t("onboarding.profile.lifestylePending")}
                   </p>
                 </div>
               </div>
@@ -1025,7 +1057,7 @@ export function OnboardingPage() {
                   variant="authSecondary"
                   onClick={() => void handleSkipOnboarding()}
                 >
-                  Skip for now
+                  {t("onboarding.action.skip")}
                 </Button>
                 {currentStep > 0 ? (
                   <Button
@@ -1034,10 +1066,10 @@ export function OnboardingPage() {
                     icon={<ArrowLeft className="h-4 w-4" />}
                     type="button"
                     variant="authSecondary"
-                    onClick={handleBack}
-                  >
-                    Back
-                  </Button>
+                  onClick={handleBack}
+                >
+                    {t("onboarding.action.back")}
+                </Button>
                 ) : null}
                 <Button
                   className="border-white/10 text-[#d7e5e2]"
@@ -1048,7 +1080,7 @@ export function OnboardingPage() {
                   variant="authSecondary"
                   onClick={() => void handleSaveDraft()}
                 >
-                  Save draft
+                  {t("onboarding.action.saveDraft")}
                 </Button>
               </div>
 
@@ -1064,7 +1096,9 @@ export function OnboardingPage() {
                     : void handleNext()
                 }
               >
-                {currentStep === STEPS.length - 1 ? "Finish setup" : "Continue"}
+                {currentStep === STEPS.length - 1
+                  ? t("onboarding.action.finish")
+                  : t("onboarding.action.continue")}
               </Button>
             </div>
           </section>

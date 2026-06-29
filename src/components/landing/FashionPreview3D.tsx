@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Box3, Group, Mesh, PerspectiveCamera, Vector3 } from "three";
 import { OrbitControls as OrbitControlsImpl } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { useI18n } from "../../i18n/useI18n";
 
 const MODEL_PATH = "/models/fashionboy.glb";
 const MODEL_HEIGHT = 2.86;
@@ -197,17 +198,18 @@ function ContactShadowFloor({ frame }: ContactFloorProps) {
 }
 
 export default function FashionPreview3D() {
+  const { t } = useI18n();
   const [frame, setFrame] = useState<ModelFrame>(DEFAULT_FRAME);
 
   return (
     <Canvas
-      aria-label="Interactive 3D fashion preview"
+      aria-label={t("landing.preview.toolbar")}
       camera={{ position: [0, 0.1, 5.8], fov: 36 }}
       className="h-full w-full cursor-grab active:cursor-grabbing"
       dpr={[1, 1.5]}
       fallback={
         <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center text-sm font-semibold text-slate-300">
-          3D preview is not available on this device.
+          {t("landing.preview.error")}
         </div>
       }
       gl={{
