@@ -307,9 +307,11 @@ textarea {
   flex: 0 0 auto;
 }
 
-.landing-hero-eyebrow,
 .landing-hero-title,
 .landing-hero-body,
+.landing-typewriter-frame,
+.landing-typewriter-reserve,
+.landing-typewriter-live,
 .landing-metrics-row,
 .landing-metric-item,
 .landing-feature-list,
@@ -324,6 +326,19 @@ textarea {
   min-width: 0;
   overflow-wrap: break-word;
   word-break: normal;
+}
+
+.landing-typewriter-frame {
+  display: grid;
+}
+
+.landing-typewriter-reserve,
+.landing-typewriter-live {
+  grid-area: 1 / 1;
+}
+
+.landing-typewriter-reserve {
+  visibility: hidden;
 }
 
 .landing-hero-title {
