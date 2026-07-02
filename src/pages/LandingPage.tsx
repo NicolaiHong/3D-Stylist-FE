@@ -1,4 +1,12 @@
-import { Component, ErrorInfo, ReactNode, Suspense, lazy } from "react";
+import {
+  Component,
+  ErrorInfo,
+  ReactNode,
+  Suspense,
+  lazy,
+  useEffect,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -168,6 +176,163 @@ const creditPacks = [
   { nameKey: "landing.creditPack.100", price: "299.000 đ" },
 ];
 
+const HERO_TITLE_TYPE_MS = 29;
+const HERO_BODY_TYPE_MS = 15;
+const HERO_BODY_DELAY_MS = 216;
+const HERO_TITLE_WORD_PAUSE_MS = 85;
+const HERO_BODY_WORD_PAUSE_MS = 45;
+
+function getPrefersReducedMotion() {
+  if (typeof window === "undefined" || !window.matchMedia) {
+    return false;
+  }
+
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getNextHeroRevealDelay(
+  text: string,
+  revealedCharacterCount: number,
+  baseDelayMs: number,
+  wordPauseMs: number,
+) {
+  const currentCharacter = text[revealedCharacterCount - 1];
+  const nextCharacter = text[revealedCharacterCount];
+  const finishedWord =
+    revealedCharacterCount > 0 &&
+    currentCharacter !== undefined &&
+    nextCharacter !== undefined &&
+    !/\s/.test(currentCharacter) &&
+    /\s/.test(nextCharacter);
+
+  return baseDelayMs + (finishedWord ? wordPauseMs : 0);
+}
+
+function useHeroTypewriter(titleText: string, bodyText: string) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    getPrefersReducedMotion,
+  );
+  const [titleCharacterCount, setTitleCharacterCount] = useState(() =>
+    getPrefersReducedMotion() ? titleText.length : 0,
+  );
+  const [bodyCharacterCount, setBodyCharacterCount] = useState(() =>
+    getPrefersReducedMotion() ? bodyText.length : 0,
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    syncPreference();
+    mediaQuery.addEventListener("change", syncPreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncPreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setTitleCharacterCount(titleText.length);
+      setBodyCharacterCount(bodyText.length);
+      return undefined;
+    }
+
+    setTitleCharacterCount(0);
+    setBodyCharacterCount(0);
+
+    let titleTimer: number | undefined;
+    let bodyDelayTimer: number | undefined;
+    let bodyTimer: number | undefined;
+
+    const startBodyReveal = () => {
+      if (bodyText.length === 0) {
+        return;
+      }
+
+      let bodyIndex = 0;
+      const revealNextBodyCharacter = () => {
+        bodyIndex = Math.min(bodyIndex + 1, bodyText.length);
+        setBodyCharacterCount(bodyIndex);
+
+        if (bodyIndex >= bodyText.length) {
+          bodyTimer = undefined;
+          return;
+        }
+
+        bodyTimer = window.setTimeout(
+          revealNextBodyCharacter,
+          getNextHeroRevealDelay(
+            bodyText,
+            bodyIndex,
+            HERO_BODY_TYPE_MS,
+            HERO_BODY_WORD_PAUSE_MS,
+          ),
+        );
+      };
+
+      bodyTimer = window.setTimeout(revealNextBodyCharacter, HERO_BODY_TYPE_MS);
+    };
+
+    if (titleText.length === 0) {
+      bodyDelayTimer = window.setTimeout(startBodyReveal, HERO_BODY_DELAY_MS);
+    } else {
+      let titleIndex = 0;
+      const revealNextTitleCharacter = () => {
+        titleIndex = Math.min(titleIndex + 1, titleText.length);
+        setTitleCharacterCount(titleIndex);
+
+        if (titleIndex >= titleText.length) {
+          titleTimer = undefined;
+          bodyDelayTimer = window.setTimeout(
+            startBodyReveal,
+            HERO_BODY_DELAY_MS,
+          );
+          return;
+        }
+
+        titleTimer = window.setTimeout(
+          revealNextTitleCharacter,
+          getNextHeroRevealDelay(
+            titleText,
+            titleIndex,
+            HERO_TITLE_TYPE_MS,
+            HERO_TITLE_WORD_PAUSE_MS,
+          ),
+        );
+      };
+
+      titleTimer = window.setTimeout(
+        revealNextTitleCharacter,
+        HERO_TITLE_TYPE_MS,
+      );
+    }
+
+    return () => {
+      if (titleTimer !== undefined) {
+        window.clearTimeout(titleTimer);
+      }
+
+      if (bodyDelayTimer !== undefined) {
+        window.clearTimeout(bodyDelayTimer);
+      }
+
+      if (bodyTimer !== undefined) {
+        window.clearTimeout(bodyTimer);
+      }
+    };
+  }, [bodyText, prefersReducedMotion, titleText]);
+
+  return {
+    bodyCharacterCount,
+    titleCharacterCount,
+  };
+}
+
 export function LandingPage() {
   const { t } = useI18n();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -181,6 +346,34 @@ export function LandingPage() {
   const pricingCtaLabel = isAuthenticated
     ? t("landing.openCredits")
     : t("landing.createAccount");
+  const heroTitleLead = t("landing.hero.titleLead");
+  const heroTitleAccent = t("landing.hero.titleAccent");
+  const heroTitleText = `${heroTitleLead} ${heroTitleAccent}`;
+  const heroBodyText = t("landing.hero.body");
+  const { bodyCharacterCount, titleCharacterCount } = useHeroTypewriter(
+    heroTitleText,
+    heroBodyText,
+  );
+  const revealedTitleLead = heroTitleLead.slice(
+    0,
+    Math.min(titleCharacterCount, heroTitleLead.length),
+  );
+  const titleAccentStart = heroTitleLead.length + 1;
+  const shouldRevealTitleGap = titleCharacterCount > heroTitleLead.length;
+  const revealedTitleAccent =
+    titleCharacterCount > titleAccentStart
+      ? heroTitleAccent.slice(
+          0,
+          Math.min(
+            titleCharacterCount - titleAccentStart,
+            heroTitleAccent.length,
+          ),
+        )
+      : "";
+  const revealedHeroBody = heroBodyText.slice(
+    0,
+    Math.min(bodyCharacterCount, heroBodyText.length),
+  );
 
   return (
     <main className="landing-surface graphite-theme min-h-screen overflow-x-hidden bg-canvas text-text-primary">
@@ -253,17 +446,28 @@ export function LandingPage() {
         className="relative z-10 mx-auto grid w-full max-w-7xl min-w-0 gap-10 px-4 pb-16 pt-9 sm:px-6 md:pt-14 lg:px-8 lg:pb-20 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-center xl:pb-24"
       >
         <div className="min-w-0 max-w-3xl">
-          <p className="landing-hero-eyebrow inline-flex max-w-full rounded-md border border-[#12dff3]/45 bg-[#12dff3]/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#c3f5ff]">
-            {t("landing.hero.eyebrow")}
-          </p>
-          <h1 className="landing-hero-title mt-6 max-w-3xl font-display font-bold text-white sm:mt-7">
-            {t("landing.hero.titleLead")}{" "}
-            <span className="text-[#00e5ff]">
-              {t("landing.hero.titleAccent")}
+          <h1 className="landing-hero-title landing-typewriter-frame max-w-3xl font-display font-bold text-white">
+            <span className="sr-only">{heroTitleText}</span>
+            <span className="landing-typewriter-reserve" aria-hidden="true">
+              {heroTitleLead}{" "}
+              <span className="text-[#00e5ff]">{heroTitleAccent}</span>
+            </span>
+            <span className="landing-typewriter-live" aria-hidden="true">
+              {revealedTitleLead}
+              {shouldRevealTitleGap ? " " : ""}
+              {revealedTitleAccent ? (
+                <span className="text-[#00e5ff]">{revealedTitleAccent}</span>
+              ) : null}
             </span>
           </h1>
-          <p className="landing-hero-body mt-5 max-w-2xl text-base leading-7 text-[#bac9cc] sm:mt-6 sm:text-lg sm:leading-8 lg:text-xl">
-            {t("landing.hero.body")}
+          <p className="landing-hero-body landing-typewriter-frame mt-5 max-w-2xl text-base leading-7 text-[#bac9cc] sm:mt-6 sm:text-lg sm:leading-8 lg:text-xl">
+            <span className="sr-only">{heroBodyText}</span>
+            <span className="landing-typewriter-reserve" aria-hidden="true">
+              {heroBodyText}
+            </span>
+            <span className="landing-typewriter-live" aria-hidden="true">
+              {revealedHeroBody}
+            </span>
           </p>
 
           <div className="landing-hero-cta mt-7 flex min-w-0 flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
