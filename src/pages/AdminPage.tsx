@@ -70,11 +70,14 @@ const orderStatusOptions: OrderStatusFilter[] = [
 const transactionStatusOptions: PaymentStatusFilter[] = [
   "all",
   "initiated",
+  "redirected",
   "succeeded",
   "failed",
   "cancelled",
   "expired",
 ];
+
+const PAYMENT_TRANSACTIONS_PAGE_LIMIT = 8;
 
 const rangeOptions: Array<{ label: string; value: AdminRange }> = [
   { label: "admin.range.7d", value: ADMIN_RANGES.SEVEN_DAYS },
@@ -100,7 +103,7 @@ const emptyOrdersPage: AdminPagination<AdminOrder> = {
 
 const emptyTransactionsPage: AdminPagination<AdminPaymentTransaction> = {
   page: 1,
-  limit: 8,
+  limit: PAYMENT_TRANSACTIONS_PAGE_LIMIT,
   total: 0,
   totalPages: 0,
   items: [],
@@ -371,14 +374,20 @@ function KpiCard({
   );
 }
 
-function AdminEmptyState({ message }: { message: string }) {
+function AdminEmptyState({
+  message,
+  detail,
+}: {
+  message: string;
+  detail?: string;
+}) {
   const { t } = useI18n();
 
   return (
     <div className="p-8 text-center">
       <p className="text-sm font-bold text-white">{message}</p>
       <p className="mt-2 text-sm text-[#849396]">
-        {t("admin.empty.refreshHint")}
+        {detail ?? t("admin.empty.refreshHint")}
       </p>
     </div>
   );
@@ -676,6 +685,128 @@ function OrdersTable({
   );
 }
 
+function TransactionActivitySkeleton() {
+  return (
+    <div className="space-y-3 p-4">
+      {Array.from({ length: 4 }).map((_, rowIndex) => (
+        <div
+          className="rounded-lg border border-[#3b494c]/70 bg-[#201f1f]/70 p-4"
+          key={rowIndex}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="h-4 w-3/4 animate-pulse rounded-sm bg-white/[0.08] sm:w-64" />
+              <div className="h-3 w-full animate-pulse rounded-sm bg-white/[0.07] sm:w-96" />
+            </div>
+            <div className="space-y-2 sm:w-32">
+              <div className="h-3 w-20 animate-pulse rounded-sm bg-white/[0.07] sm:ml-auto" />
+              <div className="h-5 w-28 animate-pulse rounded-sm bg-white/[0.09] sm:ml-auto" />
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((__, itemIndex) => (
+              <div
+                className="h-9 animate-pulse rounded-md bg-white/[0.055]"
+                key={itemIndex}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function isKnownPaginationValue(value: number) {
+  return Number.isFinite(value) && value >= 0;
+}
+
+function AdminPaginationControls({
+  ariaLabel,
+  isLoading,
+  page,
+  requestedLimit,
+  onNext,
+  onPrevious,
+}: {
+  ariaLabel: string;
+  isLoading: boolean;
+  page: AdminPagination<unknown>;
+  requestedLimit: number;
+  onNext: () => void;
+  onPrevious: () => void;
+}) {
+  const { language, t } = useI18n();
+  const currentPage = Math.max(1, page.page || 1);
+  const effectiveLimit = page.limit > 0 ? page.limit : requestedLimit;
+  const receivedCount = page.items.length;
+  const hasTotalMetadata =
+    isKnownPaginationValue(page.total) && isKnownPaginationValue(page.totalPages);
+  const hasKnownTotalPages = hasTotalMetadata && page.totalPages > 0;
+  const rangeStart =
+    receivedCount > 0 ? (currentPage - 1) * effectiveLimit + 1 : 0;
+  const rangeEnd = receivedCount > 0 ? rangeStart + receivedCount - 1 : 0;
+  const rangeLabel =
+    receivedCount > 0
+      ? t("admin.pagination.range", {
+          start: formatNumber(rangeStart, language),
+          end: formatNumber(rangeEnd, language),
+        })
+      : t("admin.pagination.page", {
+          page: formatNumber(currentPage, language),
+        });
+  const totalLabel = hasTotalMetadata
+    ? hasKnownTotalPages
+      ? t("admin.pagination.totalWithPages", {
+          total: formatNumber(page.total, language),
+          totalPages: formatNumber(page.totalPages, language),
+        })
+      : t("admin.pagination.total", {
+          total: formatNumber(page.total, language),
+        })
+    : t("admin.pagination.pageItems", {
+        count: formatNumber(receivedCount, language),
+      });
+  const previousDisabled = isLoading || currentPage <= 1;
+  const nextDisabled =
+    isLoading ||
+    (hasKnownTotalPages
+      ? currentPage >= page.totalPages
+      : receivedCount < requestedLimit);
+
+  return (
+    <nav
+      aria-label={ariaLabel}
+      className="flex flex-col gap-3 border-t border-[#3b494c]/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+    >
+      <div className="min-w-0 text-sm">
+        <p className="font-bold text-white">{rangeLabel}</p>
+        <p className="mt-1 text-xs font-semibold text-[#849396]">
+          {totalLabel}
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+        <button
+          className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-2 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={previousDisabled}
+          type="button"
+          onClick={onPrevious}
+        >
+          {t("admin.pagination.previous")}
+        </button>
+        <button
+          className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-2 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={nextDisabled}
+          type="button"
+          onClick={onNext}
+        >
+          {t("admin.pagination.next")}
+        </button>
+      </div>
+    </nav>
+  );
+}
+
 function TransactionsTable({
   transactions,
   isLoading,
@@ -686,85 +817,131 @@ function TransactionsTable({
   const { language, t } = useI18n();
 
   if (isLoading) {
-    return <TableSkeleton columns={7} />;
+    return <TransactionActivitySkeleton />;
   }
 
   if (transactions.length === 0) {
-    return <AdminEmptyState message={t("admin.empty.transactions")} />;
+    return (
+      <AdminEmptyState
+        detail={t("admin.transactions.emptyDetail")}
+        message={t("admin.empty.transactions")}
+      />
+    );
   }
 
   return (
-    <div className="internal-scroll-region overflow-x-auto">
-      <table className="min-w-[980px] w-full text-left">
-        <thead className="border-b border-[#3b494c]/70 bg-[#201f1f] text-xs uppercase text-[#849396]">
-          <tr>
-            <th className="px-5 py-3 font-bold">
-              {t("admin.table.transaction")}
-            </th>
-            <th className="px-5 py-3 font-bold">{t("admin.table.order")}</th>
-            <th className="px-5 py-3 font-bold">{t("admin.table.user")}</th>
-            <th className="px-5 py-3 font-bold">
-              {t("admin.table.provider")}
-            </th>
-            <th className="px-5 py-3 font-bold">{t("admin.table.status")}</th>
-            <th className="px-5 py-3 font-bold">
-              {t("admin.table.signature")}
-            </th>
-            <th className="px-5 py-3 font-bold">{t("admin.table.amount")}</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#3b494c]/60">
-          {transactions.map((transaction) => (
-            <tr className="transition hover:bg-white/[0.035]" key={transaction.id}>
-              <td className="px-5 py-4">
-                <p className="font-mono text-xs font-bold text-white">
-                  {transaction.txnRef || shortId(transaction.id, t)}
+    <div className="divide-y divide-[#3b494c]/60">
+      {transactions.map((transaction) => {
+        const fullTransactionReference = transaction.txnRef || transaction.id;
+        const visibleTransactionReference =
+          transaction.txnRef || shortId(transaction.id, t);
+        const providerLabel = getDisplayLabel(
+          "paymentProvider",
+          transaction.provider,
+          language,
+        );
+        const transactionDate = transaction.processedAt ?? transaction.createdAt;
+        const transactionDateLabel = transaction.processedAt
+          ? t("admin.transactions.processedAt")
+          : t("admin.transactions.createdAt");
+        const signatureLabel = transaction.signatureVerified
+          ? getDisplayLabel("booleanStatus", "verified", language)
+          : getDisplayLabel("booleanStatus", "not_verified", language);
+
+        return (
+          <article
+            className="min-w-0 bg-[#1c1b1b] p-4 transition hover:bg-white/[0.03] sm:p-5"
+            key={transaction.id}
+          >
+            <div className="grid min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(9rem,auto)] sm:items-start">
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <p
+                    aria-label={t("admin.transactions.referenceAria", {
+                      reference: fullTransactionReference,
+                    })}
+                    className="min-w-0 max-w-full truncate font-mono text-sm font-bold text-white sm:max-w-[24rem]"
+                    title={fullTransactionReference}
+                  >
+                    {visibleTransactionReference}
+                  </p>
+                  <StatusBadge status={transaction.status} />
+                </div>
+              </div>
+
+              <div className="rounded-md border border-[#3b494c]/70 bg-[#0e0e0e]/80 p-3 sm:text-right">
+                <p className="text-xs font-bold uppercase text-[#849396]">
+                  {t("admin.table.amount")}
                 </p>
-                <p className="mt-1 text-xs text-[#849396]">
-                  {formatDateTime(
-                    transaction.processedAt ?? transaction.createdAt,
+                <p className="mt-1 font-display text-xl font-semibold text-white">
+                  {formatCurrency(
+                    transaction.amount,
                     language,
-                    t,
+                    transaction.currency,
                   )}
                 </p>
-              </td>
-              <td className="px-5 py-4 font-mono text-xs font-bold text-[#bac9cc]">
-                {shortId(transaction.orderId, t)}
-              </td>
-              <td className="px-5 py-4">
-                <p className="max-w-[170px] truncate text-sm font-bold text-white">
+              </div>
+            </div>
+
+            <div className="mt-3 grid min-w-0 gap-2 text-xs sm:grid-cols-3">
+              <div className="min-w-0">
+                <p className="font-bold uppercase text-[#849396]">
+                  {t("admin.table.user")}
+                </p>
+                <p className="mt-1 truncate font-semibold text-[#e5e2e1]">
                   {getUserLabel(transaction.user, t)}
                 </p>
-                <p className="mt-1 max-w-[170px] truncate text-xs text-[#bac9cc]">
+                <p className="mt-0.5 truncate text-[#849396]">
                   {transaction.user.email || t("admin.table.noEmail")}
                 </p>
-              </td>
-              <td className="px-5 py-4 text-xs font-bold text-[#bac9cc]">
-                {getDisplayLabel(
-                  "paymentProvider",
-                  transaction.provider,
-                  language,
-                )}
-              </td>
-              <td className="px-5 py-4">
-                <StatusBadge status={transaction.status} />
-              </td>
-              <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                {transaction.signatureVerified
-                  ? getDisplayLabel("booleanStatus", "verified", language)
-                  : getDisplayLabel("booleanStatus", "not_verified", language)}
-              </td>
-              <td className="px-5 py-4 text-sm font-semibold text-[#e5e2e1]">
-                {formatCurrency(
-                  transaction.amount,
-                  language,
-                  transaction.currency,
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold uppercase text-[#849396]">
+                  {t("admin.table.provider")}
+                </p>
+                <p className="mt-1 truncate font-semibold text-[#e5e2e1]">
+                  {providerLabel}
+                </p>
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold uppercase text-[#849396]">
+                  {transactionDateLabel}
+                </p>
+                <p className="mt-1 truncate font-semibold text-[#e5e2e1]">
+                  {formatDateTime(transactionDate, language, t)}
+                </p>
+              </div>
+            </div>
+
+            <dl className="mt-4 grid min-w-0 gap-2 border-t border-[#3b494c]/55 pt-3 text-xs sm:grid-cols-3">
+              <div className="min-w-0 rounded-md bg-white/[0.035] px-3 py-2">
+                <dt className="font-bold uppercase text-[#849396]">
+                  {t("admin.table.order")}
+                </dt>
+                <dd className="mt-1 truncate font-mono font-bold text-[#bac9cc]">
+                  {shortId(transaction.orderId, t)}
+                </dd>
+              </div>
+              <div className="min-w-0 rounded-md bg-white/[0.035] px-3 py-2">
+                <dt className="font-bold uppercase text-[#849396]">
+                  {t("admin.transactions.orderStatus")}
+                </dt>
+                <dd className="mt-1 font-semibold text-[#bac9cc]">
+                  {getKnownDisplayLabel(transaction.orderStatus, language)}
+                </dd>
+              </div>
+              <div className="min-w-0 rounded-md bg-white/[0.035] px-3 py-2">
+                <dt className="font-bold uppercase text-[#849396]">
+                  {t("admin.table.signature")}
+                </dt>
+                <dd className="mt-1 font-semibold text-[#bac9cc]">
+                  {signatureLabel}
+                </dd>
+              </div>
+            </dl>
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -1268,6 +1445,7 @@ export function AdminPage() {
   const [orderStatus, setOrderStatus] = useState<OrderStatusFilter>("all");
   const [transactionStatus, setTransactionStatus] =
     useState<PaymentStatusFilter>("all");
+  const [transactionsPageNumber, setTransactionsPageNumber] = useState(1);
   const [health, setHealth] = useState<AdminHealth | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [usersPage, setUsersPage] =
@@ -1332,8 +1510,8 @@ export function AdminPage() {
             status: orderStatus === "all" ? undefined : orderStatus,
           }),
           adminApi.getAdminPaymentTransactions({
-            page: 1,
-            limit: 8,
+            page: transactionsPageNumber,
+            limit: PAYMENT_TRANSACTIONS_PAGE_LIMIT,
             status:
               transactionStatus === "all" ? undefined : transactionStatus,
           }),
@@ -1363,7 +1541,7 @@ export function AdminPage() {
         }
       }
     },
-    [activeSearch, orderStatus, range, transactionStatus],
+    [activeSearch, orderStatus, range, transactionStatus, transactionsPageNumber],
   );
 
   useEffect(() => {
@@ -1724,7 +1902,10 @@ export function AdminPage() {
                       label={t("admin.transactions.statusFilter")}
                       options={transactionStatusOptions}
                       value={transactionStatus}
-                      onChange={setTransactionStatus}
+                      onChange={(nextStatus) => {
+                        setTransactionStatus(nextStatus);
+                        setTransactionsPageNumber(1);
+                      }}
                     />
                   </div>
                 }
@@ -1732,6 +1913,20 @@ export function AdminPage() {
               <TransactionsTable
                 isLoading={isLoading}
                 transactions={transactionsPage.items}
+              />
+              <AdminPaginationControls
+                ariaLabel={t("admin.transactions.paginationLabel")}
+                isLoading={isLoading}
+                page={transactionsPage}
+                requestedLimit={PAYMENT_TRANSACTIONS_PAGE_LIMIT}
+                onNext={() =>
+                  setTransactionsPageNumber((currentPage) => currentPage + 1)
+                }
+                onPrevious={() =>
+                  setTransactionsPageNumber((currentPage) =>
+                    Math.max(1, currentPage - 1),
+                  )
+                }
               />
             </AdminPanel>
 
