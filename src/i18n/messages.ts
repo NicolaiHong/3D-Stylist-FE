@@ -1230,18 +1230,15 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.charts.empty.title": "Not enough data for this chart yet.",
     "admin.charts.empty.description":
       "The chart will populate after matching admin activity is returned.",
-    "admin.charts.trend.title": "Revenue & Orders Trend",
+    "admin.charts.trend.title": "Revenue Trend",
     "admin.charts.trend.description":
-      "Paid value and order count grouped by date from the latest returned billing orders inside the selected range.",
+      "Paid order value grouped by date from the latest returned billing orders inside the selected range.",
     "admin.charts.trend.sampleRevenue": "Paid value in sample",
     "admin.charts.trend.sampleOrders": "Orders in sample",
-    "admin.charts.trend.aria":
-      "Recent paid order value bars with an order count line.",
-    "admin.charts.trend.ordersTooltip": "{date}: {count} orders",
+    "admin.charts.trend.aria": "Recent paid order value bars.",
     "admin.charts.trend.disclaimer":
       "Based on up to {count} recent orders in the admin overview; this is an operational sample, not an audited finance report.",
     "admin.charts.legend.paidRevenue": "Paid order value",
-    "admin.charts.legend.orders": "Order count",
     "admin.charts.payment.title": "Payment Status Mix",
     "admin.charts.payment.description":
       "Selected-range payment transactions grouped by current status.",
@@ -2708,18 +2705,15 @@ export const messages: Record<Language, Record<string, string>> = {
     "admin.charts.empty.title": "Chưa đủ dữ liệu cho biểu đồ này.",
     "admin.charts.empty.description":
       "Biểu đồ sẽ hiển thị khi có hoạt động quản trị phù hợp.",
-    "admin.charts.trend.title": "Xu hướng doanh thu và đơn hàng",
+    "admin.charts.trend.title": "Xu hướng doanh thu",
     "admin.charts.trend.description":
-      "Giá trị đã thanh toán và số đơn theo ngày từ các đơn thanh toán mới nhất trong khoảng đã chọn.",
+      "Giá trị đơn đã thanh toán theo ngày từ các đơn thanh toán mới nhất trong khoảng đã chọn.",
     "admin.charts.trend.sampleRevenue": "Giá trị đã trả trong mẫu",
     "admin.charts.trend.sampleOrders": "Số đơn trong mẫu",
-    "admin.charts.trend.aria":
-      "Biểu đồ cột giá trị đơn đã thanh toán cùng đường số lượng đơn.",
-    "admin.charts.trend.ordersTooltip": "{date}: {count} đơn",
+    "admin.charts.trend.aria": "Biểu đồ cột giá trị đơn đã thanh toán gần đây.",
     "admin.charts.trend.disclaimer":
       "Dựa trên tối đa {count} đơn gần đây trong tổng quan quản trị; đây là mẫu vận hành, không phải báo cáo tài chính đã kiểm toán.",
     "admin.charts.legend.paidRevenue": "Giá trị đơn đã trả",
-    "admin.charts.legend.orders": "Số lượng đơn",
     "admin.charts.payment.title": "Phân bổ trạng thái thanh toán",
     "admin.charts.payment.description":
       "Giao dịch thanh toán trong khoảng đã chọn, nhóm theo trạng thái hiện tại.",

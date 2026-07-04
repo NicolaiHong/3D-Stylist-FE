@@ -214,22 +214,17 @@ function RevenueOrdersTrendChart({
   const slotWidth = plotWidth / points.length;
   const barWidth = Math.min(42, slotWidth * 0.42);
   const maxRevenue = Math.max(...points.map((point) => point.revenue), 1);
-  const maxOrders = Math.max(...points.map((point) => point.orders), 1);
-  const linePoints = points.map((point, index) => {
+  const barPoints = points.map((point, index) => {
     const x = padding.left + slotWidth * index + slotWidth / 2;
-    const y =
-      padding.top + plotHeight - (point.orders / maxOrders) * plotHeight;
 
-    return { ...point, x, y };
+    return { ...point, x };
   });
-  const orderPath = linePoints
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-    .join(" ");
   const totalRevenue = points.reduce(
     (total, point) => total + point.revenue,
     0,
   );
   const totalOrders = points.reduce((total, point) => total + point.orders, 0);
+  const hasPaidRevenue = totalRevenue > 0;
 
   return (
     <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
@@ -265,111 +260,83 @@ function RevenueOrdersTrendChart({
             <span className="h-2.5 w-2.5 rounded-sm bg-[#00e5ff]" />
             {t("admin.charts.legend.paidRevenue")}
           </span>
-          <span className="inline-flex items-center gap-2">
-            <span className="h-0.5 w-5 bg-[#f3bf26]" />
-            {t("admin.charts.legend.orders")}
-          </span>
         </div>
 
-        <div className="mx-auto w-full max-w-[960px]">
-          <svg
-            aria-label={t("admin.charts.trend.aria")}
-            className="h-auto w-full"
-            role="img"
-            viewBox={`0 0 ${width} ${height}`}
-          >
-            <defs>
-              <linearGradient
-                id="admin-trend-bar"
-                x1="0"
-                x2="0"
-                y1="0"
-                y2="1"
-              >
-                <stop offset="0%" stopColor="#00e5ff" />
-                <stop offset="100%" stopColor="#006875" />
-              </linearGradient>
-            </defs>
+        {hasPaidRevenue ? (
+          <div className="mx-auto w-full max-w-[960px]">
+            <svg
+              aria-label={t("admin.charts.trend.aria")}
+              className="h-auto w-full"
+              role="img"
+              viewBox={`0 0 ${width} ${height}`}
+            >
+              <defs>
+                <linearGradient
+                  id="admin-trend-bar"
+                  x1="0"
+                  x2="0"
+                  y1="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#00e5ff" />
+                  <stop offset="100%" stopColor="#006875" />
+                </linearGradient>
+              </defs>
 
-            {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-              const y = padding.top + plotHeight * ratio;
+              {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+                const y = padding.top + plotHeight * ratio;
 
-              return (
-                <line
-                  key={ratio}
-                  stroke="rgba(132, 147, 150, 0.18)"
-                  strokeDasharray="4 8"
-                  x1={padding.left}
-                  x2={width - padding.right}
-                  y1={y}
-                  y2={y}
-                />
-              );
-            })}
+                return (
+                  <line
+                    key={ratio}
+                    stroke="rgba(132, 147, 150, 0.18)"
+                    strokeDasharray="4 8"
+                    x1={padding.left}
+                    x2={width - padding.right}
+                    y1={y}
+                    y2={y}
+                  />
+                );
+              })}
 
-            {linePoints.map((point) => {
-              const barHeight = (point.revenue / maxRevenue) * plotHeight;
+              {barPoints.map((point) => {
+                const barHeight = (point.revenue / maxRevenue) * plotHeight;
 
-              return (
-                <g key={point.dateKey}>
-                  <rect
-                    fill="url(#admin-trend-bar)"
-                    height={barHeight}
-                    opacity={point.revenue > 0 ? 0.9 : 0}
-                    rx="4"
-                    width={barWidth}
-                    x={point.x - barWidth / 2}
-                    y={padding.top + plotHeight - barHeight}
-                  >
-                    <title>
-                      {`${point.label}: ${formatI18nCurrency(
-                        point.revenue,
-                        language,
-                      )}`}
-                    </title>
-                  </rect>
-                  <text
-                    fill="#849396"
-                    fontSize="10"
-                    textAnchor="middle"
-                    x={point.x}
-                    y={height - 14}
-                  >
-                    {point.label}
-                  </text>
-                </g>
-              );
-            })}
-
-            <path
-              d={orderPath}
-              fill="none"
-              stroke="#f3bf26"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="3"
-            />
-
-            {linePoints.map((point) => (
-              <circle
-                cx={point.x}
-                cy={point.y}
-                fill="#1c1b1b"
-                key={point.dateKey}
-                r="5"
-                stroke="#f3bf26"
-                strokeWidth="3"
-              >
-                <title>
-                  {t("admin.charts.trend.ordersTooltip", {
-                    count: formatI18nNumber(point.orders, language),
-                    date: point.label,
-                  })}
-                </title>
-              </circle>
-            ))}
-          </svg>
-        </div>
+                return (
+                  <g key={point.dateKey}>
+                    <rect
+                      fill="url(#admin-trend-bar)"
+                      height={barHeight}
+                      opacity={point.revenue > 0 ? 0.9 : 0}
+                      rx="4"
+                      width={barWidth}
+                      x={point.x - barWidth / 2}
+                      y={padding.top + plotHeight - barHeight}
+                    >
+                      <title>
+                        {`${point.label}: ${formatI18nCurrency(
+                          point.revenue,
+                          language,
+                        )}`}
+                      </title>
+                    </rect>
+                    <text
+                      fill="#849396"
+                      fontSize="10"
+                      textAnchor="middle"
+                      x={point.x}
+                      y={height - 14}
+                    >
+                      {point.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        ) : (
+          <ChartEmptyState />
+        )}
       </div>
     </div>
   );
