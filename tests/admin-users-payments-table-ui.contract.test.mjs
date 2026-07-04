@@ -18,15 +18,37 @@ function functionBody(name) {
   );
 }
 
+function assertMessageParity(keys) {
+  for (const key of keys) {
+    const matches = messagesSource.match(new RegExp(`"${key}":`, "g")) ?? [];
+    assert.equal(matches.length, 2, `${key} must exist in EN and VI`);
+  }
+}
+
 const transactionsBody = functionBody("TransactionsTable");
 const usersBody = functionBody("UsersTable");
+const paginationBody = functionBody("AdminPaginationControls");
 
-test("payment transactions use an activity layout instead of the old seven-column scroller", () => {
+test("payment transactions use compact activity rows instead of the old seven-column scroller", () => {
   assert.match(transactionsBody, /<article\b/);
   assert.doesNotMatch(transactionsBody, /<table\b/);
   assert.doesNotMatch(transactionsBody, /min-w-\[980px\]/);
+  assert.doesNotMatch(transactionsBody, /internal-scroll-region/);
   assert.match(transactionsBody, /admin\.transactions\.orderStatus/);
   assert.match(transactionsBody, /admin\.table\.signature/);
+});
+
+test("payment transaction metadata stays inline and amount is not an oversized card", () => {
+  assert.doesNotMatch(
+    transactionsBody,
+    /rounded-md border border-\[#3b494c\]\/70 bg-\[#0e0e0e\]\/80 p-3/,
+  );
+  assert.doesNotMatch(
+    transactionsBody,
+    /rounded-md bg-white\/\[0\.035\] px-3 py-2/,
+  );
+  assert.match(transactionsBody, /font-display text-base font-semibold/);
+  assert.match(transactionsBody, /flex min-w-0 flex-wrap gap-x-4 gap-y-1\.5/);
 });
 
 test("transaction activity prioritizes reference, status, amount, user, provider, and date", () => {
@@ -34,15 +56,11 @@ test("transaction activity prioritizes reference, status, amount, user, provider
   const statusIndex = transactionsBody.indexOf(
     "<StatusBadge status={transaction.status}",
   );
-  const amountIndex = transactionsBody.indexOf(
-    't("admin.table.amount")',
-  );
+  const amountIndex = transactionsBody.indexOf('t("admin.table.amount")');
   const userIndex = transactionsBody.indexOf('t("admin.table.user")');
-  const providerIndex = transactionsBody.indexOf(
-    't("admin.table.provider")',
-  );
+  const providerIndex = transactionsBody.indexOf('t("admin.table.provider")');
   const dateIndex = transactionsBody.indexOf(
-    "{transactionDateLabel}",
+    "{formatDateTime(transactionDate",
     providerIndex,
   );
   const signatureIndex = transactionsBody.indexOf(
@@ -52,8 +70,9 @@ test("transaction activity prioritizes reference, status, amount, user, provider
 
   assert.ok(referenceIndex >= 0, "transaction reference is missing");
   assert.ok(statusIndex > referenceIndex, "payment status must sit with the reference");
-  assert.ok(amountIndex > statusIndex, "amount must be in the primary row group");
-  assert.ok(userIndex > amountIndex, "user context must follow primary fields");
+  assert.ok(amountIndex > statusIndex, "amount must follow the reference/status");
+  assert.ok(userIndex > amountIndex, "user context must follow amount");
+  assert.ok(userIndex > statusIndex, "user context must follow the primary row");
   assert.ok(providerIndex > userIndex, "provider context must be visible");
   assert.ok(dateIndex > providerIndex, "processed/created date must be visible");
   assert.ok(signatureIndex > dateIndex, "signature must remain secondary metadata");
@@ -68,22 +87,46 @@ test("long transaction references are truncated but exposed through title and ar
   );
 });
 
-test("payment transaction pagination is frontend-only and preserves the existing limit", () => {
+test("Recent Users uses account activity rows instead of the old five-column scroller", () => {
+  assert.match(usersBody, /<article\b/);
+  assert.doesNotMatch(usersBody, /<table\b/);
+  assert.doesNotMatch(usersBody, /min-w-\[820px\]/);
+  assert.doesNotMatch(usersBody, /internal-scroll-region/);
+  assert.match(usersBody, /<StatusBadge status=\{adminUser\.status\}/);
+  assert.match(usersBody, /<StatusBadge status=\{adminUser\.role\}/);
+  assert.match(usersBody, /const onboardingStatus = adminUser\.onboardingCompleted/);
+  assert.match(usersBody, /admin\.users\.subscription/);
+  assert.match(usersBody, /admin\.users\.credits/);
+  assert.match(usersBody, /admin\.users\.updatedAt/);
+});
+
+test("users and transactions keep frontend-only pagination with existing limits", () => {
   assert.match(adminPageSource, /const PAYMENT_TRANSACTIONS_PAGE_LIMIT = 8;/);
+  assert.match(adminPageSource, /const ADMIN_USERS_PAGE_LIMIT = 6;/);
   assert.match(
     adminPageSource,
     /const \[transactionsPageNumber, setTransactionsPageNumber\] = useState\(1\);/,
   );
   assert.match(
     adminPageSource,
+    /const \[usersPageNumber, setUsersPageNumber\] = useState\(1\);/,
+  );
+  assert.match(
+    adminPageSource,
     /adminApi\.getAdminPaymentTransactions\(\{\s*page: transactionsPageNumber,\s*limit: PAYMENT_TRANSACTIONS_PAGE_LIMIT,/s,
   );
+  assert.match(
+    adminPageSource,
+    /adminApi\.getAdminUsers\(\{\s*page: usersPageNumber,\s*limit: ADMIN_USERS_PAGE_LIMIT,/s,
+  );
   assert.match(adminPageSource, /<AdminPaginationControls\b/);
-  assert.match(adminPageSource, /admin\.pagination\.previous/);
-  assert.match(adminPageSource, /admin\.pagination\.next/);
   assert.match(
     adminApiSource,
     /async getAdminPaymentTransactions\(\s*filters: AdminPaymentTransactionsFilters = \{\},\s*\): Promise<AdminPagination<AdminPaymentTransaction>>/,
+  );
+  assert.match(
+    adminApiSource,
+    /async getAdminUsers\(\s*filters: AdminUsersFilters = \{\},\s*\): Promise<AdminPagination<AdminUser>>/,
   );
   assert.match(
     adminTypesSource,
@@ -91,42 +134,68 @@ test("payment transaction pagination is frontend-only and preserves the existing
   );
 });
 
-test("payment status filtering includes redirected and resets transactions to page one", () => {
-  assert.match(
-    adminPageSource,
-    /const transactionStatusOptions: PaymentStatusFilter\[\] = \[[\s\S]*"redirected"[\s\S]*\];/,
+test("one-page pagination shows compact copy instead of disabled Previous and Next controls", () => {
+  const singlePageIndex = paginationBody.indexOf("if (isKnownSinglePage)");
+  const allItemsIndex = paginationBody.indexOf("t(allItemsKey", singlePageIndex);
+  const previousButtonIndex = paginationBody.indexOf(
+    't("admin.pagination.previous")',
+    singlePageIndex,
   );
-  assert.match(
-    adminPageSource,
-    /setTransactionStatus\(nextStatus\);\s*setTransactionsPageNumber\(1\);/,
+  const nextButtonIndex = paginationBody.indexOf(
+    't("admin.pagination.next")',
+    singlePageIndex,
   );
-  assert.match(adminTypesSource, /export type AdminPaymentStatus =[\s\S]*\| "redirected"/);
+
+  assert.ok(singlePageIndex >= 0, "known one-page branch is missing");
+  assert.ok(allItemsIndex > singlePageIndex, "known one-page branch must render all-items copy");
+  assert.ok(previousButtonIndex > allItemsIndex, "Previous must be outside the one-page branch");
+  assert.ok(nextButtonIndex > allItemsIndex, "Next must be outside the one-page branch");
+  assert.doesNotMatch(paginationBody, /admin\.pagination\.totalWithPages/);
 });
 
-test("pagination disables previous on page one and next on known final or fallback short page", () => {
-  const paginationBody = functionBody("AdminPaginationControls");
-
+test("multi-page and fallback pagination render range/page copy with guarded buttons", () => {
+  assert.match(paginationBody, /admin\.pagination\.showingRange/);
+  assert.match(paginationBody, /admin\.pagination\.pageItems/);
   assert.match(paginationBody, /const previousDisabled = isLoading \|\| currentPage <= 1;/);
   assert.match(
     paginationBody,
     /hasKnownTotalPages\s*\?\s*currentPage >= page\.totalPages\s*:\s*receivedCount < requestedLimit/s,
   );
+  assert.match(paginationBody, /admin\.pagination\.previous/);
+  assert.match(paginationBody, /admin\.pagination\.next/);
 });
 
-test("Recent Users remains outside Batch A1 pagination and layout changes", () => {
-  assert.match(usersBody, /<table className="min-w-\[820px\] w-full text-left">/);
-  assert.doesNotMatch(adminPageSource, /usersPageNumber|setUsersPageNumber/);
-  assert.doesNotMatch(usersBody, /AdminPaginationControls/);
+test("search and filter changes reset their scoped page state to page one", () => {
+  assert.match(
+    adminPageSource,
+    /function handleSearchSubmit[\s\S]*setUsersPageNumber\(1\);[\s\S]*setActiveSearch\(searchInput\.trim\(\)\);/,
+  );
+  assert.match(
+    adminPageSource,
+    /setTransactionStatus\(nextStatus\);\s*setTransactionsPageNumber\(1\);/,
+  );
 });
 
-test("new admin transaction and pagination copy has EN/VI parity", () => {
-  for (const key of [
+test("payment status filtering includes redirected and layout prevents equal-height stretching", () => {
+  assert.match(
+    adminPageSource,
+    /const transactionStatusOptions: PaymentStatusFilter\[\] = \[[\s\S]*"redirected"[\s\S]*\];/,
+  );
+  assert.match(adminTypesSource, /export type AdminPaymentStatus =[\s\S]*\| "redirected"/);
+  assert.match(
+    adminPageSource,
+    /<section className="grid items-start gap-5 xl:grid-cols-12">/,
+  );
+  assert.doesNotMatch(adminPageSource, /xl:col-span-5 h-full/);
+});
+
+test("new admin row and pagination copy has EN/VI parity", () => {
+  assertMessageParity([
     "admin.pagination.previous",
     "admin.pagination.next",
-    "admin.pagination.range",
-    "admin.pagination.page",
-    "admin.pagination.total",
-    "admin.pagination.totalWithPages",
+    "admin.pagination.showingRange",
+    "admin.pagination.showingAllTransactions",
+    "admin.pagination.showingAllUsers",
     "admin.pagination.pageItems",
     "admin.transactions.emptyDetail",
     "admin.transactions.processedAt",
@@ -134,8 +203,15 @@ test("new admin transaction and pagination copy has EN/VI parity", () => {
     "admin.transactions.orderStatus",
     "admin.transactions.referenceAria",
     "admin.transactions.paginationLabel",
-  ]) {
-    const matches = messagesSource.match(new RegExp(`"${key}":`, "g")) ?? [];
-    assert.equal(matches.length, 2, `${key} must exist in EN and VI`);
-  }
+    "admin.users.emptyDetail",
+    "admin.users.paginationLabel",
+    "admin.users.subscription",
+    "admin.users.noSubscription",
+    "admin.users.credits",
+    "admin.users.updatedAt",
+    "admin.users.plan.free",
+    "admin.users.plan.starter",
+    "admin.users.plan.creator",
+    "admin.users.plan.pro",
+  ]);
 });
