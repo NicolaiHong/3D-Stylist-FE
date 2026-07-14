@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  CreditCard,
   Database,
   Loader2,
   RefreshCw,
@@ -502,9 +501,6 @@ export function CreditsPage() {
               <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
                 {t("credits.header.title")}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#bac9cc] sm:text-base">
-                {t("credits.header.body")}
-              </p>
             </div>
 
             <section className="grid grid-cols-2 divide-x divide-[#3b494c]/60 overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
@@ -616,30 +612,15 @@ export function CreditsPage() {
             </section>
           ) : null}
 
-          <section className="border-y border-[#3b494c]/60 py-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-[#bac9cc]">
-                  <CreditCard className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <h2 className="text-sm font-bold text-white">
-                    {t("credits.paymentsLink.title")}
-                  </h2>
-                  <p className="mt-1 text-sm leading-6 text-[#bac9cc]">
-                    {t("credits.paymentsLink.body")}
-                  </p>
-                </div>
-              </div>
-              <Link
-                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                to="/payments"
-              >
-                {t("credits.paymentsLink.action")}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </section>
+          <div className="flex justify-end">
+            <Link
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
+              to="/payments"
+            >
+              {t("credits.paymentsLink.action")}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
 
           {isLoading ? (
             <div className="grid gap-5 lg:grid-cols-3">
