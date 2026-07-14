@@ -2347,9 +2347,9 @@ export function DashboardPage() {
                     </div>
                   ) : null}
 
-                  <div className="rounded-lg border border-[#3b494c] bg-[#131313] p-3 sm:p-4">
-                    <dl className="grid divide-y divide-[#3b494c]/70 overflow-hidden rounded-md border border-[#3b494c]/80 bg-[#0e0e0e] text-sm leading-6 text-[#bac9cc] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                      <div className="flex min-w-0 items-center justify-between gap-3 p-4 sm:block">
+                  <div className="rounded-lg border border-[#3b494c] bg-[#131313] p-4 sm:p-5">
+                    <dl className="grid gap-4 text-sm leading-6 text-[#bac9cc] sm:grid-cols-3 sm:gap-8">
+                      <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
                         <dt className="dashboard-utility-label font-bold text-[#849396]">
                           {t("dashboard.generate.cost")}
                         </dt>
@@ -2357,7 +2357,7 @@ export function DashboardPage() {
                           {t("dashboard.generate.oneCredit")}
                         </dd>
                       </div>
-                      <div className="flex min-w-0 items-center justify-between gap-3 p-4 sm:block">
+                      <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
                         <dt className="dashboard-utility-label font-bold text-[#849396]">
                           {t("dashboard.generate.balance")}
                         </dt>
@@ -2368,7 +2368,7 @@ export function DashboardPage() {
                         </dd>
                       </div>
                       {summary && creditBalance > 0 ? (
-                        <div className="flex min-w-0 items-center justify-between gap-3 p-4 sm:block">
+                        <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
                           <dt className="dashboard-utility-label font-bold text-[#849396]">
                             {t("dashboard.generate.balanceAfter")}
                           </dt>
@@ -2380,7 +2380,7 @@ export function DashboardPage() {
                         </div>
                       ) : null}
                     </dl>
-                    <p className="mt-3 px-1 text-xs leading-5 text-[#849396]">
+                    <p className="mt-4 text-xs leading-5 text-[#849396]">
                       {t("dashboard.generate.estimate")}
                     </p>
                   </div>
