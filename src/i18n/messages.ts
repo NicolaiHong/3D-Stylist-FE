@@ -890,7 +890,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.paymentsLink.title": "Payments and order history",
     "credits.paymentsLink.body":
       "Pending checkout links and previous orders now live in one focused payments page.",
-    "credits.paymentsLink.action": "View payments",
+    "credits.paymentsLink.action": "View payment history",
     "credits.pending.title": "Pending payments",
     "credits.pending.body":
       "Resume a payment method or monitor admin verification after reporting a manual transfer.",
@@ -2371,7 +2371,7 @@ export const messages: Record<Language, Record<string, string>> = {
     "credits.paymentsLink.title": "Thanh toán và lịch sử đơn",
     "credits.paymentsLink.body":
       "Liên kết checkout đang chờ và các đơn trước đây nằm trong trang thanh toán riêng.",
-    "credits.paymentsLink.action": "Xem thanh toán",
+    "credits.paymentsLink.action": "Xem lịch sử thanh toán",
     "credits.pending.title": "Thanh toán đang chờ",
     "credits.pending.body":
       "Tiếp tục phương thức thanh toán hoặc theo dõi xác minh của quản trị sau khi báo chuyển khoản thủ công.",
