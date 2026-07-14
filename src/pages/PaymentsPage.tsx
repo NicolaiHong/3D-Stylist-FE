@@ -4,11 +4,14 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   CreditCard,
   Loader2,
   ReceiptText,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { billingApi } from "../features/billing/billing.api";
@@ -23,6 +26,8 @@ import { getApiErrorMessage } from "../services/apiClient";
 import type { Language } from "../i18n/types";
 
 type Translate = ReturnType<typeof useI18n>["t"];
+
+const ORDER_HISTORY_PAGE_SIZE = 6;
 
 function getOrderProductName(order: BillingOrder, t: Translate) {
   return order.items[0]?.productName ?? t("payments.productFallback");
@@ -94,6 +99,23 @@ function getVerificationStatus(order: BillingOrder) {
   return order.paymentVerification ?? "awaiting_transfer";
 }
 
+function canRemovePendingOrder(order: BillingOrder) {
+  const verificationStatus = getVerificationStatus(order);
+
+  return (
+    (order.status === "pending" || order.status === "expired") &&
+    !order.userReportedTransferredAt &&
+    ![
+      "user_reported_transferred",
+      "pending_admin_verification",
+      "admin_verified",
+    ].includes(verificationStatus) &&
+    !order.transactions.some((transaction) =>
+      ["initiated", "redirected"].includes(transaction.status),
+    )
+  );
+}
+
 function PaymentsEmptyState({
   body,
   title,
@@ -113,13 +135,18 @@ function PaymentsEmptyState({
 }
 
 function PendingPaymentCard({
+  isDeleting,
+  onRemove,
   order,
 }: {
+  isDeleting: boolean;
+  onRemove: (order: BillingOrder) => void;
   order: BillingOrder;
 }) {
   const { language, t } = useI18n();
   const verificationStatus = getVerificationStatus(order);
   const isPayable = isPayablePendingOrder(order);
+  const canRemove = canRemovePendingOrder(order);
 
   return (
     <article className="rounded-lg border border-[#f3bf26]/25 bg-[#1c1b1b] p-4">
@@ -185,14 +212,35 @@ function PendingPaymentCard({
           </dl>
         </div>
 
-        {isPayable ? (
-          <Link
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
-            to={`/credits/checkout/${order.id}`}
-          >
-            {t("payments.action.resume")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+        {isPayable || canRemove ? (
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {isPayable ? (
+              <Link
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#001f24] transition hover:bg-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9cf0ff]"
+                to={`/credits/checkout/${order.id}`}
+              >
+                {t("payments.action.resume")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
+            {canRemove ? (
+              <button
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#ffb4ab]/30 px-4 py-2.5 text-sm font-bold text-[#ffdad6] transition hover:bg-[#ffb4ab]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffb4ab] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isDeleting}
+                type="button"
+                onClick={() => onRemove(order)}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                {isDeleting
+                  ? t("payments.pending.deleting")
+                  : t("payments.pending.delete")}
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </article>
@@ -264,6 +312,8 @@ export function PaymentsPage() {
   const [orders, setOrders] = useState<BillingOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
   const loadPayments = useCallback(async (showLoading = true) => {
@@ -295,6 +345,27 @@ export function PaymentsPage() {
     void loadPayments();
   }, [loadPayments]);
 
+  const handleRemovePendingOrder = useCallback(
+    async (order: BillingOrder) => {
+      if (!window.confirm(t("payments.pending.deleteConfirm"))) {
+        return;
+      }
+
+      setDeletingOrderId(order.id);
+      setError(null);
+
+      try {
+        await billingApi.cancelPendingBillingOrder(order.id);
+        await loadPayments(false);
+      } catch (removeError) {
+        setError(getApiErrorMessage(removeError));
+      } finally {
+        setDeletingOrderId(null);
+      }
+    },
+    [loadPayments, t],
+  );
+
   const pendingOrders = useMemo(() => {
     const byId = new Map<string, BillingOrder>();
 
@@ -312,6 +383,21 @@ export function PaymentsPage() {
     () => [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [orders],
   );
+  const historyPageCount = Math.max(
+    1,
+    Math.ceil(sortedOrders.length / ORDER_HISTORY_PAGE_SIZE),
+  );
+  const currentHistoryPage = Math.min(historyPage, historyPageCount);
+  const paginatedOrders = useMemo(() => {
+    const start = (currentHistoryPage - 1) * ORDER_HISTORY_PAGE_SIZE;
+    return sortedOrders.slice(start, start + ORDER_HISTORY_PAGE_SIZE);
+  }, [currentHistoryPage, sortedOrders]);
+
+  useEffect(() => {
+    setHistoryPage((currentPage) =>
+      Math.min(currentPage, historyPageCount),
+    );
+  }, [historyPageCount]);
 
   return (
     <DashboardShell planLabel={summary?.plan.name}>
@@ -399,7 +485,14 @@ export function PaymentsPage() {
                 ) : (
                   <div className="grid gap-4">
                     {pendingOrders.map((order) => (
-                      <PendingPaymentCard key={order.id} order={order} />
+                      <PendingPaymentCard
+                        isDeleting={deletingOrderId === order.id}
+                        key={order.id}
+                        order={order}
+                        onRemove={(selectedOrder) =>
+                          void handleRemovePendingOrder(selectedOrder)
+                        }
+                      />
                     ))}
                   </div>
                 )}
@@ -424,10 +517,50 @@ export function PaymentsPage() {
                     title={t("payments.history.emptyTitle")}
                   />
                 ) : (
-                  <div className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
-                    {sortedOrders.map((order) => (
-                      <OrderHistoryRow key={order.id} order={order} />
-                    ))}
+                  <div className="space-y-3">
+                    <div className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b]">
+                      {paginatedOrders.map((order) => (
+                        <OrderHistoryRow key={order.id} order={order} />
+                      ))}
+                    </div>
+
+                    {historyPageCount > 1 ? (
+                      <nav
+                        aria-label={t("payments.pagination.aria")}
+                        className="flex flex-col items-center justify-between gap-3 rounded-lg border border-[#3b494c]/70 bg-[#1c1b1b] p-3 sm:flex-row"
+                      >
+                        <button
+                          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                          disabled={currentHistoryPage === 1}
+                          type="button"
+                          onClick={() =>
+                            setHistoryPage((page) => Math.max(1, page - 1))
+                          }
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          {t("payments.pagination.previous")}
+                        </button>
+                        <span className="text-sm font-semibold text-[#bac9cc]">
+                          {t("payments.pagination.page", {
+                            page: currentHistoryPage,
+                            total: historyPageCount,
+                          })}
+                        </span>
+                        <button
+                          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                          disabled={currentHistoryPage === historyPageCount}
+                          type="button"
+                          onClick={() =>
+                            setHistoryPage((page) =>
+                              Math.min(historyPageCount, page + 1),
+                            )
+                          }
+                        >
+                          {t("payments.pagination.next")}
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </nav>
+                    ) : null}
                   </div>
                 )}
               </section>

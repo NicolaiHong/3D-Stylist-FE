@@ -86,6 +86,16 @@ export async function getBillingOrder(
   return unwrapData(data).order;
 }
 
+export async function cancelPendingBillingOrder(
+  orderId: string,
+): Promise<BillingOrder> {
+  const { data } = await apiClient.delete<
+    ApiResponse<{ order: BillingOrder }>
+  >(`/billing/orders/${orderId}`);
+
+  return unwrapData(data).order;
+}
+
 export async function payBillingOrder(
   orderId: string,
   provider: BillingProvider,
@@ -137,6 +147,7 @@ export const billingApi = {
   createBillingOrder,
   getBillingOrders,
   getBillingOrder,
+  cancelPendingBillingOrder,
   payBillingOrder,
   createPayosPaymentLink,
   confirmBillingTransfer,
