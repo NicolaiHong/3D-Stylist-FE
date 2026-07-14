@@ -17,19 +17,16 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock3,
-  CreditCard,
   Database,
   Download,
   Eye,
   ExternalLink,
   ImageIcon,
   Loader2,
-  LockKeyhole,
   RefreshCw,
   Sparkles,
   Trash2,
   Upload,
-  UserRound,
   X,
 } from "lucide-react";
 import { PaywallModal } from "../components/billing/PaywallModal";
@@ -146,16 +143,6 @@ function getPendingPaymentBannerDontShowKey(userScope: string) {
 }
 
 type Translate = ReturnType<typeof useI18n>["t"];
-
-function getPlanTone(summary: BillingSummary | null, t: Translate) {
-  if (!summary) {
-    return t("dashboard.plan.checking");
-  }
-
-  return summary.plan.status === "active"
-    ? t("dashboard.plan.active")
-    : t("dashboard.plan.free");
-}
 
 function isPollingStatus(status: FigureStatus) {
   return status === "queued" || status === "processing";
@@ -1821,11 +1808,6 @@ export function DashboardPage() {
     );
   const shouldShowPendingOrderBanner =
     Boolean(pendingOrder) && !pendingBannerDontShow && !pendingBannerDismissed;
-  const renewalDate = formatI18nDate(
-    summary?.plan.currentPeriodEnd,
-    language,
-    "",
-  );
   const latestPayment = summary?.latestPayment;
   const creditBalance = summary?.credits.balance ?? 0;
   const hasLoadedZeroCredits = Boolean(summary) && creditBalance <= 0;
@@ -2560,106 +2542,6 @@ export function DashboardPage() {
                 </p>
               </article>
 
-              <article className="overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] lg:col-span-12">
-                <div className="grid md:grid-cols-3 md:divide-x md:divide-[#3b494c]/60">
-                  <div className="flex min-w-0 flex-col gap-3 border-b border-[#3b494c]/60 p-5 md:border-b-0">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-white/[0.06] text-[#bac9cc]">
-                        <CreditCard className="h-5 w-5" />
-                      </span>
-                      <span className="dashboard-utility-label font-bold text-[#849396]">
-                        {getPlanTone(summary, t)}
-                      </span>
-                    </div>
-                    <div>
-                      <h2 className="font-display text-xl font-semibold text-white">
-                        {summary?.plan.name ?? t("dashboard.card.free")}
-                      </h2>
-                      <p className="dashboard-helper-copy mt-1 text-[#bac9cc]">
-                        {summary?.plan.status === "active"
-                          ? t("dashboard.card.activePlanBody")
-                          : t("dashboard.card.freePlanBody")}
-                      </p>
-                      {renewalDate ? (
-                        <p className="mt-2 text-xs font-semibold text-[#e5e2e1]">
-                          {t("dashboard.card.activeThrough", {
-                            date: renewalDate,
-                          })}
-                        </p>
-                      ) : null}
-                    </div>
-                    <Link
-                      className="mt-auto inline-flex min-h-11 items-center justify-center rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                      to="/credits"
-                    >
-                      {summary?.plan.status === "active"
-                        ? t("dashboard.card.managePlan")
-                        : t("dashboard.card.upgrade")}
-                    </Link>
-                  </div>
-
-                  <div className="flex min-w-0 flex-col gap-3 border-b border-[#3b494c]/60 p-5 md:border-b-0">
-                    <span
-                      className={`flex h-10 w-10 items-center justify-center rounded-md ${
-                        summary?.capabilities.canExportModel
-                          ? "bg-[#2cebcf]/10 text-[#2cebcf]"
-                          : "bg-[#f3bf26]/10 text-[#f3bf26]"
-                      }`}
-                    >
-                      {summary?.capabilities.canExportModel ? (
-                        <CheckCircle2 className="h-5 w-5" />
-                      ) : (
-                        <LockKeyhole className="h-5 w-5" />
-                      )}
-                    </span>
-                    <div>
-                      <h2 className="font-display text-xl font-semibold text-white">
-                        {t("dashboard.card.exportAccess")}
-                      </h2>
-                      <p className="dashboard-helper-copy mt-1 text-[#bac9cc]">
-                        {summary?.capabilities.canExportModel
-                          ? t("dashboard.card.exportConfirmed")
-                          : t("dashboard.card.exportBlocked")}
-                      </p>
-                    </div>
-                    <button
-                      className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-4 py-2.5 text-sm font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/35 hover:bg-[#00e5ff]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                      type="button"
-                      onClick={() => {
-                        if (!summary?.capabilities.canExportModel) {
-                          setIsPaywallOpen(true);
-                        }
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                      {t("dashboard.card.downloadExportAccess")}
-                    </button>
-                  </div>
-
-                  <div className="flex min-w-0 flex-col gap-3 p-5">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-md bg-white/[0.06] text-[#bac9cc]">
-                      <UserRound className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <h2 className="font-display text-xl font-semibold text-white">
-                        {t("dashboard.card.account")}
-                      </h2>
-                      <p className="mt-1 truncate text-sm font-semibold text-[#e5e2e1]">
-                        {user?.email || t("dashboard.card.noEmail")}
-                      </p>
-                      <p className="dashboard-helper-copy mt-1 text-[#bac9cc]">
-                        {t("dashboard.card.accountBody")}
-                      </p>
-                    </div>
-                    <Link
-                      className="mt-auto inline-flex min-h-11 items-center justify-center rounded-md px-4 py-2.5 text-sm font-bold text-[#bac9cc] transition hover:bg-white/[0.05] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                      to="/profile"
-                    >
-                      {t("dashboard.card.viewProfile")}
-                    </Link>
-                  </div>
-                </div>
-              </article>
             </section>
           )}
 
