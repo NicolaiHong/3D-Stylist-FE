@@ -920,6 +920,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "payments.pending.title": "Pending payments",
     "payments.pending.body":
       "Pending orders stay visible here even if the dashboard banner is dismissed.",
+    "payments.pending.delete": "Delete pending payment",
+    "payments.pending.deleting": "Deleting...",
+    "payments.pending.deleteConfirm":
+      "Delete this pending payment? It will be cancelled and remain in order history for payment records.",
     "payments.pending.emptyTitle": "No pending payments",
     "payments.pending.emptyBody":
       "Choose a plan or credit pack on the credits page to start checkout.",
@@ -932,6 +936,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "payments.history.created": "Created {date}",
     "payments.history.paid": "Paid",
     "payments.history.noAction": "No action",
+    "payments.pagination.aria": "Order history pagination",
+    "payments.pagination.previous": "Previous",
+    "payments.pagination.next": "Next",
+    "payments.pagination.page": "Page {page} of {total}",
     "payments.field.amount": "Amount",
     "payments.field.expires": "Expires",
     "payments.field.status": "Status",
@@ -2393,6 +2401,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "payments.pending.title": "Thanh toán đang chờ",
     "payments.pending.body":
       "Các đơn đang chờ vẫn hiển thị ở đây ngay cả khi bạn đóng thông báo trên bảng điều khiển.",
+    "payments.pending.delete": "Xóa thanh toán đang chờ",
+    "payments.pending.deleting": "Đang xóa...",
+    "payments.pending.deleteConfirm":
+      "Xóa thanh toán đang chờ này? Đơn sẽ được hủy và vẫn nằm trong lịch sử để lưu hồ sơ thanh toán.",
     "payments.pending.emptyTitle": "Không có thanh toán đang chờ",
     "payments.pending.emptyBody":
       "Chọn một gói hoặc gói tín dụng trên trang tín dụng để bắt đầu checkout.",
@@ -2405,6 +2417,10 @@ export const messages: Record<Language, Record<string, string>> = {
     "payments.history.created": "Đã tạo {date}",
     "payments.history.paid": "Đã thanh toán",
     "payments.history.noAction": "Không có hành động",
+    "payments.pagination.aria": "Phân trang lịch sử đơn",
+    "payments.pagination.previous": "Trang trước",
+    "payments.pagination.next": "Trang sau",
+    "payments.pagination.page": "Trang {page} / {total}",
     "payments.field.amount": "Số tiền",
     "payments.field.expires": "Hết hạn",
     "payments.field.status": "Trạng thái",

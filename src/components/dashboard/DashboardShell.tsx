@@ -312,9 +312,6 @@ export function DashboardShell({
                 <span className="block truncate font-display text-lg font-bold text-white">
                   3D Stylist
                 </span>
-                <span className="block truncate text-xs font-semibold tracking-[0.04em] text-[#bac9cc]">
-                  {planLabel || t("shell.planFallback")}
-                </span>
               </span>
             </Link>
 
@@ -328,9 +325,6 @@ export function DashboardShell({
             </nav>
 
             <div className="flex shrink-0 items-center gap-2">
-              <span className="hidden max-w-[180px] truncate rounded-md border border-[#00e5ff]/20 bg-[#00e5ff]/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-[#c3f5ff] sm:inline-flex">
-                {planLabel || t("shell.planFallback")}
-              </span>
               <LanguageSwitch className={authenticatedLanguageSwitchClassName} />
               <button
                 aria-label={t("common.logout")}
