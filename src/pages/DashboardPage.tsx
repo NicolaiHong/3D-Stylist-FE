@@ -17,7 +17,6 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock3,
-  Database,
   Download,
   Eye,
   ExternalLink,
@@ -377,8 +376,7 @@ function getReferenceImageValidationError(file: File, t: Translate) {
 function DashboardSkeleton() {
   return (
     <div className="grid gap-5 lg:grid-cols-12">
-      <div className="h-[430px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-9" />
-      <div className="h-64 animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-3" />
+      <div className="h-[430px] animate-pulse rounded-lg border border-white/10 bg-white/[0.05] lg:col-span-12" />
       <div className="h-36 animate-pulse rounded-lg border border-white/10 bg-white/[0.04] lg:col-span-12" />
     </div>
   );
@@ -2292,7 +2290,7 @@ export function DashboardPage() {
             <DashboardSkeleton />
           ) : (
             <section className="grid gap-5 lg:grid-cols-12">
-              <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-9 lg:p-6">
+              <article className="relative overflow-hidden rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-12 lg:p-6">
                 <div className="absolute inset-x-0 top-0 h-px bg-[#00e5ff]/30" />
                 <form
                   className="flex h-full min-h-[320px] flex-col gap-4 sm:gap-5"
@@ -2513,33 +2511,6 @@ export function DashboardPage() {
                     </>
                   ) : null}
                 </form>
-              </article>
-
-              <article className="rounded-lg border border-[#3b494c] bg-[#1c1b1b] p-5 lg:col-span-3 lg:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <Database className="h-6 w-6 text-[#bac9cc]" />
-                  <Link
-                    className="dashboard-utility-label inline-flex items-center gap-1 font-bold text-[#00e5ff] transition hover:text-[#9cf0ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-                    to="/credits"
-                  >
-                    {t("dashboard.card.topUp")}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-                <p className="dashboard-label mt-5 font-bold text-[#bac9cc]">
-                  {t("dashboard.card.creditBalance")}
-                </p>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="font-display text-5xl font-semibold leading-none text-white">
-                    {creditBalance}
-                  </span>
-                  <span className="text-base font-semibold text-[#bac9cc]">
-                    {t("shell.nav.credits").toLowerCase()}
-                  </span>
-                </div>
-                <p className="dashboard-helper-copy mt-4 border-t border-[#3b494c]/70 pt-4 text-[#bac9cc]">
-                  {t("dashboard.card.creditRule")}
-                </p>
               </article>
 
             </section>
