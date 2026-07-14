@@ -207,28 +207,6 @@ function getFigurePreviewUrl(figure: FigureDto) {
   return figure.previewUrl || figure.thumbnailUrl || null;
 }
 
-function getFigureAssetAvailability(figure: FigureDto, t: Translate) {
-  const availability: string[] = [];
-
-  if (getFigurePreviewUrl(figure)) {
-    availability.push(t("dashboard.figure.imageReady"));
-  }
-
-  if (figure.modelAssetReady === true) {
-    availability.push(t("dashboard.figure.modelReady"));
-  }
-
-  if (
-    availability.length === 0 &&
-    figure.status !== "failed" &&
-    figure.status !== "canceled"
-  ) {
-    availability.push(t("dashboard.figure.previewPending"));
-  }
-
-  return availability;
-}
-
 function composeGenerationPrompt(
   prompt: string,
   styleIntent: StyleIntent | undefined,
@@ -430,12 +408,10 @@ function FigureCard({
   figure,
   downloadingAssetKey,
   onDownload,
-  onView,
 }: {
   figure: FigureDto;
   downloadingAssetKey: string | null;
   onDownload: (figure: FigureDto, kind: FigureAssetKind) => void;
-  onView: (figure: FigureDto) => void;
 }) {
   const { language, t } = useI18n();
   const fallbackPrompt = t("dashboard.figure.untitled");
@@ -445,12 +421,7 @@ function FigureCard({
     language,
     t("common.unknown"),
   );
-  const previewUrl = getFigurePreviewUrl(figure);
-  const assetAvailability = getFigureAssetAvailability(figure, t);
   const canOpenStudio = isStudio3dReadyFigure(figure);
-  const canViewImage = figure.status === "success" && Boolean(previewUrl);
-  const isImageDownloading =
-    downloadingAssetKey === getFigureAssetKey(figure, "image");
   const isModelDownloading =
     downloadingAssetKey === getFigureAssetKey(figure, "model");
 
@@ -466,16 +437,9 @@ function FigureCard({
             {createdDate}
           </span>
         </div>
-        <div className="border-b border-[#3b494c]/45 pb-3">
-          <p className="min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
-            {promptSnippet}
-          </p>
-        </div>
-        {assetAvailability.length > 0 ? (
-          <p className="text-xs font-semibold leading-5 text-[#849396]">
-            {assetAvailability.join(" · ")}
-          </p>
-        ) : null}
+        <p className="min-h-12 text-sm font-semibold leading-6 text-[#e5e2e1]">
+          {promptSnippet}
+        </p>
         {figure.status === "failed" && figure.failureReason ? (
           <p className="border-l-2 border-[#ffb4ab]/35 pl-3 text-xs leading-5 text-[#ffdad6]">
             {figure.failureReason}
@@ -493,52 +457,6 @@ function FigureCard({
               <Box className="h-3.5 w-3.5" />
               {t("dashboard.figure.open3dStudio")}
             </Link>
-          ) : null}
-          {canViewImage ? (
-            <button
-              aria-label={t("dashboard.figure.viewImageAria", {
-                prompt: promptSnippet,
-              })}
-              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 ${
-                canOpenStudio
-                  ? "border border-white/[0.12] text-[#e5e2e1] hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline-[#00e5ff]"
-                  : "bg-[#00e5ff] text-[#001f24] hover:bg-[#9cf0ff] focus-visible:outline-[#9cf0ff]"
-              }`}
-              type="button"
-              onClick={() => onView(figure)}
-            >
-              <Eye className="h-3.5 w-3.5" />
-              {t("dashboard.figure.viewImage")}
-            </button>
-          ) : null}
-          {previewUrl ? (
-            <button
-              aria-label={t("dashboard.figure.downloadImageAria", {
-                prompt: promptSnippet,
-              })}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/[0.12] px-3 py-2 text-xs font-bold text-[#e5e2e1] transition hover:border-[#00e5ff]/45 hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isImageDownloading}
-              type="button"
-              onClick={() => onDownload(figure, "image")}
-            >
-              {isImageDownloading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Download className="h-3.5 w-3.5" />
-              )}
-              {t("dashboard.figure.downloadImage")}
-            </button>
-          ) : null}
-          {figure.modelUrl ? (
-            <a
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-3 py-2 text-xs font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
-              href={figure.modelUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("dashboard.figure.openModel")}
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
           ) : null}
           {figure.modelUrl ? (
             <button
@@ -2593,7 +2511,6 @@ export function DashboardPage() {
                       onDownload={(selected, kind) =>
                         void handleDownloadFigureAsset(selected, kind)
                       }
-                      onView={handleViewFigure}
                     />
                   ))
                 )}
