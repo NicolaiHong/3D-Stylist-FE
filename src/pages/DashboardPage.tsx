@@ -2101,9 +2101,6 @@ export function DashboardPage() {
               <h1 className="dashboard-page-title mt-3 font-display font-semibold text-white">
                 {t("dashboard.header.greeting", { name: displayName })}
               </h1>
-              <p className="dashboard-copy mt-3 max-w-2xl text-[#bac9cc]">
-                {t("dashboard.header.body")}
-              </p>
             </div>
             <Link
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#00e5ff]/35 px-4 py-2.5 text-sm font-bold text-[#9cf0ff] transition hover:bg-[#00e5ff]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00e5ff]"
@@ -2222,9 +2219,6 @@ export function DashboardPage() {
                     <h2 className="dashboard-generation-title mt-3 max-w-2xl font-display font-semibold text-white">
                       {t("dashboard.generate.title")}
                     </h2>
-                    <p className="dashboard-copy mt-2 max-w-3xl text-[#bac9cc]">
-                      {t("dashboard.generate.body")}
-                    </p>
                   </div>
 
                   <div>
@@ -2353,32 +2347,32 @@ export function DashboardPage() {
                     </div>
                   ) : null}
 
-                  <div className="rounded-md border-y border-[#3b494c]/70 py-3">
-                    <dl className="grid gap-3 text-sm leading-6 text-[#bac9cc] sm:grid-cols-3">
-                      <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
+                  <div className="rounded-lg border border-[#3b494c] bg-[#131313] p-3 sm:p-4">
+                    <dl className="grid divide-y divide-[#3b494c]/70 overflow-hidden rounded-md border border-[#3b494c]/80 bg-[#0e0e0e] text-sm leading-6 text-[#bac9cc] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                      <div className="flex min-w-0 items-center justify-between gap-3 p-4 sm:block">
                         <dt className="dashboard-utility-label font-bold text-[#849396]">
                           {t("dashboard.generate.cost")}
                         </dt>
-                        <dd className="text-right font-bold text-white sm:mt-1 sm:text-left">
+                        <dd className="text-right font-display text-base font-semibold text-white sm:mt-2 sm:text-left sm:text-xl">
                           {t("dashboard.generate.oneCredit")}
                         </dd>
                       </div>
-                      <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
+                      <div className="flex min-w-0 items-center justify-between gap-3 p-4 sm:block">
                         <dt className="dashboard-utility-label font-bold text-[#849396]">
                           {t("dashboard.generate.balance")}
                         </dt>
-                        <dd className="text-right font-bold text-[#9cf0ff] sm:mt-1 sm:text-left">
+                        <dd className="text-right font-display text-base font-semibold text-[#9cf0ff] sm:mt-2 sm:text-left sm:text-xl">
                           {t("dashboard.generate.credits", {
                             count: creditBalance,
                           })}
                         </dd>
                       </div>
                       {summary && creditBalance > 0 ? (
-                        <div className="flex min-w-0 items-center justify-between gap-3 sm:block">
+                        <div className="flex min-w-0 items-center justify-between gap-3 p-4 sm:block">
                           <dt className="dashboard-utility-label font-bold text-[#849396]">
                             {t("dashboard.generate.balanceAfter")}
                           </dt>
-                          <dd className="text-right font-bold text-[#c9fff6] sm:mt-1 sm:text-left">
+                          <dd className="text-right font-display text-base font-semibold text-[#c9fff6] sm:mt-2 sm:text-left sm:text-xl">
                             {t("dashboard.generate.credits", {
                               count: estimatedBalanceAfterSubmit,
                             })}
@@ -2386,7 +2380,7 @@ export function DashboardPage() {
                         </div>
                       ) : null}
                     </dl>
-                    <p className="mt-2 text-xs leading-5 text-[#849396]">
+                    <p className="mt-3 px-1 text-xs leading-5 text-[#849396]">
                       {t("dashboard.generate.estimate")}
                     </p>
                   </div>
