@@ -8,6 +8,8 @@ import type {
   GenerateFigureFromReferencePayload,
   GenerateFigurePayload,
   ListFiguresParams,
+  OptimizePromptPayload,
+  PromptOptimizationResult,
   ReferenceImageAssetDto,
   RegenerateFigurePayload,
   UploadReferenceImageOptions,
@@ -64,6 +66,14 @@ function compactReferencePayload(
   };
 }
 
+function compactPromptOptimizationPayload(
+  payload: OptimizePromptPayload,
+): OptimizePromptPayload {
+  return {
+    prompt: payload.prompt.trim(),
+  };
+}
+
 function compactRegenerationPayload(
   payload: RegenerateFigurePayload = {},
 ): RegenerateFigurePayload {
@@ -112,6 +122,17 @@ export async function generateFigureFromReference(
   );
 
   return normalizeFigure(unwrapData(data).figure);
+}
+
+export async function optimizePrompt(
+  payload: OptimizePromptPayload,
+): Promise<PromptOptimizationResult> {
+  const { data } = await apiClient.post<ApiResponse<PromptOptimizationResult>>(
+    "/figures/prompt-optimizations",
+    compactPromptOptimizationPayload(payload),
+  );
+
+  return unwrapData(data);
 }
 
 export async function regenerateFigure(
@@ -215,6 +236,7 @@ export async function getFigureStatus(id: string): Promise<FigureDto> {
 export const figuresApi = {
   generateFigure,
   generateFigureFromReference,
+  optimizePrompt,
   regenerateFigure,
   createPreviewVariation,
   createRetexture,

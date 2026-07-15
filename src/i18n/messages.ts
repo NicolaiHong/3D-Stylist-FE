@@ -402,6 +402,31 @@ export const messages: Record<Language, Record<string, string>> = {
       "Start with a garment type, then add material, fit, color, and mood.",
     "dashboard.generate.promptCount":
       "{promptCount} design chars + {setupCount} setup chars / {maxCount}",
+    "dashboard.promptOptimization.action": "Improve design brief with AI",
+    "dashboard.promptOptimization.optimizing": "Improving design brief",
+    "dashboard.promptOptimization.loading":
+      "AI is improving your design brief.",
+    "dashboard.promptOptimization.eyebrow": "Pro prompt helper",
+    "dashboard.promptOptimization.title": "Review the AI-improved prompt",
+    "dashboard.promptOptimization.body":
+      "Compare both versions. Your design brief changes only if you choose the improved prompt.",
+    "dashboard.promptOptimization.close": "Close prompt comparison",
+    "dashboard.promptOptimization.original": "Original prompt",
+    "dashboard.promptOptimization.improved": "AI-improved prompt",
+    "dashboard.promptOptimization.use": "Use this prompt",
+    "dashboard.promptOptimization.keep": "Keep my prompt",
+    "dashboard.promptOptimization.staleTitle": "Your prompt changed",
+    "dashboard.promptOptimization.staleBody":
+      "This suggestion was created from an older version. Keep your current text and run the helper again.",
+    "dashboard.promptOptimization.viewPlans": "View plans",
+    "dashboard.promptOptimization.error.proRequired":
+      "An active Pro plan is required for this helper. Your design brief is unchanged.",
+    "dashboard.promptOptimization.error.rateLimited":
+      "You've used the prompt helper too quickly. Wait a moment and try again; your design brief is unchanged.",
+    "dashboard.promptOptimization.error.unavailable":
+      "The prompt helper is temporarily unavailable. You can still generate with your current design brief.",
+    "dashboard.promptOptimization.error.failed":
+      "We couldn't improve this prompt. Your design brief is unchanged and normal generation is still available.",
     "dashboard.generate.styleIntent": "Style intent",
     "dashboard.generate.styleHelp":
       "Optional style direction. Applied to your design brief when you generate.",
@@ -1887,6 +1912,31 @@ export const messages: Record<Language, Record<string, string>> = {
       "Nêu loại trang phục, chất liệu, phom dáng, màu sắc và cảm hứng chính.",
     "dashboard.generate.promptCount":
       "{promptCount} ký tự mô tả + {setupCount} ký tự thiết lập / {maxCount}",
+    "dashboard.promptOptimization.action": "Cải thiện mô tả bằng AI",
+    "dashboard.promptOptimization.optimizing": "Đang cải thiện mô tả",
+    "dashboard.promptOptimization.loading":
+      "AI đang cải thiện mô tả thiết kế của bạn.",
+    "dashboard.promptOptimization.eyebrow": "Trợ lý câu lệnh Pro",
+    "dashboard.promptOptimization.title": "Xem lại mô tả AI đã cải thiện",
+    "dashboard.promptOptimization.body":
+      "So sánh hai phiên bản. Mô tả thiết kế chỉ thay đổi khi bạn chọn dùng bản đã cải thiện.",
+    "dashboard.promptOptimization.close": "Đóng phần so sánh mô tả",
+    "dashboard.promptOptimization.original": "Mô tả gốc",
+    "dashboard.promptOptimization.improved": "Mô tả AI đã cải thiện",
+    "dashboard.promptOptimization.use": "Dùng mô tả này",
+    "dashboard.promptOptimization.keep": "Giữ mô tả của tôi",
+    "dashboard.promptOptimization.staleTitle": "Mô tả của bạn đã thay đổi",
+    "dashboard.promptOptimization.staleBody":
+      "Gợi ý này được tạo từ phiên bản cũ. Hãy giữ nội dung hiện tại và chạy lại trợ lý.",
+    "dashboard.promptOptimization.viewPlans": "Xem các gói",
+    "dashboard.promptOptimization.error.proRequired":
+      "Cần gói Pro đang hoạt động để dùng trợ lý này. Mô tả thiết kế của bạn không thay đổi.",
+    "dashboard.promptOptimization.error.rateLimited":
+      "Bạn đã dùng trợ lý câu lệnh quá nhanh. Hãy chờ một chút rồi thử lại; mô tả của bạn không thay đổi.",
+    "dashboard.promptOptimization.error.unavailable":
+      "Trợ lý câu lệnh tạm thời không khả dụng. Bạn vẫn có thể tạo mẫu bằng mô tả hiện tại.",
+    "dashboard.promptOptimization.error.failed":
+      "Không thể cải thiện mô tả này. Mô tả của bạn không thay đổi và bạn vẫn có thể tạo mẫu như bình thường.",
     "dashboard.generate.styleIntent": "Ý đồ phong cách",
     "dashboard.generate.styleHelp":
       "Định hướng phong cách tùy chọn. Áp dụng vào mô tả thiết kế khi bạn tạo.",

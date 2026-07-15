@@ -26,10 +26,12 @@ import {
   Sparkles,
   Trash2,
   Upload,
+  Wand2,
   X,
 } from "lucide-react";
 import { PaywallModal } from "../components/billing/PaywallModal";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
+import { PromptOptimizationDialog } from "../components/dashboard/PromptOptimizationDialog";
 import { billingApi } from "../features/billing/billing.api";
 import type {
   BillingOrder,
@@ -100,6 +102,12 @@ type StyleIntent = (typeof STYLE_INTENTS)[number];
 type StyleIntentId = StyleIntent["id"];
 type ModelSource = "default" | "personal";
 type ModelGender = "male" | "female" | "unisex";
+
+interface PromptOptimizationPreview {
+  optimizedPrompt: string;
+  originalPrompt: string;
+  sourceRawPrompt: string;
+}
 
 const MODEL_GENDERS: Array<{ id: ModelGender; labelKey: string }> = [
   { id: "male", labelKey: "dashboard.setup.gender.male" },
@@ -1420,6 +1428,14 @@ export function DashboardPage() {
   const [figures, setFigures] = useState<FigureDto[]>([]);
   const [activeFigure, setActiveFigure] = useState<FigureDto | null>(null);
   const [prompt, setPrompt] = useState("");
+  const [isPromptOptimizing, setIsPromptOptimizing] = useState(false);
+  const [promptOptimizationPreview, setPromptOptimizationPreview] =
+    useState<PromptOptimizationPreview | null>(null);
+  const [promptOptimizationError, setPromptOptimizationError] = useState<
+    string | null
+  >(null);
+  const [promptOptimizationErrorCode, setPromptOptimizationErrorCode] =
+    useState<string | null>(null);
   const [selectedStyleIntentId, setSelectedStyleIntentId] =
     useState<StyleIntentId | null>(null);
   const [modelSource] = useState<ModelSource>("default");
@@ -1467,6 +1483,10 @@ export function DashboardPage() {
   const autoOpenFigureIdRef = useRef<string | null>(null);
   const autoOpenStudioTimeoutRef = useRef<number | null>(null);
   const generateButtonRef = useRef<HTMLButtonElement | null>(null);
+  const promptRef = useRef("");
+  const promptOptimizationButtonRef = useRef<HTMLButtonElement | null>(null);
+  const promptOptimizationInFlightRef = useRef(false);
+  const promptOptimizationRequestIdRef = useRef(0);
   const referenceImageFileInputRef = useRef<HTMLInputElement | null>(null);
   const referenceImageObjectUrlRef = useRef<string | null>(null);
 
@@ -1548,9 +1568,15 @@ export function DashboardPage() {
 
     return () => {
       isMountedRef.current = false;
+      promptOptimizationRequestIdRef.current += 1;
+      promptOptimizationInFlightRef.current = false;
       clearAutoOpenStudioTimeout();
     };
   }, [clearAutoOpenStudioTimeout, loadBillingSummary, loadFigures]);
+
+  useEffect(() => {
+    promptRef.current = prompt;
+  }, [prompt]);
 
   useEffect(() => {
     return () => {
@@ -1727,6 +1753,8 @@ export function DashboardPage() {
   const latestPayment = summary?.latestPayment;
   const creditBalance = summary?.credits.balance ?? 0;
   const hasLoadedZeroCredits = Boolean(summary) && creditBalance <= 0;
+  const isActiveProPlan =
+    summary?.plan.code === "pro" && summary.plan.status === "active";
   const trimmedPrompt = prompt.trim();
   const selectedStyleIntent = STYLE_INTENTS.find(
     (styleIntent) => styleIntent.id === selectedStyleIntentId,
@@ -1747,6 +1775,15 @@ export function DashboardPage() {
     !isGenerating &&
     !hasLoadedZeroCredits &&
     !isComposedPromptTooLong;
+  const isPromptOptimizationDisabled =
+    trimmedPrompt.length === 0 ||
+    isPromptOptimizing ||
+    isGenerating ||
+    isGenerationSetupOpen;
+  const isPromptOptimizationStale = Boolean(
+    promptOptimizationPreview &&
+      prompt !== promptOptimizationPreview.sourceRawPrompt,
+  );
   const insufficientCreditsMessage = t(
     "dashboard.generate.error.insufficientCredits",
   );
@@ -1779,6 +1816,38 @@ export function DashboardPage() {
     setIsGenerationSetupOpen(false);
     window.requestAnimationFrame(() => generateButtonRef.current?.focus());
   }, []);
+
+  const invalidatePromptOptimization = useCallback(() => {
+    promptOptimizationRequestIdRef.current += 1;
+    promptOptimizationInFlightRef.current = false;
+    setIsPromptOptimizing(false);
+    setPromptOptimizationPreview(null);
+    setPromptOptimizationError(null);
+    setPromptOptimizationErrorCode(null);
+  }, []);
+
+  const handleClosePromptOptimization = useCallback(() => {
+    setPromptOptimizationPreview(null);
+    window.requestAnimationFrame(() =>
+      promptOptimizationButtonRef.current?.focus(),
+    );
+  }, []);
+
+  const handleAcceptPromptOptimization = useCallback(() => {
+    if (
+      !promptOptimizationPreview ||
+      promptRef.current !== promptOptimizationPreview.sourceRawPrompt
+    ) {
+      return;
+    }
+
+    promptRef.current = promptOptimizationPreview.optimizedPrompt;
+    setPrompt(promptOptimizationPreview.optimizedPrompt);
+    setPromptOptimizationPreview(null);
+    setPromptOptimizationError(null);
+    setPromptOptimizationErrorCode(null);
+    window.requestAnimationFrame(() => generateButtonRef.current?.focus());
+  }, [promptOptimizationPreview]);
 
   const clearReferenceImageObjectUrl = useCallback(() => {
     if (referenceImageObjectUrlRef.current) {
@@ -1919,6 +1988,89 @@ export function DashboardPage() {
     ],
   );
 
+  async function handleOptimizePrompt() {
+    const sourceRawPrompt = promptRef.current;
+    const requestPrompt = sourceRawPrompt.trim();
+
+    if (
+      !isActiveProPlan ||
+      !requestPrompt ||
+      isGenerating ||
+      promptOptimizationInFlightRef.current
+    ) {
+      return;
+    }
+
+    promptOptimizationInFlightRef.current = true;
+    const requestId = promptOptimizationRequestIdRef.current + 1;
+    promptOptimizationRequestIdRef.current = requestId;
+    setIsPromptOptimizing(true);
+    setPromptOptimizationPreview(null);
+    setPromptOptimizationError(null);
+    setPromptOptimizationErrorCode(null);
+
+    try {
+      const result = await figuresApi.optimizePrompt({
+        prompt: requestPrompt,
+      });
+
+      if (
+        !isMountedRef.current ||
+        requestId !== promptOptimizationRequestIdRef.current
+      ) {
+        return;
+      }
+
+      setPromptOptimizationPreview({
+        optimizedPrompt: result.optimizedPrompt,
+        originalPrompt: requestPrompt,
+        sourceRawPrompt,
+      });
+    } catch (optimizationError) {
+      if (
+        !isMountedRef.current ||
+        requestId !== promptOptimizationRequestIdRef.current
+      ) {
+        return;
+      }
+
+      const errorCode = getApiErrorCode(optimizationError);
+      setPromptOptimizationErrorCode(errorCode);
+
+      if (errorCode === "PROMPT_OPTIMIZATION_PRO_REQUIRED") {
+        setPromptOptimizationError(
+          t("dashboard.promptOptimization.error.proRequired"),
+        );
+        void loadBillingSummary(false);
+      } else if (
+        errorCode === "PROMPT_OPTIMIZATION_RATE_LIMIT_EXCEEDED"
+      ) {
+        setPromptOptimizationError(
+          t("dashboard.promptOptimization.error.rateLimited"),
+        );
+      } else if (
+        errorCode === "PROMPT_OPTIMIZATION_DISABLED" ||
+        errorCode === "PROMPT_OPTIMIZATION_UNAVAILABLE"
+      ) {
+        setPromptOptimizationError(
+          t("dashboard.promptOptimization.error.unavailable"),
+        );
+      } else {
+        setPromptOptimizationError(
+          t("dashboard.promptOptimization.error.failed"),
+        );
+      }
+    } finally {
+      if (
+        isMountedRef.current &&
+        requestId === promptOptimizationRequestIdRef.current
+      ) {
+        promptOptimizationInFlightRef.current = false;
+        setIsPromptOptimizing(false);
+      }
+    }
+  }
+
   function handleGenerate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -1936,6 +2088,7 @@ export function DashboardPage() {
       return;
     }
 
+    invalidatePromptOptimization();
     setGenerationError(null);
     setIsGenerationSetupOpen(true);
   }
@@ -1956,6 +2109,7 @@ export function DashboardPage() {
       return;
     }
 
+    invalidatePromptOptimization();
     setIsGenerating(true);
     setGenerationError(null);
     resetStudioAutoOpenGuard();
@@ -1970,6 +2124,7 @@ export function DashboardPage() {
         return;
       }
 
+      promptRef.current = "";
       setPrompt("");
       setActiveFigure(figure);
       setFigures((currentFigures) => mergeFigureIntoList(currentFigures, figure));
@@ -2019,6 +2174,7 @@ export function DashboardPage() {
       return;
     }
 
+    invalidatePromptOptimization();
     setIsGenerating(true);
     setGenerationError(null);
     resetStudioAutoOpenGuard();
@@ -2034,6 +2190,7 @@ export function DashboardPage() {
         return;
       }
 
+      promptRef.current = "";
       setPrompt("");
       setActiveFigure(figure);
       setFigures((currentFigures) => mergeFigureIntoList(currentFigures, figure));
@@ -2228,24 +2385,57 @@ export function DashboardPage() {
                     >
                       {t("dashboard.generate.promptLabel")}
                     </label>
-                    <textarea
-                      aria-describedby={`generation-prompt-help${
-                        isComposedPromptTooLong
-                          ? " generation-prompt-length-error"
-                          : ""
-                      }`}
-                      aria-invalid={isComposedPromptTooLong}
-                      className="mt-3 min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-[0.96875rem] leading-7 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={isGenerating}
-                      id="generation-prompt"
-                      maxLength={MAX_GENERATION_PROMPT_LENGTH}
-                      placeholder={t("dashboard.generate.promptPlaceholder")}
-                      value={prompt}
-                      onChange={(event) => {
-                        setPrompt(event.target.value);
-                        setGenerationError(null);
-                      }}
-                    />
+                    <div className="relative mt-3">
+                      <textarea
+                        aria-describedby={`generation-prompt-help${
+                          isComposedPromptTooLong
+                            ? " generation-prompt-length-error"
+                            : ""
+                        }`}
+                        aria-invalid={isComposedPromptTooLong}
+                        className={`min-h-[150px] w-full resize-y rounded-md border border-[#3b494c] bg-[#0e0e0e] px-4 py-3 text-[0.96875rem] leading-7 text-white outline-none transition placeholder:text-[#849396] focus:border-[#00e5ff]/60 focus:ring-2 focus:ring-[#00e5ff]/20 disabled:cursor-not-allowed disabled:opacity-60 ${
+                          isActiveProPlan ? "pr-16" : ""
+                        }`}
+                        disabled={isGenerating}
+                        id="generation-prompt"
+                        maxLength={MAX_GENERATION_PROMPT_LENGTH}
+                        placeholder={t(
+                          "dashboard.generate.promptPlaceholder",
+                        )}
+                        value={prompt}
+                        onChange={(event) => {
+                          promptRef.current = event.target.value;
+                          setPrompt(event.target.value);
+                          setGenerationError(null);
+                          setPromptOptimizationError(null);
+                          setPromptOptimizationErrorCode(null);
+                        }}
+                      />
+                      {isActiveProPlan ? (
+                        <button
+                          aria-label={
+                            isPromptOptimizing
+                              ? t("dashboard.promptOptimization.optimizing")
+                              : t("dashboard.promptOptimization.action")
+                          }
+                          className="absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-md border border-[#00e5ff]/30 bg-[#141d1f] text-[#9cf0ff] shadow-sm transition hover:border-[#00e5ff]/65 hover:bg-[#00e5ff]/15 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00e5ff] disabled:cursor-not-allowed disabled:border-white/[0.1] disabled:bg-[#1c1b1b] disabled:text-[#657477]"
+                          disabled={isPromptOptimizationDisabled}
+                          ref={promptOptimizationButtonRef}
+                          title={t("dashboard.promptOptimization.action")}
+                          type="button"
+                          onClick={() => void handleOptimizePrompt()}
+                        >
+                          {isPromptOptimizing ? (
+                            <Loader2
+                              aria-hidden="true"
+                              className="h-4 w-4 animate-spin"
+                            />
+                          ) : (
+                            <Wand2 aria-hidden="true" className="h-4 w-4" />
+                          )}
+                        </button>
+                      ) : null}
+                    </div>
                     <div
                       className="mt-2 flex flex-col gap-2 text-[#849396] sm:flex-row sm:items-start sm:justify-between"
                       id="generation-prompt-help"
@@ -2269,6 +2459,28 @@ export function DashboardPage() {
                       >
                         {promptTooLongMessage}
                       </p>
+                    ) : null}
+                    {isPromptOptimizing ? (
+                      <p className="sr-only" role="status">
+                        {t("dashboard.promptOptimization.loading")}
+                      </p>
+                    ) : null}
+                    {promptOptimizationError ? (
+                      <div
+                        className="mt-3 flex flex-col gap-3 rounded-md border border-[#f3bf26]/30 bg-[#f3bf26]/10 px-4 py-3 text-sm leading-6 text-[#ffeac0] sm:flex-row sm:items-center sm:justify-between"
+                        role="alert"
+                      >
+                        <p>{promptOptimizationError}</p>
+                        {promptOptimizationErrorCode ===
+                        "PROMPT_OPTIMIZATION_PRO_REQUIRED" ? (
+                          <Link
+                            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-[#ffdf96]/35 px-4 py-2.5 text-sm font-bold text-[#ffeac0] transition hover:bg-[#f3bf26]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffdf96]"
+                            to="/credits"
+                          >
+                            {t("dashboard.promptOptimization.viewPlans")}
+                          </Link>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
 
@@ -2517,6 +2729,16 @@ export function DashboardPage() {
         isOpen={isPaywallOpen}
         onClose={() => setIsPaywallOpen(false)}
       />
+      {promptOptimizationPreview ? (
+        <PromptOptimizationDialog
+          isStale={isPromptOptimizationStale}
+          optimizedPrompt={promptOptimizationPreview.optimizedPrompt}
+          originalPrompt={promptOptimizationPreview.originalPrompt}
+          onAccept={handleAcceptPromptOptimization}
+          onClose={handleClosePromptOptimization}
+          onKeep={handleClosePromptOptimization}
+        />
+      ) : null}
       {isGenerationSetupOpen ? (
         <GenerationSetupDialog
           composedPromptCharacterCount={composedPromptCharacterCount}
