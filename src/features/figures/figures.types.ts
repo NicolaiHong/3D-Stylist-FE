@@ -52,6 +52,14 @@ export interface GenerateFigureFromReferencePayload {
   prompt?: string;
 }
 
+export interface OptimizePromptPayload {
+  prompt: string;
+}
+
+export interface PromptOptimizationResult {
+  optimizedPrompt: string;
+}
+
 export interface RegenerateFigurePayload {
   variationInstruction?: string;
 }
