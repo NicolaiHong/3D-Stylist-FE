@@ -24,6 +24,11 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../features/auth/auth.store";
 import { AUTH_ROLES } from "../features/auth/auth.types";
+import {
+  getOrCreateAnonymousVisitorId,
+  visitorAnalyticsApi,
+} from "../features/analytics/visitor.api";
+import { formatI18nNumber } from "../i18n/formatters";
 import { LanguageSwitch } from "../i18n/LanguageSwitch";
 import { useI18n } from "../i18n/useI18n";
 
@@ -334,9 +339,11 @@ function useHeroTypewriter(titleText: string, bodyText: string) {
 }
 
 export function LandingPage() {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [visitorCountFailed, setVisitorCountFailed] = useState(false);
   const workspacePath = user?.role === AUTH_ROLES.ADMIN ? "/admin" : "/dashboard";
   const primaryHref = isAuthenticated ? workspacePath : "/register";
   const primaryLabel = isAuthenticated
@@ -374,6 +381,47 @@ export function LandingPage() {
     0,
     Math.min(bodyCharacterCount, heroBodyText.length),
   );
+  const visitorDetail =
+    visitorCount !== null
+      ? t("landing.metric.creditsDetail", {
+          count: formatI18nNumber(visitorCount, language),
+        })
+      : t(
+          visitorCountFailed
+            ? "landing.metric.visitorUnavailable"
+            : "landing.metric.visitorLoading",
+        );
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function loadVisitorCount() {
+      setVisitorCountFailed(false);
+
+      try {
+        const visitorId = isAuthenticated
+          ? null
+          : getOrCreateAnonymousVisitorId();
+        const result = visitorId
+          ? await visitorAnalyticsApi.record(visitorId)
+          : await visitorAnalyticsApi.getTotal();
+
+        if (isCurrent) {
+          setVisitorCount(result.totalVisitors);
+        }
+      } catch {
+        if (isCurrent) {
+          setVisitorCountFailed(true);
+        }
+      }
+    }
+
+    void loadVisitorCount();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [isAuthenticated]);
 
   return (
     <main className="landing-surface graphite-theme min-h-screen overflow-x-hidden bg-canvas text-text-primary">
@@ -499,10 +547,20 @@ export function LandingPage() {
 
           <dl className="landing-metrics-row mt-9 max-w-2xl min-w-0 divide-y divide-border-subtle rounded-lg border border-border-subtle bg-surface-muted/70 sm:mt-10 sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
-              [t("landing.metric.prompt"), t("landing.metric.promptDetail")],
-              [t("landing.metric.credits"), t("landing.metric.creditsDetail")],
-              [t("landing.metric.preview"), t("landing.metric.previewDetail")],
-            ].map(([label, detail]) => (
+              {
+                label: t("landing.metric.prompt"),
+                detail: t("landing.metric.promptDetail"),
+              },
+              {
+                label: t("landing.metric.credits"),
+                detail: visitorDetail,
+                isLive: true,
+              },
+              {
+                label: t("landing.metric.preview"),
+                detail: t("landing.metric.previewDetail"),
+              },
+            ].map(({ label, detail, isLive }) => (
               <div
                 className="landing-metric-item min-w-0 px-4 py-4 sm:px-5"
                 key={label}
@@ -510,7 +568,10 @@ export function LandingPage() {
                 <dt className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">
                   {label}
                 </dt>
-                <dd className="mt-2 text-sm font-semibold text-text-primary">
+                <dd
+                  className="mt-2 text-sm font-semibold text-text-primary"
+                  aria-live={isLive ? "polite" : undefined}
+                >
                   {detail}
                 </dd>
               </div>
